@@ -13,7 +13,8 @@ import ReportesView   from '@/views/ReportesView';
 import KardexView     from '@/views/KardexView';
 import AuditoriaView  from '@/views/AuditoriaView';
 import InsumosView        from '@/views/InsumosView';
-import ReporteDiarioView from '@/views/ReporteDiarioView';
+import ReporteDiarioView  from '@/views/ReporteDiarioView';
+import SeguimientoView   from '@/views/SeguimientoView';
 
 function isTokenValid(token: string | null): boolean {
     if (!token) return false;
@@ -51,6 +52,10 @@ export const router = createBrowserRouter([
     {
         element: <PublicRoute />,
         children: [{ path: '/login', element: <LoginView /> }],
+    },
+    {
+        path: '/seguimiento/:id',
+        element: <SeguimientoView />,
     },
     {
         element: <PrivateRoute />,
