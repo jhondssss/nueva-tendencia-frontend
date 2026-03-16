@@ -40,6 +40,7 @@ export default function PedidosView() {
     // Global creation date filters — apply to all pedidos
     const [filterAnioPedido, setFilterAnioPedido] = useState<number>(0);
     const [filterMesPedido,  setFilterMesPedido]  = useState<number>(0);
+    const [filterCategoria,  setFilterCategoria]  = useState('');
 
     const { pedidos, isLoading, fetchAll, create, update, mover, remove } = usePedidoStore();
     const { canCreate, canEdit, canDelete, isOperario } = useRole();
@@ -71,6 +72,8 @@ export default function PedidosView() {
             if (filterAnio !== 0 && d.getFullYear() !== filterAnio) return false;
             if (filterMes  !== 0 && d.getMonth() + 1 !== filterMes)  return false;
         }
+
+        if (filterCategoria && p.categoria !== filterCategoria) return false;
 
         // Global delivery date filter
         if (filterAnioPedido !== 0) {
@@ -125,6 +128,20 @@ export default function PedidosView() {
                     <option value="">Todos los estados</option>
                     {ESTADOS.map(e => <option key={e} value={e}>{e}</option>)}
                 </select>
+
+                <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-cafe-700">Categoría</label>
+                    <select
+                        value={filterCategoria}
+                        onChange={e => setFilterCategoria(e.target.value)}
+                        className="select w-36"
+                    >
+                        <option value="">Todas</option>
+                        <option value="adulto">Adulto</option>
+                        <option value="juvenil">Juvenil</option>
+                        <option value="niño">Niño</option>
+                    </select>
+                </div>
 
                 <div className="flex flex-col gap-1">
                     <label className="text-xs font-medium text-cafe-700">Año</label>
