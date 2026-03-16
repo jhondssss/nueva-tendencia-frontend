@@ -7,7 +7,7 @@ import { Upload, Loader2 } from 'lucide-react';
 import Modal from '@/components/shared/Modal';
 import type { Producto, CreateProductoDto } from '@/types';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
 const schema = z.object({
     nombre_modelo:      z.string().min(1, 'Requerido'),

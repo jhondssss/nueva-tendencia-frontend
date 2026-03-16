@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { FileSpreadsheet, Users, Package, Loader2 } from 'lucide-react';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
 interface ExcelCard {
     key:      string;

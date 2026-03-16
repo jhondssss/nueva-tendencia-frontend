@@ -17,7 +17,7 @@ import { useRole } from '@/hooks/useRole';
 import type { CategoriaInsumo, UnidadMedida, CreateInsumoDto, Insumo } from '@/types';
 import { clsx } from 'clsx';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
 // ─── Catálogos ────────────────────────────────────────────────────────────────
 

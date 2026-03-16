@@ -7,7 +7,7 @@ import { clsx } from 'clsx';
 import type { Producto } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
 interface Props {
     onEdit:     (p: Producto) => void;

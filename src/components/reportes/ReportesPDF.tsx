@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { TrendingUp, ClipboardList, AlertTriangle, Loader2, Download } from 'lucide-react';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
 interface PdfCard {
     key:      string;
