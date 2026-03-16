@@ -30,7 +30,14 @@ export default function NTAssistant() {
     const hasMoved   = useRef(false);
     const dragStart  = useRef({ mouseX: 0, mouseY: 0, btnX: 0, btnY: 0 });
 
-    const { messages, isLoading, input, setInput, sendMessage } = useNTAssistant();
+    const { messages, isLoading, input, setInput, sendMessage, sendQuick } = useNTAssistant();
+
+    const SUGERENCIAS = [
+        '¿Cuántos pedidos pendientes?',
+        '¿Stock crítico?',
+        '¿Ventas del mes?',
+        '¿Pedidos por entregar hoy?',
+    ];
 
     // Auto-scroll al último mensaje
     useEffect(() => {
@@ -218,6 +225,22 @@ export default function NTAssistant() {
                         <p className="text-2xs text-cafe-400 mt-1.5 text-center">
                             Enter para enviar · Shift+Enter para nueva línea
                         </p>
+
+                        {/* Sugerencias rápidas */}
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                            {SUGERENCIAS.map(s => (
+                                <button
+                                    key={s}
+                                    onClick={() => sendQuick(s)}
+                                    disabled={isLoading}
+                                    className="text-2xs px-2 py-1 rounded-full border border-cafe-200
+                                               bg-crema text-cafe-700 hover:bg-cafe-100 hover:border-cafe-400
+                                               disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}

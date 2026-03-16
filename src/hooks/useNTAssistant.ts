@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 
+const ASSISTANT_URL = 'https://nueva-tendencia-backend-production.up.railway.app/assistant/chat';
+
 export interface ChatMessage {
     role: 'user' | 'assistant';
     content: string;
@@ -11,20 +13,20 @@ export function useNTAssistant() {
     const [isLoading, setIsLoading] = useState(false);
     const [input,     setInput]     = useState('');
 
-    const sendMessage = useCallback(async () => {
-        const text = input.trim();
-        if (!text || isLoading) return;
-
-        const updated: ChatMessage[] = [...messages, { role: 'user', content: text }];
+    const send = useCallback(async (text: string, currentMessages: ChatMessage[]) => {
+        const updated: ChatMessage[] = [...currentMessages, { role: 'user', content: text }];
         setMessages(updated);
         setInput('');
         setIsLoading(true);
 
         try {
-            const res = await fetch('http://localhost:3000/assistant/chat', {
+            const res = await fetch(ASSISTANT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text }),
+                body: JSON.stringify({
+                    message: text,
+                    history: currentMessages.map(m => ({ role: m.role, text: m.content })),
+                }),
             });
 
             if (!res.ok) {
@@ -51,7 +53,18 @@ export function useNTAssistant() {
         } finally {
             setIsLoading(false);
         }
-    }, [input, messages, isLoading]);
+    }, []);
 
-    return { messages, isLoading, input, setInput, sendMessage };
+    const sendMessage = useCallback(async () => {
+        const text = input.trim();
+        if (!text || isLoading) return;
+        await send(text, messages);
+    }, [input, messages, isLoading, send]);
+
+    const sendQuick = useCallback(async (text: string) => {
+        if (isLoading) return;
+        await send(text, messages);
+    }, [messages, isLoading, send]);
+
+    return { messages, isLoading, input, setInput, sendMessage, sendQuick };
 }
