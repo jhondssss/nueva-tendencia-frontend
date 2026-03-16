@@ -500,7 +500,7 @@ export default function ReporteDiarioView() {
                                                 <td>
                                                     <span className={clsx(
                                                         'inline-block text-xs font-medium px-2 py-0.5 rounded-full capitalize',
-                                                        KARDEX_BADGE[rm.tipo],
+                                                        KARDEX_BADGE[rm.tipo as TipoMovimiento],
                                                     )}>
                                                         {rm.tipo}
                                                     </span>
