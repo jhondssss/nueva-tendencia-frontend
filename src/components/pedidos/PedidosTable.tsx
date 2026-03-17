@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Edit2, Trash2, ClipboardList, ChevronDown } from 'lucide-react';
+import { Edit2, Trash2, ClipboardList, ChevronDown, Link2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import StatusBadge from '@/components/shared/StatusBadge';
 import Pagination from '@/components/shared/Pagination';
 import PageLoader from '@/components/shared/PageLoader';
@@ -73,6 +74,14 @@ interface Props {
     isLoading:   boolean;
     pagination:  PaginationResult<Pedido>;
     total:       number;
+}
+
+const BASE_TRACKING_URL = 'https://nueva-tendencia-frontend.vercel.app/seguimiento/token';
+
+function copiarLink(token: string) {
+    navigator.clipboard.writeText(`${BASE_TRACKING_URL}/${token}`)
+        .then(() => toast.success('¡Link copiado!'))
+        .catch(() => toast.error('No se pudo copiar el link'));
 }
 
 export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDelete, hideTotals = false, isLoading, pagination, total }: Props) {
@@ -166,6 +175,21 @@ export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDe
                                                     <button onClick={() => onDelete(p)}
                                                             className="p-1.5 rounded text-ink-300 hover:text-red-400 hover:bg-red-950/40 transition-colors">
                                                         <Trash2 size={13} />
+                                                    </button>
+                                                )}
+                                                {p.token_seguimiento ? (
+                                                    <button
+                                                        onClick={() => copiarLink(p.token_seguimiento!)}
+                                                        title="Copiar link de seguimiento"
+                                                        className="p-1.5 rounded text-ink-300 hover:text-blue-400 hover:bg-blue-500/10 transition-colors">
+                                                        <Link2 size={13} />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        disabled
+                                                        title="Sin token generado"
+                                                        className="p-1.5 rounded text-ink-600 cursor-not-allowed opacity-50">
+                                                        <Link2 size={13} />
                                                     </button>
                                                 )}
                                             </div>

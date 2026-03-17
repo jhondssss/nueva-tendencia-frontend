@@ -68,17 +68,18 @@ export type EstadoPedido  = 'Pendiente' | 'Cortado' | 'Aparado' | 'Solado' | 'Em
 export type UnidadPedido  = 'docena' | 'media_docena' | 'par';
 
 export interface Pedido {
-    id_pedido:      number;
-    cliente:        Cliente;
-    producto:       Producto;
-    cantidad:       number;
-    unidad:         UnidadPedido;
-    cantidad_pares: number;
-    total:          number;
-    fecha_entrega:  string;
-    estado:         EstadoPedido;
-    categoria?:     CategoriaCalzado;
-    talles?:        TallaDetalle[];
+    id_pedido:          number;
+    cliente:            Cliente;
+    producto:           Producto;
+    cantidad:           number;
+    unidad:             UnidadPedido;
+    cantidad_pares:     number;
+    total:              number;
+    fecha_entrega:      string;
+    estado:             EstadoPedido;
+    categoria?:         CategoriaCalzado;
+    talles?:            TallaDetalle[];
+    token_seguimiento?: string | null;
 }
 export interface CreatePedidoDto {
     clienteId:              number;
