@@ -8,7 +8,7 @@ interface PedidoPublico {
     id_pedido:      number;
     cliente:        string;
     producto:       string;
-    imagen:         string | null;
+    imagen?:        string;
     cantidad:       number;
     unidad:         string;
     cantidad_pares: number;
@@ -202,7 +202,7 @@ export default function SeguimientoView() {
                         <div className="card overflow-hidden">
                             {pedido.imagen ? (
                                 <img
-                                    src={`${BACKEND_URL}${pedido.imagen}`}
+                                    src={pedido.imagen}
                                     alt={pedido.producto}
                                     className="w-full h-48 object-cover"
                                 />
