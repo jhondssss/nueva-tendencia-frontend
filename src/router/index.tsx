@@ -58,6 +58,10 @@ export const router = createBrowserRouter([
         element: <SeguimientoView />,
     },
     {
+        path: '/seguimiento/token/:token',
+        element: <SeguimientoView />,
+    },
+    {
         element: <PrivateRoute />,
         children: [
             {

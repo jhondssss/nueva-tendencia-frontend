@@ -41,7 +41,7 @@ function formatFecha(iso: string) {
 }
 
 export default function SeguimientoView() {
-    const { id } = useParams<{ id: string }>();
+    const { id, token } = useParams<{ id?: string; token?: string }>();
     const navigate = useNavigate();
 
     const [pedido, setPedido]   = useState<PedidoPublico | null>(null);
@@ -49,10 +49,16 @@ export default function SeguimientoView() {
     const [error, setError]     = useState<string | null>(null);
 
     useEffect(() => {
-        if (!id) { setError('ID de pedido inválido.'); setLoading(false); return; }
+        const endpoint = token
+            ? `/publico/pedido/token/${token}`
+            : id
+                ? `/publico/pedido/${id}`
+                : null;
+
+        if (!endpoint) { setError('Enlace de seguimiento inválido.'); setLoading(false); return; }
 
         api
-            .get<PedidoPublico>(`/publico/pedido/${id}`)
+            .get<PedidoPublico>(endpoint)
             .then(res => setPedido(res.data))
             .catch(err => {
                 const status = err?.response?.status;
@@ -60,7 +66,7 @@ export default function SeguimientoView() {
                 else setError('No pudimos cargar el pedido. Intenta nuevamente más tarde.');
             })
             .finally(() => setLoading(false));
-    }, [id]);
+    }, [id, token]);
 
     const currentIndex = pedido ? ESTADOS.indexOf(pedido.estado) : -1;
 
