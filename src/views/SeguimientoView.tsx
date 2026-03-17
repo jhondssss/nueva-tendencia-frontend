@@ -168,8 +168,7 @@ export default function SeguimientoView() {
                                 <div>
                                     <p className="label">Cliente</p>
                                     <p className="text-cafe-900 font-medium text-sm">
-                                        {pedido.cliente.nombre_completo
-                                            ?? `${pedido.cliente.nombre} ${pedido.cliente.apellido ?? ''}`.trim()}
+                                        {`${pedido.cliente?.nombre ?? ''} ${pedido.cliente?.apellido ?? ''}`.trim() || 'N/D'}
                                     </p>
                                 </div>
                             </div>
@@ -187,32 +186,39 @@ export default function SeguimientoView() {
                         </div>
 
                         {/* Producto */}
-                        <div className="card p-4 flex gap-4">
-                            {pedido.producto.imagen_url ? (
+                        <div className="card overflow-hidden">
+                            {pedido.producto?.imagen_url ? (
                                 <img
                                     src={`${BACKEND_URL}${pedido.producto.imagen_url}`}
-                                    alt={pedido.producto.nombre_modelo}
-                                    className="w-20 h-20 object-cover rounded-lg border border-surface-border shrink-0"
+                                    alt={pedido.producto?.nombre_modelo ?? (pedido.producto as any)?.nombre}
+                                    className="w-full h-48 object-cover"
                                 />
                             ) : (
-                                <div className="w-20 h-20 bg-crema-dark rounded-lg border border-surface-border flex items-center justify-center shrink-0">
-                                    <Package className="w-8 h-8 text-cafe-300" />
+                                <div className="w-full h-48 bg-gradient-to-br from-crema-dark to-cafe-100 flex flex-col items-center justify-center gap-3">
+                                    <div className="w-16 h-16 rounded-full bg-white/60 flex items-center justify-center">
+                                        <Package className="w-8 h-8 text-cafe-400" />
+                                    </div>
+                                    <span className="text-cafe-300 text-xs tracking-wide">Sin imagen disponible</span>
                                 </div>
                             )}
-                            <div className="flex-1 min-w-0">
-                                <p className="label">Producto</p>
-                                <p className="text-cafe-900 font-semibold text-sm leading-snug">
-                                    {pedido.producto.nombre_modelo}
-                                </p>
-                                <p className="text-cafe-400 text-xs mt-0.5">
-                                    {pedido.producto.marca} · {pedido.producto.tipo_calzado}
-                                </p>
-                                <div className="flex flex-wrap gap-3 mt-2">
-                                    <span className="text-xs text-cafe-600">
-                                        <span className="font-medium">{pedido.cantidad}</span>{' '}
-                                        {UNIDAD_LABELS[pedido.unidad] ?? pedido.unidad}
-                                        {' '}·{' '}
-                                        <span className="font-medium">{pedido.cantidad_pares}</span> pares
+                            <div className="p-4 space-y-3">
+                                <div>
+                                    <p className="text-2xs text-cafe-400 uppercase tracking-widest">Producto</p>
+                                    <p className="text-cafe-900 font-bold text-xl leading-tight mt-0.5">
+                                        {pedido.producto?.nombre_modelo ?? (pedido.producto as any)?.nombre ?? 'N/D'}
+                                    </p>
+                                    {(pedido.producto?.marca || pedido.producto?.tipo_calzado) && (
+                                        <p className="text-cafe-400 text-xs mt-0.5">
+                                            {[pedido.producto.marca, pedido.producto.tipo_calzado].filter(Boolean).join(' · ')}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="inline-flex items-center bg-cafe-100 text-cafe-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                                        {pedido.cantidad} {UNIDAD_LABELS[pedido.unidad] ?? pedido.unidad}
+                                    </span>
+                                    <span className="inline-flex items-center bg-dorado-200 text-dorado-600 text-xs font-semibold px-3 py-1.5 rounded-full">
+                                        {pedido.cantidad_pares} pares
                                     </span>
                                 </div>
                             </div>
