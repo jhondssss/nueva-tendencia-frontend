@@ -2,7 +2,20 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/api/axios';
 import { CheckCircle2, Clock, AlertCircle, Package, User, Calendar, Ruler } from 'lucide-react';
-import type { Pedido, EstadoPedido } from '@/types';
+import type { EstadoPedido } from '@/types';
+
+interface PedidoPublico {
+    id_pedido:      number;
+    cliente:        string;
+    producto:       string;
+    imagen:         string | null;
+    cantidad:       number;
+    unidad:         string;
+    cantidad_pares: number;
+    fecha_entrega:  string;
+    estado:         EstadoPedido;
+    talles?:        { talla: number; cantidad_pares: number }[];
+}
 
 const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
@@ -32,7 +45,7 @@ export default function SeguimientoView() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [pedido, setPedido]   = useState<Pedido | null>(null);
+    const [pedido, setPedido]   = useState<PedidoPublico | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError]     = useState<string | null>(null);
 
@@ -40,7 +53,7 @@ export default function SeguimientoView() {
         if (!id) { setError('ID de pedido inválido.'); setLoading(false); return; }
 
         api
-            .get<Pedido>(`/publico/pedido/${id}`)
+            .get<PedidoPublico>(`/publico/pedido/${id}`)
             .then(res => setPedido(res.data))
             .catch(err => {
                 const status = err?.response?.status;
@@ -168,7 +181,7 @@ export default function SeguimientoView() {
                                 <div>
                                     <p className="label">Cliente</p>
                                     <p className="text-cafe-900 font-medium text-sm">
-                                        {`${pedido.cliente?.nombre ?? ''} ${pedido.cliente?.apellido ?? ''}`.trim() || 'N/D'}
+                                        {pedido.cliente || 'N/D'}
                                     </p>
                                 </div>
                             </div>
@@ -187,10 +200,10 @@ export default function SeguimientoView() {
 
                         {/* Producto */}
                         <div className="card overflow-hidden">
-                            {pedido.producto?.imagen_url ? (
+                            {pedido.imagen ? (
                                 <img
-                                    src={`${BACKEND_URL}${pedido.producto.imagen_url}`}
-                                    alt={pedido.producto?.nombre_modelo ?? (pedido.producto as any)?.nombre}
+                                    src={`${BACKEND_URL}${pedido.imagen}`}
+                                    alt={pedido.producto}
                                     className="w-full h-48 object-cover"
                                 />
                             ) : (
@@ -205,13 +218,8 @@ export default function SeguimientoView() {
                                 <div>
                                     <p className="text-2xs text-cafe-400 uppercase tracking-widest">Producto</p>
                                     <p className="text-cafe-900 font-bold text-xl leading-tight mt-0.5">
-                                        {pedido.producto?.nombre_modelo ?? (pedido.producto as any)?.nombre ?? 'N/D'}
+                                        {pedido.producto || 'N/D'}
                                     </p>
-                                    {(pedido.producto?.marca || pedido.producto?.tipo_calzado) && (
-                                        <p className="text-cafe-400 text-xs mt-0.5">
-                                            {[pedido.producto.marca, pedido.producto.tipo_calzado].filter(Boolean).join(' · ')}
-                                        </p>
-                                    )}
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     <span className="inline-flex items-center bg-cafe-100 text-cafe-700 text-xs font-semibold px-3 py-1.5 rounded-full">
