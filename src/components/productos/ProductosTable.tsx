@@ -9,6 +9,11 @@ import type { PaginationResult } from '@/hooks/usePagination';
 
 const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
+function resolveImageUrl(url?: string | null): string | null {
+    if (!url) return null;
+    return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+}
+
 interface Props {
     onEdit:     (p: Producto) => void;
     onDelete:   (p: Producto) => void;
@@ -53,10 +58,11 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                                 <div
                                                     className="w-10"
                                                     onMouseEnter={e => {
-                                                        if (!p.imagen_url) return;
+                                                        const url = resolveImageUrl(p.imagen_url);
+                                                        if (!url) return;
                                                         const rect = e.currentTarget.getBoundingClientRect();
                                                         setHoverImg({
-                                                            url:  `${BACKEND_URL}${p.imagen_url}`,
+                                                            url,
                                                             top:  Math.max(8, rect.top - 104),
                                                             left: rect.right + 10,
                                                         });
@@ -64,7 +70,7 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                                     onMouseLeave={() => setHoverImg(null)}
                                                 >
                                                     {p.imagen_url ? (
-                                                        <img src={`${BACKEND_URL}${p.imagen_url}`} alt={p.nombre_modelo}
+                                                        <img src={resolveImageUrl(p.imagen_url)!} alt={p.nombre_modelo}
                                                              className="w-10 h-10 object-cover rounded border border-ink-600 cursor-zoom-in" />
                                                     ) : (
                                                         <div className="w-10 h-10 rounded bg-ink-700 border border-ink-600

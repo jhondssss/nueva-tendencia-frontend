@@ -9,6 +9,11 @@ import type { Producto, CreateProductoDto } from '@/types';
 
 const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
+function resolveImageUrl(url?: string | null): string | null {
+    if (!url) return null;
+    return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+}
+
 const schema = z.object({
     nombre_modelo:      z.string().min(1, 'Requerido'),
     marca:              z.string().min(1, 'Requerido'),
@@ -70,7 +75,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 unidad_medida:      producto.unidad_medida ?? 'unidades',
                 activo:             Boolean(producto.activo),
             });
-            setPreview(producto.imagen_url ? `${BACKEND_URL}${producto.imagen_url}` : null);
+            setPreview(resolveImageUrl(producto.imagen_url));
             setImagen(null);
         } else if (!isOpen) {
             reset();
