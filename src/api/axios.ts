@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
 
 const api = axios.create({
-    baseURL: 'https://nueva-tendencia-backend-production.up.railway.app',
+    baseURL: import.meta.env.VITE_API_URL,
     timeout: 15_000,
     headers: { 'Content-Type': 'application/json' },
 });
