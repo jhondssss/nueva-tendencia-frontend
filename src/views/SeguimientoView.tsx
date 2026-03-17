@@ -17,7 +17,6 @@ interface PedidoPublico {
     talles?:        { talla: number; cantidad_pares: number }[];
 }
 
-const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
 
