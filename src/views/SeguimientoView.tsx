@@ -203,7 +203,7 @@ export default function SeguimientoView() {
                                 <img
                                     src={pedido.imagen}
                                     alt={pedido.producto}
-                                    className="w-full h-48 object-cover"
+                                    className="w-full h-48 object-contain bg-gray-50"
                                 />
                             ) : (
                                 <div className="w-full h-48 bg-gradient-to-br from-crema-dark to-cafe-100 flex flex-col items-center justify-center gap-3">
