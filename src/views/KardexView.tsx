@@ -7,8 +7,8 @@ import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { kardexApi, productoApi } from '@/api/services';
-import type { KardexMovimiento, Producto, TipoMovimiento } from '@/types';
+import { kardexApi, insumoApi } from '@/api/services';
+import type { KardexMovimiento, Insumo, TipoMovimiento } from '@/types';
 import { useRole } from '@/hooks/useRole';
 import PageLoader from '@/components/shared/PageLoader';
 import EmptyState from '@/components/shared/EmptyState';
@@ -22,7 +22,7 @@ const MESES = [
 ];
 
 const schema = z.object({
-    productoId: z.coerce.number({ error: 'Selecciona un producto' }).min(1, 'Selecciona un producto'),
+    insumoId: z.coerce.number({ error: 'Selecciona un insumo' }).min(1, 'Selecciona un insumo'),
     tipo:       z.enum(['entrada', 'salida', 'ajuste'], { error: 'Selecciona un tipo' }),
     cantidad:   z.coerce.number({ error: 'Cantidad requerida' }).min(1, 'Debe ser al menos 1'),
     motivo:     z.string().optional(),
@@ -57,7 +57,7 @@ export default function KardexView() {
     const { isAdmin } = useRole();
 
     const [movimientos, setMovimientos] = useState<KardexMovimiento[]>([]);
-    const [productos,   setProductos]   = useState<Producto[]>([]);
+    const [insumos,     setInsumos]     = useState<Insumo[]>([]);
     const [loadingData, setLoadingData] = useState(true);
     const [submitting,  setSubmitting]  = useState(false);
 
@@ -74,18 +74,18 @@ export default function KardexView() {
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema) as Resolver<FormValues>,
-        defaultValues: { productoId: 0, tipo: 'entrada', cantidad: 1, motivo: '' },
+        defaultValues: { insumoId: 0, tipo: 'entrada', cantidad: 1, motivo: '' },
     });
 
     const loadAll = async () => {
         setLoadingData(true);
         try {
-            const [movRes, prodRes] = await Promise.all([
+            const [movRes, insRes] = await Promise.all([
                 kardexApi.getAll(),
-                productoApi.getAll(),
+                insumoApi.getAll(),
             ]);
             setMovimientos(movRes.data);
-            setProductos(prodRes.data);
+            setInsumos(insRes.data);
         } catch {
             toast.error('Error al cargar datos');
         } finally {
@@ -102,13 +102,13 @@ export default function KardexView() {
         setSubmitting(true);
         try {
             await kardexApi.registrar({
-                productoId: values.productoId,
-                tipo:       values.tipo,
-                cantidad:   values.cantidad,
-                motivo:     values.motivo || undefined,
+                insumoId: values.insumoId,
+                tipo:     values.tipo,
+                cantidad: values.cantidad,
+                motivo:   values.motivo || undefined,
             });
             toast.success('Movimiento registrado');
-            reset({ productoId: 0, tipo: 'entrada', cantidad: 1, motivo: '' });
+            reset({ insumoId: 0, tipo: 'entrada', cantidad: 1, motivo: '' });
             await loadAll();
         } catch {
             toast.error('Error al registrar movimiento');
@@ -184,19 +184,19 @@ export default function KardexView() {
                         <form onSubmit={handleSubmit(onSubmit)}
                               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                            {/* Producto */}
+                            {/* Insumo */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-cafe-700">Producto</label>
-                                <select {...register('productoId')} className="select">
-                                    <option value={0}>Selecciona un producto</option>
-                                    {productos.map(p => (
-                                        <option key={p.id_producto} value={p.id_producto}>
-                                            {p.nombre_modelo} — {p.marca}
+                                <label className="text-xs font-medium text-cafe-700">Insumo</label>
+                                <select {...register('insumoId')} className="select">
+                                    <option value={0}>Selecciona un insumo</option>
+                                    {insumos.map(i => (
+                                        <option key={i.id_insumo} value={i.id_insumo}>
+                                            {i.nombre} — {i.categoria}
                                         </option>
                                     ))}
                                 </select>
-                                {errors.productoId && (
-                                    <span className="text-red-500 text-xs">{errors.productoId.message}</span>
+                                {errors.insumoId && (
+                                    <span className="text-red-500 text-xs">{errors.insumoId.message}</span>
                                 )}
                             </div>
 

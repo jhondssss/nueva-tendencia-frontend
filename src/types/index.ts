@@ -130,10 +130,10 @@ export interface KardexMovimiento {
 }
 
 export interface CreateKardexDto {
-    productoId: number;
-    tipo:       TipoMovimiento;
-    cantidad:   number;
-    motivo?:    string;
+    insumoId: number;
+    tipo:     TipoMovimiento;
+    cantidad: number;
+    motivo?:  string;
 }
 
 // ─── Auditoría ────────────────────────────────────────────────────────────────
