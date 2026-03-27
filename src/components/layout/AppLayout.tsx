@@ -88,7 +88,7 @@ export default function AppLayout() {
             )}>
                 {/* Logo */}
                 <div className={clsx(
-                    'flex items-center gap-3 px-4 py-5 border-b border-cafe-800',
+                    'flex items-center gap-3 px-4 py-5 sidebar-glass',
                     !sidebarOpen && 'justify-center px-0',
                 )}>
                     <div className="w-8 h-8 rounded bg-cafe-gradient flex items-center justify-center flex-shrink-0 shadow-glow-sm">
@@ -209,7 +209,9 @@ export default function AppLayout() {
                     </button>
                 </header>
                 <main className="flex-1 overflow-y-auto p-6">
-                    <Outlet />
+                    <div className="page-transition">
+                        <Outlet />
+                    </div>
                 </main>
             </div>
 

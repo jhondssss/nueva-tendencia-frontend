@@ -15,11 +15,12 @@ interface KpiCardProps {
     sub?:        string;
     valueColor?: string;
     financiero?: boolean;
+    className?:  string;
 }
 
-function KpiCard({ label, value, icon: Icon, color, bg, trend, alert, sub, valueColor }: KpiCardProps) {
+function KpiCard({ label, value, icon: Icon, color, bg, trend, alert, sub, valueColor, className }: KpiCardProps) {
     return (
-        <div className={clsx('kpi-card', alert && 'border-red-300')}>
+        <div className={clsx('kpi-card', alert && 'border-red-300', className)}>
             <div className="flex items-center justify-between">
                 <span className="text-xs text-cafe-500 uppercase tracking-wider">{label}</span>
                 <div className={clsx('p-2 rounded-lg', bg)}>
@@ -88,11 +89,19 @@ export default function KpiCards({ kpis, isLoading }: Props) {
     const cards = isOperario ? allCards.filter(c => !c.financiero) : allCards;
     const colsClass = !isLoading && cards.length === 5 ? 'xl:grid-cols-5' : 'xl:grid-cols-4';
 
+    const staggerClass = ['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5'];
+
     return (
         <div className={clsx('grid grid-cols-1 sm:grid-cols-2 gap-4', colsClass)}>
             {isLoading
                 ? Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
-                : cards.map(card => <KpiCard key={card.label} {...card} />)
+                : cards.map((card, i) => (
+                    <KpiCard
+                        key={card.label}
+                        {...card}
+                        className={clsx('animate-fade-in', staggerClass[i])}
+                    />
+                ))
             }
         </div>
     );
