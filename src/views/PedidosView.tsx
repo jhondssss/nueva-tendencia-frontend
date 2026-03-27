@@ -103,11 +103,11 @@ export default function PedidosView() {
         <div className="space-y-5 animate-fade-in">
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Gestión de Pedidos</h1>
+                    <h1 className="page-title section-title">Gestión de Pedidos</h1>
                     <p className="page-subtitle">{pedidos.length} pedidos registrados</p>
                 </div>
                 {canCreate && (
-                    <button onClick={openCreate} className="btn-primary">
+                    <button onClick={openCreate} className="btn-ripple">
                         <Plus size={15} /> Nuevo pedido
                     </button>
                 )}

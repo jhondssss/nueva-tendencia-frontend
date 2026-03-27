@@ -199,7 +199,7 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
 
                 <div className="flex justify-end gap-2 pt-2 border-t border-ink-600">
                     <button type="button" onClick={handleClose} className="btn-secondary">Cancelar</button>
-                    <button type="submit" disabled={isSubmitting} className="btn-primary">
+                    <button type="submit" disabled={isSubmitting} className="btn-ripple">
                         {isSubmitting
                             ? <><Loader2 size={14} className="animate-spin" /> {isEditing ? 'Guardando...' : 'Creando...'}</>
                             : isEditing ? 'Guardar cambios' : 'Crear pedido'}

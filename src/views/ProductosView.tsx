@@ -46,7 +46,7 @@ export default function ProductosView() {
         <div className="space-y-5 animate-fade-in">
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Inventario de Productos</h1>
+                    <h1 className="page-title section-title">Inventario de Productos</h1>
                     <p className="page-subtitle">{productos.length} productos registrados</p>
                 </div>
                 <div className="flex gap-2">
@@ -57,7 +57,7 @@ export default function ProductosView() {
                         </button>
                     )}
                     {canCreate && (
-                        <button onClick={openCreate} className="btn-primary">
+                        <button onClick={openCreate} className="btn-ripple">
                             <Plus size={15} /> Nuevo producto
                         </button>
                     )}

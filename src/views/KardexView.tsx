@@ -165,7 +165,7 @@ export default function KardexView() {
             {/* Header */}
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Kardex</h1>
+                    <h1 className="page-title section-title">Kardex</h1>
                     <p className="page-subtitle">Movimientos de inventario</p>
                 </div>
             </div>
@@ -324,7 +324,7 @@ export default function KardexView() {
 
                 <div className="card overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="table w-full">
+                        <table className="table table-highlight w-full">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>

@@ -99,11 +99,11 @@ export default function ClientesView() {
             {/* Header */}
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Gestión de Clientes</h1>
+                    <h1 className="page-title section-title">Gestión de Clientes</h1>
                     <p className="page-subtitle">{clientes.length} clientes registrados</p>
                 </div>
                 {canCreate && (
-                    <button onClick={openCreate} className="btn-primary">
+                    <button onClick={openCreate} className="btn-ripple">
                         <Plus size={15} /> Nuevo cliente
                     </button>
                 )}
@@ -119,7 +119,7 @@ export default function ClientesView() {
             {/* Tabla */}
             <div className="card overflow-hidden">
                 <div className="table-container">
-                    <table className="table">
+                    <table className="table table-highlight">
                         <thead>
                         <tr>
                             <th>Tipo</th><th>Nombre</th><th>Correo</th>

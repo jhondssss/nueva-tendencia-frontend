@@ -88,9 +88,9 @@ export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDe
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
     return (
-        <div className="card overflow-hidden">
+        <div className="card-interactive overflow-hidden">
             <div className="table-container">
-                <table className="table">
+                <table className="table table-highlight">
                     <thead>
                         <tr>
                             <th>#</th><th>Cliente</th><th>Producto</th><th>Categoría</th>

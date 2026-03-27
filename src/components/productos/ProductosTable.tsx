@@ -29,9 +29,9 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
 
     return (
         <>
-            <div className="card overflow-hidden">
+            <div className="card-interactive overflow-hidden">
                 <div className="table-container">
-                    <table className="table">
+                    <table className="table table-highlight">
                         <thead>
                             <tr>
                                 <th>Imagen</th><th>Modelo</th><th>Marca</th><th>Tipo</th>

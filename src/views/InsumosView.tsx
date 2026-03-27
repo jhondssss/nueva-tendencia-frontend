@@ -235,13 +235,13 @@ export default function InsumosView() {
             {/* Header */}
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Insumos</h1>
+                    <h1 className="page-title section-title">Insumos</h1>
                     <p className="page-subtitle">
                         Control de materiales de producción · {insumos.length} registrados
                     </p>
                 </div>
                 {canCreate && (
-                    <button onClick={() => setCreateOpen(true)} className="btn-primary">
+                    <button onClick={() => setCreateOpen(true)} className="btn-ripple">
                         <Plus size={15} /> Nuevo insumo
                     </button>
                 )}
@@ -295,7 +295,7 @@ export default function InsumosView() {
             {/* Tabla */}
             <div className="card overflow-hidden">
                 <div className="table-container">
-                    <table className="table">
+                    <table className="table table-highlight">
                         <thead>
                         <tr>
                             <th className="w-14">Imagen</th>
