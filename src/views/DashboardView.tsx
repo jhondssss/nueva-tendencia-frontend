@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, FunnelChart, Funnel, LabelList } from 'recharts';
+import { ResponsiveContainer, Tooltip, FunnelChart, Funnel, LabelList, Cell } from 'recharts';
 import { Clock, Scissors, Hammer, Layers, Package, CheckCircle } from 'lucide-react';
 import { useDashboardStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
@@ -42,6 +42,63 @@ const TOOLTIP_STYLE = {
     itemStyle:    { color: '#4E3020', fontSize: 12 },
 };
 
+// ── SVG Donut puro ──────────────────────────────────────────────────────────
+const CX = 90, CY = 90, R_OUT = 80, R_IN = 50;
+
+function polarToXY(cx: number, cy: number, r: number, angleDeg: number) {
+    const rad = (angleDeg - 90) * (Math.PI / 180);
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function slicePath(startAngle: number, endAngle: number): string {
+    const gap = 1.5;
+    const s = startAngle + gap / 2;
+    const e = endAngle - gap / 2;
+    if (e - s <= 0) return '';
+    const largeArc = e - s > 180 ? 1 : 0;
+    const p1 = polarToXY(CX, CY, R_OUT, s);
+    const p2 = polarToXY(CX, CY, R_OUT, e);
+    const p3 = polarToXY(CX, CY, R_IN,  e);
+    const p4 = polarToXY(CX, CY, R_IN,  s);
+    return [
+        `M ${p1.x.toFixed(3)} ${p1.y.toFixed(3)}`,
+        `A ${R_OUT} ${R_OUT} 0 ${largeArc} 1 ${p2.x.toFixed(3)} ${p2.y.toFixed(3)}`,
+        `L ${p3.x.toFixed(3)} ${p3.y.toFixed(3)}`,
+        `A ${R_IN} ${R_IN} 0 ${largeArc} 0 ${p4.x.toFixed(3)} ${p4.y.toFixed(3)}`,
+        'Z',
+    ].join(' ');
+}
+
+function DonutChart({ data }: { data: { estado: string; count: number }[] }) {
+    const total = data.reduce((s, d) => s + d.count, 0);
+    if (total === 0) return null;
+
+    let currentAngle = 0;
+    const slices = data.map(d => {
+        const sweep = (d.count / total) * 360;
+        const path = slicePath(currentAngle, currentAngle + sweep);
+        const result = { ...d, path, color: STATUS_COLORS[d.estado] ?? '#C6A75E' };
+        currentAngle += sweep;
+        return result;
+    });
+
+    return (
+        <svg width={180} height={180} viewBox="0 0 180 180">
+            {slices.map(s => (
+                <path key={s.estado} d={s.path} fill={s.color} />
+            ))}
+            <text x={CX} y={CY - 6} textAnchor="middle" fontSize={22} fontWeight={600}
+                  fontFamily="'Playfair Display', Georgia, serif" fill="#1C1008">
+                {total}
+            </text>
+            <text x={CX} y={CY + 12} textAnchor="middle" fontSize={9} fontFamily="'DM Sans', system-ui, sans-serif"
+                  fill="#8B5E3C" letterSpacing="0.08em">
+                PEDIDOS
+            </text>
+        </svg>
+    );
+}
+
 export default function DashboardView() {
     const { kpis, ordersStatus, productionFunnel, recentActivity,
             topProductos, ventasPorMes, prediccionStock, proximosAEntregar, isLoading, fetchAll } = useDashboardStore();
@@ -79,27 +136,8 @@ export default function DashboardView() {
                         <div className="flex items-center justify-center h-48 text-cafe-400 text-sm">Sin datos disponibles</div>
                     ) : (
                         <div className="flex items-center gap-4">
-                            <div style={{ width: 180, height: 180, flexShrink: 0 }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={ordersStatus}
-                                            dataKey="count"
-                                            nameKey="estado"
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={45}
-                                            outerRadius={75}
-                                            paddingAngle={2}
-                                            strokeWidth={0}
-                                        >
-                                            {ordersStatus.map(({ estado }) => (
-                                                <Cell key={estado} fill={STATUS_COLORS[estado] ?? '#C6A75E'} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip {...TOOLTIP_STYLE} />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                            <div style={{ flexShrink: 0 }}>
+                                <DonutChart data={ordersStatus} />
                             </div>
                             <div className="flex-1 space-y-2">
                                 {ordersStatus.map(({ estado, count }) => (
