@@ -73,17 +73,28 @@ export default function DashboardView() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="card p-5">
                     <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Estado de Pedidos</h3>
-                    {isLoading ? <Skeleton className="h-48 w-full rounded-lg" /> : ordersStatus.length === 0 ? (
+                    {isLoading ? (
+                        <Skeleton className="h-48 w-full rounded-lg" />
+                    ) : ordersStatus.length === 0 ? (
                         <div className="flex items-center justify-center h-48 text-cafe-400 text-sm">Sin datos disponibles</div>
                     ) : (
-                        <div className="flex items-center gap-6">
-                            <div style={{ width: '55%', minWidth: 0, flexShrink: 0 }}>
-                                <ResponsiveContainer width="100%" height={180}>
+                        <div className="flex items-center gap-4">
+                            <div style={{ width: 180, height: 180, flexShrink: 0 }}>
+                                <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
-                                        <Pie data={ordersStatus} dataKey="count" nameKey="estado"
-                                             cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} strokeWidth={0}>
+                                        <Pie
+                                            data={ordersStatus}
+                                            dataKey="count"
+                                            nameKey="estado"
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={45}
+                                            outerRadius={75}
+                                            paddingAngle={2}
+                                            strokeWidth={0}
+                                        >
                                             {ordersStatus.map(({ estado }) => (
-                                                <Cell key={estado} fill={STATUS_COLORS[estado] ?? '#C49470'} />
+                                                <Cell key={estado} fill={STATUS_COLORS[estado] ?? '#C6A75E'} />
                                             ))}
                                         </Pie>
                                         <Tooltip {...TOOLTIP_STYLE} />
@@ -94,10 +105,13 @@ export default function DashboardView() {
                                 {ordersStatus.map(({ estado, count }) => (
                                     <div key={estado} className="flex items-center justify-between text-xs">
                                         <div className="flex items-center gap-2">
-                                            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: STATUS_COLORS[estado] ?? '#C49470' }} />
+                                            <span
+                                                className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                                                style={{ background: STATUS_COLORS[estado] ?? '#C6A75E' }}
+                                            />
                                             <span className="text-cafe-700">{estado}</span>
                                         </div>
-                                        <span className="font-mono text-cafe-950">{count}</span>
+                                        <span className="font-mono font-medium text-cafe-950">{count}</span>
                                     </div>
                                 ))}
                             </div>
