@@ -51,6 +51,7 @@ export default function DashboardView() {
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
     useEffect(() => { document.title = 'Dashboard | NT'; }, []);
+    useEffect(() => { console.log('[Dashboard] ordersStatus:', ordersStatus); }, [ordersStatus]);
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -76,17 +77,19 @@ export default function DashboardView() {
                         <div className="flex items-center justify-center h-48 text-cafe-400 text-sm">Sin datos disponibles</div>
                     ) : (
                         <div className="flex items-center gap-6">
-                            <ResponsiveContainer width="55%" height={180}>
-                                <PieChart>
-                                    <Pie data={ordersStatus} dataKey="count" nameKey="estado"
-                                         cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} strokeWidth={0}>
-                                        {ordersStatus.map(({ estado }) => (
-                                            <Cell key={estado} fill={STATUS_COLORS[estado] ?? '#C49470'} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip {...TOOLTIP_STYLE} />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <div style={{ width: '55%', minWidth: 0, flexShrink: 0 }}>
+                                <ResponsiveContainer width="100%" height={180}>
+                                    <PieChart>
+                                        <Pie data={ordersStatus} dataKey="count" nameKey="estado"
+                                             cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} strokeWidth={0}>
+                                            {ordersStatus.map(({ estado }) => (
+                                                <Cell key={estado} fill={STATUS_COLORS[estado] ?? '#C49470'} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip {...TOOLTIP_STYLE} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
                             <div className="flex-1 space-y-2">
                                 {ordersStatus.map(({ estado, count }) => (
                                     <div key={estado} className="flex items-center justify-between text-xs">
