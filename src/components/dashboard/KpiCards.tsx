@@ -5,27 +5,33 @@ import { clsx } from 'clsx';
 import type { DashboardKpis } from '@/types';
 
 interface KpiCardProps {
-    label:       string;
-    value:       string | number;
-    icon:        React.ElementType;
-    color:       string;
-    bg:          string;
-    trend:       string;
-    alert?:      boolean;
-    sub?:        string;
-    valueColor?: string;
-    financiero?: boolean;
-    className?:  string;
+    label:        string;
+    value:        string | number;
+    icon:         React.ElementType;
+    color:        string;
+    bg:           string;
+    trend:        string;
+    accentColor:  string;
+    alert?:       boolean;
+    sub?:         string;
+    valueColor?:  string;
+    financiero?:  boolean;
+    className?:   string;
 }
 
-function KpiCard({ label, value, icon: Icon, color, bg, trend, alert, sub, valueColor, className }: KpiCardProps) {
+function KpiCard({ label, value, icon: Icon, color, bg, trend, accentColor, alert, sub, valueColor, className }: KpiCardProps) {
     return (
-        <div className={clsx('kpi-card', alert && 'border-red-300', className)}>
-            <div className="flex items-center justify-between">
-                <span className="text-xs text-cafe-500 uppercase tracking-wider">{label}</span>
-                <div className={clsx('p-2 rounded-lg', bg)}>
+        <div
+            className={clsx('kpi-card relative overflow-hidden', alert && 'border-red-300', className)}
+            style={{ borderTop: `2px solid ${accentColor}` }}
+        >
+            <div className="absolute top-3 right-3">
+                <div className={clsx('w-7 h-7 rounded-lg flex items-center justify-center', bg)}>
                     <Icon size={15} className={color} />
                 </div>
+            </div>
+            <div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-cafe-500">{label}</span>
             </div>
             <div>
                 <p className={clsx('font-display text-2xl font-semibold',
@@ -34,8 +40,9 @@ function KpiCard({ label, value, icon: Icon, color, bg, trend, alert, sub, value
                 </p>
                 {sub && <p className="text-xs text-cafe-400 mt-0.5">{sub}</p>}
             </div>
+            <div className="w-full h-px bg-surface-border my-2" />
             <div className="flex items-center gap-1 text-xs text-cafe-500">
-                <TrendingUp size={11} className="text-dorado-600" />
+                <TrendingUp size={11} style={{ color: accentColor }} />
                 {trend}
             </div>
         </div>
@@ -54,34 +61,42 @@ export default function KpiCards({ kpis, isLoading }: Props) {
         {
             label: 'Ventas Totales',
             value: `Bs. ${Number(kpis.totalVentas ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            icon: TrendingUp, color: 'text-dorado-600', bg: 'bg-dorado-500/10', trend: 'Ventas del mes',
+            icon: TrendingUp, color: 'text-dorado-600', bg: 'bg-dorado-500/10',
+            trend: 'Ventas del mes',
+            accentColor: '#C6A75E',
             financiero: true,
         },
         {
             label: 'Total Pedidos',
             value: kpis.totalPedidos ?? 0,
-            icon: Users, color: 'text-blue-600', bg: 'bg-blue-500/10', trend: 'Con entrega este mes',
+            icon: Users, color: 'text-cafe-600', bg: 'bg-cafe-500/10',
+            trend: 'Con entrega este mes',
+            accentColor: '#8B5E3C',
         },
         {
             label: 'Ítems Inventario',
             value: kpis.itemsInventario ?? 0,
-            icon: Package, color: 'text-teal-600', bg: 'bg-teal-500/10', trend: 'Productos activos',
+            icon: Package, color: 'text-cafe-700', bg: 'bg-cafe-200/40',
+            trend: 'Productos activos',
+            accentColor: '#6B4020',
         },
         {
             label: 'Alertas de Stock',
             value: alertasStock,
             icon: AlertTriangle,
-            color:      alertasStock === 0 ? 'text-green-600' : 'text-red-600',
-            bg:         alertasStock === 0 ? 'bg-green-500/10' : 'bg-red-500/10',
+            color:       alertasStock === 0 ? 'text-cafe-700' : 'text-red-600',
+            bg:          alertasStock === 0 ? 'bg-cafe-200/40' : 'bg-red-500/10',
             trend: 'Requieren reposición',
-            alert:      alertasStock > 0,
-            valueColor: alertasStock === 0 ? 'text-green-600' : 'text-red-600',
+            accentColor: alertasStock > 0 ? '#C04530' : '#8B5E3C',
+            alert:       alertasStock > 0,
+            valueColor:  alertasStock === 0 ? 'text-cafe-700' : 'text-red-600',
         },
         ...(kpis.produccionMensual !== undefined ? [{
             label: 'Producción Mensual',
             value: `${kpis.produccionMensual} pares`,
-            icon: Package2, color: 'text-violet-600', bg: 'bg-violet-500/10',
+            icon: Package2, color: 'text-dorado-700', bg: 'bg-dorado-500/10',
             trend: 'Pares producidos este mes',
+            accentColor: '#9A6B1A',
             financiero: true,
         }] : []),
     ] : [];

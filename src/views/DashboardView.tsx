@@ -12,20 +12,20 @@ import PedidosVencidos from '@/components/dashboard/PedidosVencidos';
 
 // ── Actividad reciente ──────────────────────────────────────────────────────
 const ACTIVITY_ICON: Record<string, { icon: React.ElementType; iconClass: string; bgClass: string }> = {
-    Pendiente: { icon: Clock,        iconClass: 'text-cafe-400',   bgClass: 'bg-cafe-100 border-cafe-200'   },
-    Cortado:   { icon: Scissors,     iconClass: 'text-blue-500',   bgClass: 'bg-blue-50  border-blue-200'   },
-    Aparado:   { icon: Hammer,       iconClass: 'text-orange-500', bgClass: 'bg-orange-50 border-orange-200' },
-    Solado:    { icon: Layers,       iconClass: 'text-cafe-600',   bgClass: 'bg-cafe-50  border-cafe-200'   },
-    Empaque:   { icon: Package,      iconClass: 'text-purple-500', bgClass: 'bg-purple-50 border-purple-200' },
-    Terminado: { icon: CheckCircle,  iconClass: 'text-green-500',  bgClass: 'bg-green-50 border-green-200'  },
+    Pendiente: { icon: Clock,        iconClass: 'text-dorado-600',  bgClass: 'bg-dorado-500/10 border-dorado-300' },
+    Cortado:   { icon: Scissors,     iconClass: 'text-cafe-600',    bgClass: 'bg-cafe-100 border-cafe-300'        },
+    Aparado:   { icon: Hammer,       iconClass: 'text-cafe-700',    bgClass: 'bg-cafe-200/60 border-cafe-300'     },
+    Solado:    { icon: Layers,       iconClass: 'text-cafe-800',    bgClass: 'bg-cafe-200 border-cafe-400'        },
+    Empaque:   { icon: Package,      iconClass: 'text-dorado-700',  bgClass: 'bg-dorado-500/10 border-dorado-300' },
+    Terminado: { icon: CheckCircle,  iconClass: 'text-cafe-900',    bgClass: 'bg-cafe-100 border-cafe-400'        },
 };
 const ACTIVITY_BADGE: Record<string, string> = {
-    Pendiente: 'bg-cafe-100  text-cafe-500  border-cafe-200',
-    Cortado:   'bg-blue-100  text-blue-700  border-blue-200',
-    Aparado:   'bg-orange-100 text-orange-700 border-orange-200',
-    Solado:    'bg-cafe-200  text-cafe-700  border-cafe-300',
-    Empaque:   'bg-purple-100 text-purple-700 border-purple-200',
-    Terminado: 'bg-green-100 text-green-700  border-green-200',
+    Pendiente: 'bg-dorado-500/10 text-dorado-700 border-dorado-300',
+    Cortado:   'bg-cafe-100 text-cafe-700 border-cafe-300',
+    Aparado:   'bg-cafe-200/60 text-cafe-800 border-cafe-300',
+    Solado:    'bg-cafe-200 text-cafe-900 border-cafe-400',
+    Empaque:   'bg-dorado-500/10 text-dorado-800 border-dorado-400',
+    Terminado: 'bg-cafe-800 text-crema border-cafe-900',
 };
 function formatFechaBO(iso: string) {
     const d = new Date(new Date(iso).getTime() - 4 * 60 * 60 * 1000);
@@ -33,9 +33,9 @@ function formatFechaBO(iso: string) {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-    Pendiente: '#C6A75E', Aparado: '#5BA8D9', Solado: '#A855D9', Empaque: '#55D9A8', Terminado: '#55D955',
+    Pendiente: '#C6A75E', Cortado: '#9A6B1A', Aparado: '#8B5E3C', Solado: '#6B4020', Empaque: '#4A2810', Terminado: '#2C1810',
 };
-const FUNNEL_COLORS = ['#8B5E3C', '#A67850', '#C49470', '#4E3020', '#2C1810'];
+const FUNNEL_COLORS = ['#C6A75E', '#9A6B1A', '#8B5E3C', '#6B4020', '#4A2810', '#2C1810'];
 const TOOLTIP_STYLE = {
     contentStyle: { background: '#FFFFFF', border: '1px solid #E8DDD4', borderRadius: 6 },
     labelStyle:   { color: '#1C1008', fontSize: 12 },
@@ -79,7 +79,7 @@ export default function DashboardView() {
                             <ResponsiveContainer width="55%" height={180}>
                                 <PieChart>
                                     <Pie data={ordersStatus} dataKey="count" nameKey="estado"
-                                         cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} strokeWidth={0}>
+                                         cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} strokeWidth={0}>
                                         {ordersStatus.map(({ estado }) => (
                                             <Cell key={estado} fill={STATUS_COLORS[estado] ?? '#C49470'} />
                                         ))}
@@ -91,7 +91,7 @@ export default function DashboardView() {
                                 {ordersStatus.map(({ estado, count }) => (
                                     <div key={estado} className="flex items-center justify-between text-xs">
                                         <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full" style={{ background: STATUS_COLORS[estado] ?? '#C49470' }} />
+                                            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: STATUS_COLORS[estado] ?? '#C49470' }} />
                                             <span className="text-cafe-700">{estado}</span>
                                         </div>
                                         <span className="font-mono text-cafe-950">{count}</span>
@@ -114,8 +114,8 @@ export default function DashboardView() {
                                     {productionFunnel.map((_, i) => (
                                         <Cell key={i} fill={FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
                                     ))}
-                                    <LabelList position="center" fill="#FAFAF8" stroke="none" dataKey="etapa"
-                                               style={{ fontSize: 11, fontFamily: 'DM Sans' }} />
+                                    <LabelList position="center" fill="#F7EDE4" stroke="none" dataKey="etapa"
+                                               style={{ fontSize: 11, fontFamily: 'DM Sans', fontWeight: 500 }} />
                                 </Funnel>
                             </FunnelChart>
                         </ResponsiveContainer>
