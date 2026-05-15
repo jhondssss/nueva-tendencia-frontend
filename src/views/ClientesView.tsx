@@ -55,7 +55,7 @@ export default function ClientesView() {
     useEffect(() => { fetchAll(); }, [fetchAll]);
     useEffect(() => { document.title = 'Clientes | NT'; }, []);
 
-    const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
+    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema) as Resolver<FormData>,
         defaultValues: { pais: 'Bolivia', activo: true },
     });
@@ -68,10 +68,22 @@ export default function ClientesView() {
 
     const openEdit = (c: Cliente) => {
         setEditTarget(c);
-        (Object.keys(c) as (keyof Cliente)[]).forEach(k => {
-            if (k !== 'id_cliente' && k !== 'fecha_registro' && k !== 'pedidos') {
-                setValue(k as keyof FormData, c[k] as never);
-            }
+        reset({
+            tipo_cliente:         c.tipo_cliente,
+            nombre:               c.nombre,
+            apellido:             c.apellido             ?? undefined,
+            nombre_completo:      c.nombre_completo      ?? undefined,
+            documento_identidad:  c.documento_identidad  ?? undefined,
+            correo_electronico:   c.correo_electronico,
+            telefono_principal:   c.telefono_principal,
+            telefono_alternativo: c.telefono_alternativo ?? undefined,
+            direccion_calle:      c.direccion_calle,
+            direccion_colonia:    c.direccion_colonia,
+            ciudad:               c.ciudad,
+            estado_provincia:     c.estado_provincia,
+            codigo_postal:        c.codigo_postal,
+            pais:                 c.pais,
+            activo:               c.activo,
         });
         setModalOpen(true);
     };
