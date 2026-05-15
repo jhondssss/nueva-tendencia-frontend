@@ -7,7 +7,7 @@ import { Upload, Loader2 } from 'lucide-react';
 import Modal from '@/components/shared/Modal';
 import type { Producto, CreateProductoDto } from '@/types';
 
-const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_API_URL;
 
 function resolveImageUrl(url?: string | null): string | null {
     if (!url) return null;

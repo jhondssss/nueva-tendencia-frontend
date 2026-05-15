@@ -7,7 +7,7 @@ import { clsx } from 'clsx';
 import type { Producto } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
 
-const BACKEND_URL = 'https://nueva-tendencia-backend-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_API_URL;
 
 function resolveImageUrl(url?: string | null): string | null {
     if (!url) return null;

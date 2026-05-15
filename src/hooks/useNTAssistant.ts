@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 
-const ASSISTANT_URL = 'https://nueva-tendencia-backend-production.up.railway.app/assistant/chat';
+const ASSISTANT_URL = `${import.meta.env.VITE_API_URL}/assistant/chat`;
 
 export interface ChatMessage {
     role: 'user' | 'assistant';
