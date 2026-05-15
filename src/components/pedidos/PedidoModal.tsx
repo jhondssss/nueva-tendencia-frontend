@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type { Resolver } from 'react-hook-form';
 import Modal from '@/components/shared/Modal';
 import TallaInfoBox, { defaultTallas } from './TallaInfoBox';
@@ -10,12 +11,17 @@ import type { TallaItem } from './TallaInfoBox';
 import type { Pedido, Cliente, Producto, CategoriaCalzado, UnidadPedido, CreatePedidoDto } from '@/types';
 
 const schema = z.object({
-    clienteId:     z.number({ error: 'Selecciona un cliente' }),
-    productoId:    z.number({ error: 'Selecciona un producto' }),
+    clienteId:     z.number({ error: 'Selecciona un cliente' }).min(1, 'Selecciona un cliente'),
+    productoId:    z.number({ error: 'Selecciona un producto' }).min(1, 'Selecciona un producto'),
     cantidad:      z.number({ error: 'Ingresa una cantidad' }).int('Debe ser un número entero').min(1, 'Mínimo 1'),
     unidad:        z.enum(['docena', 'media_docena', 'par']),
     total:         z.number().positive('Debe ser mayor a 0'),
-    fecha_entrega: z.string().min(1, 'Selecciona una fecha'),
+    fecha_entrega: z.string()
+                    .min(1, 'Selecciona una fecha')
+                    .refine(
+                        val => new Date(val + 'T12:00:00') >= new Date(new Date().toDateString()),
+                        'La fecha de entrega no puede ser en el pasado',
+                    ),
     categoria:     z.enum(['nino', 'juvenil', 'adulto']).optional(),
 });
 
@@ -72,6 +78,15 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
         () => buildInitialTallas(pedido)
     );
 
+    // Cuando el mismo pedido se edita dos veces (misma key, sin remount),
+    // isOpen pasa de false→true y necesitamos restaurar sus valores.
+    useEffect(() => {
+        if (!isOpen) return;
+        reset(buildDefaultValues(pedido));
+        setTallasPersonalizadas(buildInitialTallas(pedido));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
+
     const handleCategoriaChange = (val: CategoriaCalzado | '') => {
         setValue('categoria', val || undefined);
         // Resetear tallas al cambiar categoría
@@ -82,6 +97,13 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
     const handleClose = () => { onClose(); reset(DEFAULT_VALUES); setTallasPersonalizadas(null); };
 
     const onFormSubmit = async (data: PedidoFormData) => {
+        if (tallasPersonalizadas && data.categoria) {
+            const sumTallas = tallasPersonalizadas.reduce((s, t) => s + t.cantidad_pares, 0);
+            if (sumTallas !== 12) {
+                toast.error(`La suma de tallas debe ser 12 pares por docena (actual: ${sumTallas})`);
+                return;
+            }
+        }
         const dto: CreatePedidoDto = { ...data } as CreatePedidoDto;
         // Incluir tallas personalizadas solo si difieren del estándar
         if (tallasPersonalizadas && data.categoria) {

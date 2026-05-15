@@ -258,7 +258,7 @@ export default function PedidosView() {
                 onConfirm={() => deleteTarget && remove(deleteTarget.id_pedido)}
                 title="Eliminar pedido"
                 message={deleteTarget
-                    ? `¿Seguro que deseas eliminar el pedido #${deleteTarget.id_pedido} de ${deleteTarget.cliente.nombre}? Esta acción no se puede deshacer.`
+                    ? `¿Estás seguro de eliminar el pedido #${deleteTarget.id_pedido} de ${deleteTarget.cliente.nombre} ${deleteTarget.cliente.apellido}? Esta acción no se puede deshacer.`
                     : ''}
             />
         </div>
