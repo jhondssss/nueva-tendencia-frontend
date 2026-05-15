@@ -39,7 +39,6 @@ export default function ProductosView() {
     const handleSubmit = async (data: CreateProductoDto, imagen: File | null) => {
         if (editTarget) await update(editTarget.id_producto, data, imagen ?? undefined);
         else await create(data, imagen ?? undefined);
-        setModalOpen(false);
     };
 
     return (

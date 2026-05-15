@@ -81,7 +81,6 @@ export const useProductoStore = create<ProductoState>((set, get) => ({
         toast.success('Producto creado exitosamente');
     },
     update: async (id, dto, imagen) => {
-        console.log('STORE UPDATE PRODUCTO:', JSON.stringify(dto));
         const { data } = await productoApi.update(id, dto, imagen);
         set({ productos: get().productos.map(p => p.id_producto === id ? data : p) });
         toast.success('Producto actualizado');
@@ -112,7 +111,6 @@ export const usePedidoStore = create<PedidoState>((set, get) => ({
         finally { set({ isLoading: false }); }
     },
     create: async (dto) => {
-        console.log('2. STORE CREATE:', JSON.stringify(dto));
         const { data } = await pedidoApi.create(dto);
         set({ pedidos: [data, ...get().pedidos] });
         toast.success('Pedido creado exitosamente');

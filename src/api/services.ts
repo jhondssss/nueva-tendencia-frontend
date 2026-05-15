@@ -52,7 +52,6 @@ export const productoApi = {
             form.append(k, typeof v === 'boolean' ? (v ? 'true' : 'false') : String(v));
         });
         if (imagen) form.append('imagen', imagen);
-        console.log('FORMDATA ACTIVO:', form.get('activo'));
         return api.patch<Producto>(`/productos/${id}`, form, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });

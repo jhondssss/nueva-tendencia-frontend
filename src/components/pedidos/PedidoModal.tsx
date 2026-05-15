@@ -114,7 +114,6 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
             });
             if (difiere) dto.tallas_personalizadas = tallasPersonalizadas;
         }
-        console.log('1. MODAL SUBMIT:', JSON.stringify(dto));
         await onSubmit(dto);
         handleClose();
     };

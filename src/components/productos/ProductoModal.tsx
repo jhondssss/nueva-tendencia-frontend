@@ -91,16 +91,13 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
         setPreview(URL.createObjectURL(f));
     };
 
-    const handleClose = () => { onClose(); };
-
     const onFormSubmit = async (data: ProductoFormData) => {
-        console.log('FORM SUBMIT ACTIVO:', data.activo, typeof data.activo);
         await onSubmit(data as CreateProductoDto, imagen);
-        handleClose();
+        onClose();
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose}
+        <Modal isOpen={isOpen} onClose={onClose}
                title={producto ? 'Editar Producto' : 'Nuevo Producto'}
                subtitle="Completa la información del calzado" size="lg">
             <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
@@ -177,10 +174,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                                 type="checkbox"
                                 id="activo"
                                 checked={field.value ?? true}
-                                onChange={e => {
-                                    console.log('CHECKBOX CHANGED:', e.target.checked);
-                                    field.onChange(e.target.checked);
-                                }}
+                                onChange={e => field.onChange(e.target.checked)}
                                 className="w-4 h-4 rounded border-ink-500 accent-amber-500"
                             />
                         )}
@@ -189,7 +183,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2 border-t border-ink-600">
-                    <button type="button" onClick={handleClose} className="btn-secondary">Cancelar</button>
+                    <button type="button" onClick={onClose} className="btn-secondary">Cancelar</button>
                     <button type="submit" disabled={isSubmitting} className="btn-primary">
                         {isSubmitting
                             ? <><Loader2 size={14} className="animate-spin" /> Guardando...</>
