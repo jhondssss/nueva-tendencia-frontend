@@ -14,18 +14,21 @@ function resolveImageUrl(url?: string | null): string | null {
     return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
 }
 
+const nanToDefault = (fallback: number) => (v: unknown) =>
+    typeof v === 'number' && isNaN(v) ? fallback : v;
+
 const schema = z.object({
-    nombre_modelo:      z.string().min(1, 'Requerido'),
+    nombre_modelo:      z.string().min(3, 'Mínimo 3 caracteres'),
     marca:              z.string().min(1, 'Requerido'),
     tipo_calzado:       z.string().min(1, 'Requerido'),
     genero:             z.string().min(1, 'Requerido'),
     material_principal: z.string().min(1, 'Requerido'),
     color:              z.string().min(1, 'Requerido'),
-    precio_venta:       z.number().positive('Mayor a 0'),
-    costo_unidad:       z.number().positive('Mayor a 0'),
-    descripcion_corta:  z.string().min(1, 'Requerido'),
-    stock:              z.number().min(0),
-    nivel_minimo:       z.number().min(0),
+    precio_venta:       z.number({ invalid_type_error: 'Requerido' }).positive('Debe ser mayor a 0'),
+    costo_unidad:       z.number({ invalid_type_error: 'Requerido' }).positive('Debe ser mayor a 0'),
+    descripcion_corta:  z.string().min(10, 'Mínimo 10 caracteres'),
+    stock:              z.preprocess(nanToDefault(0), z.number().min(0, 'No puede ser negativo')),
+    nivel_minimo:       z.preprocess(nanToDefault(0), z.number().min(0, 'No puede ser negativo')),
     unidad_medida:      z.string().default('unidades'),
     activo:             z.boolean(),
 });
@@ -55,7 +58,8 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
 
     const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<ProductoFormData>({
         resolver: zodResolver(schema) as Resolver<ProductoFormData>,
-        defaultValues: { activo: true },
+        mode: 'onTouched',
+        defaultValues: { activo: true, stock: 0, nivel_minimo: 0 },
     });
 
     useEffect(() => {
@@ -134,24 +138,38 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 <div className="grid grid-cols-3 gap-3">
                     <div>
                         <label className="label">Precio venta (Bs.) *</label>
-                        <input type="number" step="0.01" {...register('precio_venta', { valueAsNumber: true })}
-                               placeholder="0.00" className={`input ${errors.precio_venta ? 'input-error' : ''}`} />
+                        <input type="number" step="0.01" min="0.01"
+                               {...register('precio_venta', { valueAsNumber: true })}
+                               placeholder="0.00"
+                               className={`input ${errors.precio_venta ? 'input-error' : ''}`} />
+                        {errors.precio_venta && <p className="text-red-400 text-xs mt-1">{errors.precio_venta.message}</p>}
                     </div>
                     <div>
                         <label className="label">Costo unidad (Bs.) *</label>
-                        <input type="number" step="0.01" {...register('costo_unidad', { valueAsNumber: true })}
-                               placeholder="0.00" className={`input ${errors.costo_unidad ? 'input-error' : ''}`} />
+                        <input type="number" step="0.01" min="0.01"
+                               {...register('costo_unidad', { valueAsNumber: true })}
+                               placeholder="0.00"
+                               className={`input ${errors.costo_unidad ? 'input-error' : ''}`} />
+                        {errors.costo_unidad && <p className="text-red-400 text-xs mt-1">{errors.costo_unidad.message}</p>}
                     </div>
                     <div>
                         <label className="label">Stock actual</label>
-                        <input type="number" {...register('stock', { valueAsNumber: true })} placeholder="0" className="input" />
+                        <input type="number" min="0"
+                               {...register('stock', { valueAsNumber: true })}
+                               placeholder="0"
+                               className={`input ${errors.stock ? 'input-error' : ''}`} />
+                        {errors.stock && <p className="text-red-400 text-xs mt-1">{errors.stock.message}</p>}
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="label">Nivel mínimo</label>
-                        <input type="number" {...register('nivel_minimo', { valueAsNumber: true })} placeholder="5" className="input" />
+                        <input type="number" min="0"
+                               {...register('nivel_minimo', { valueAsNumber: true })}
+                               placeholder="5"
+                               className={`input ${errors.nivel_minimo ? 'input-error' : ''}`} />
+                        {errors.nivel_minimo && <p className="text-red-400 text-xs mt-1">{errors.nivel_minimo.message}</p>}
                     </div>
                     <div>
                         <label className="label">Unidad de medida</label>
