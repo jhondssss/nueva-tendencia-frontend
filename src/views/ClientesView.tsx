@@ -220,7 +220,7 @@ export default function ClientesView() {
                             <label className="label">Tipo de cliente *</label>
                             <select {...register('tipo_cliente')} className={`select ${errors.tipo_cliente ? 'input-error' : ''}`}>
                                 <option value="">Seleccionar...</option>
-                                <option value="persona">Persona natural</option>
+                                <option value="persona_natural">Persona natural</option>
                                 <option value="empresa">Empresa</option>
                             </select>
                         </div>
