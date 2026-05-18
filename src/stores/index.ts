@@ -34,8 +34,9 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
         toast.success('Cliente registrado exitosamente');
     },
     update: async (id, dto) => {
-        const { data } = await clienteApi.update(id, dto);
-        set({ clientes: get().clientes.map(c => c.id_cliente === id ? data : c) });
+        await clienteApi.update(id, dto);
+        const { data: updated } = await clienteApi.getOne(id);
+        set({ clientes: get().clientes.map(c => c.id_cliente === id ? updated : c) });
         toast.success('Cliente actualizado');
     },
     remove: async (id) => {
