@@ -74,7 +74,7 @@ export default function KpiCards({ kpis, isLoading }: Props) {
             accentColor: '#8B5E3C',
         },
         {
-            label: 'Ítems Inventario',
+            label: 'Stock Total',
             value: kpis.itemsInventario ?? 0,
             icon: Package, color: 'text-cafe-700', bg: 'bg-cafe-200/40',
             trend: 'Productos activos',
