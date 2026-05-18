@@ -214,7 +214,7 @@ export interface DashboardKpis {
     alertasStock:       number;
     produccionMensual?: number;
 }
-export interface OrdersStatus    { estado: EstadoPedido; count: number; }
+export interface OrdersStatus    { estado: EstadoPedido; cantidad: number; }
 export interface ProductionFunnel { etapa: string; cantidad: number; }
 export interface RecentActivity  { id: number; descripcion: string; cliente: string; estado: string; fecha: string; }
 export interface TopProducto     { nombre: string; mes: string; cantidad: number; total: number; }

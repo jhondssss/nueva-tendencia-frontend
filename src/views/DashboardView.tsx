@@ -69,13 +69,13 @@ function slicePath(startAngle: number, endAngle: number): string {
     ].join(' ');
 }
 
-function DonutChart({ data }: { data: { estado: string; count: number }[] }) {
-    const total = data.reduce((s, d) => s + d.count, 0);
+function DonutChart({ data }: { data: { estado: string; cantidad: number }[] }) {
+    const total = data.reduce((s, d) => s + d.cantidad, 0);
     if (total === 0) return null;
 
     let currentAngle = 0;
     const slices = data.map(d => {
-        const sweep = (d.count / total) * 360;
+        const sweep = (d.cantidad / total) * 360;
         const path = slicePath(currentAngle, currentAngle + sweep);
         const result = { ...d, path, color: STATUS_COLORS[d.estado] ?? '#C6A75E' };
         currentAngle += sweep;
@@ -140,7 +140,7 @@ export default function DashboardView() {
                                 <DonutChart data={ordersStatus} />
                             </div>
                             <div className="flex-1 space-y-2">
-                                {ordersStatus.map(({ estado, count }) => (
+                                {ordersStatus.map(({ estado, cantidad }) => (
                                     <div key={estado} className="flex items-center justify-between text-xs">
                                         <div className="flex items-center gap-2">
                                             <span
@@ -149,7 +149,7 @@ export default function DashboardView() {
                                             />
                                             <span className="text-cafe-700">{estado}</span>
                                         </div>
-                                        <span className="font-mono font-medium text-cafe-950">{count}</span>
+                                        <span className="font-mono font-medium text-cafe-950">{cantidad}</span>
                                     </div>
                                 ))}
                             </div>
