@@ -70,20 +70,20 @@ export default function ClientesView() {
         setEditTarget(c);
         reset({
             tipo_cliente:         c.tipo_cliente,
-            nombre:               c.nombre,
+            nombre:               c.nombre               ?? undefined,
             apellido:             c.apellido             ?? undefined,
             nombre_completo:      c.nombre_completo      ?? undefined,
             documento_identidad:  c.documento_identidad  ?? undefined,
-            correo_electronico:   c.correo_electronico,
-            telefono_principal:   c.telefono_principal,
+            correo_electronico:   c.correo_electronico   ?? undefined,
+            telefono_principal:   c.telefono_principal   ?? undefined,
             telefono_alternativo: c.telefono_alternativo ?? undefined,
-            direccion_calle:      c.direccion_calle,
-            direccion_colonia:    c.direccion_colonia,
-            ciudad:               c.ciudad,
-            estado_provincia:     c.estado_provincia,
-            codigo_postal:        c.codigo_postal,
-            pais:                 c.pais,
-            activo:               c.activo,
+            direccion_calle:      c.direccion_calle      ?? undefined,
+            direccion_colonia:    c.direccion_colonia    ?? undefined,
+            ciudad:               c.ciudad               ?? undefined,
+            estado_provincia:     c.estado_provincia     ?? undefined,
+            codigo_postal:        c.codigo_postal        ?? undefined,
+            pais:                 c.pais                 ?? 'Bolivia',
+            activo:               c.activo               ?? true,
         });
         setModalOpen(true);
     };
@@ -159,7 +159,7 @@ export default function ClientesView() {
                                     <td className="font-mono text-xs text-ink-50">{c.telefono_principal}</td>
                                     <td className="text-ink-100">{c.ciudad}</td>
                                     <td className="text-ink-200 text-xs">
-                                        {new Date(c.fecha_registro).toLocaleDateString('es-BO')}
+                                        {c.fecha_registro ? new Date(c.fecha_registro).toLocaleDateString('es-BO') : '—'}
                                     </td>
                                     <td>
                                         <span className={`text-xs px-2 py-0.5 rounded border ${
