@@ -104,6 +104,7 @@ export default function InsumosView() {
     const [createOpen, setCreateOpen]     = useState(false);
     const [editTarget, setEditTarget]     = useState<Insumo | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Insumo | null>(null);
+    const [lightboxUrl, setLightboxUrl]   = useState<string | null>(null);
     const [search, setSearch]             = useState('');
     const [filterCategoria, setFilterCategoria] = useState<CategoriaInsumo | ''>('');
 
@@ -331,11 +332,17 @@ export default function InsumosView() {
                                         {/* Imagen */}
                                         <td>
                                             {insumo.imagen_url ? (
-                                                <img
-                                                    src={`${BACKEND_URL}${insumo.imagen_url}`}
-                                                    alt={insumo.nombre}
-                                                    className="w-10 h-10 rounded-lg object-cover border border-ink-600"
-                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setLightboxUrl(`${BACKEND_URL}${insumo.imagen_url}`)}
+                                                    className="block w-10 h-10 rounded-lg overflow-hidden border border-ink-600
+                                                               hover:border-dorado-500 hover:scale-105 transition-all cursor-zoom-in">
+                                                    <img
+                                                        src={`${BACKEND_URL}${insumo.imagen_url}`}
+                                                        alt={insumo.nombre}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </button>
                                             ) : (
                                                 <div className="w-10 h-10 rounded-lg bg-ink-700 border border-ink-600
                                                                 flex items-center justify-center">
@@ -545,6 +552,20 @@ export default function InsumosView() {
                     ? `¿Seguro que deseas eliminar "${deleteTarget.nombre}"? Esta acción no se puede deshacer.`
                     : ''}
             />
+
+            {/* ── Lightbox ──────────────────────────────────────────────────────── */}
+            {lightboxUrl && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    onClick={() => setLightboxUrl(null)}>
+                    <img
+                        src={lightboxUrl}
+                        alt="Vista previa"
+                        className="max-w-[90vw] max-h-[90vh] rounded-xl shadow-2xl object-contain"
+                        onClick={e => e.stopPropagation()}
+                    />
+                </div>
+            )}
         </div>
     );
 }

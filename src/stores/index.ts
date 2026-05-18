@@ -172,9 +172,11 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
     },
     uploadImagen: async (id, formData) => {
         const { data } = await insumoApi.uploadImagen(id, formData);
-        set({ insumos: get().insumos.map(i => i.id_insumo === id ? data : i) });
+        const existing = get().insumos.find(i => i.id_insumo === id);
+        const merged = existing ? { ...existing, ...data } : data;
+        set({ insumos: get().insumos.map(i => i.id_insumo === id ? merged : i) });
         toast.success('Imagen subida correctamente');
-        return data;
+        return merged;
     },
     remove: async (id) => {
         await insumoApi.remove(id);
