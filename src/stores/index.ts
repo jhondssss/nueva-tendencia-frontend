@@ -140,9 +140,10 @@ interface InsumoState {
     isLoading:    boolean;
     fetchAll:     () => Promise<void>;
     fetchAlertas: () => Promise<void>;
-    create:       (dto: CreateInsumoDto)             => Promise<Insumo>;
-    update:       (id: number, dto: UpdateInsumoDto) => Promise<Insumo>;
-    remove:       (id: number)                       => Promise<void>;
+    create:        (dto: CreateInsumoDto)              => Promise<Insumo>;
+    update:        (id: number, dto: UpdateInsumoDto)  => Promise<Insumo>;
+    uploadImagen:  (id: number, formData: FormData)    => Promise<Insumo>;
+    remove:        (id: number)                        => Promise<void>;
 }
 
 export const useInsumoStore = create<InsumoState>((set, get) => ({
@@ -167,6 +168,12 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
         const { data } = await insumoApi.update(id, dto);
         set({ insumos: get().insumos.map(i => i.id_insumo === id ? data : i) });
         toast.success('Insumo actualizado');
+        return data;
+    },
+    uploadImagen: async (id, formData) => {
+        const { data } = await insumoApi.uploadImagen(id, formData);
+        set({ insumos: get().insumos.map(i => i.id_insumo === id ? data : i) });
+        toast.success('Imagen subida correctamente');
         return data;
     },
     remove: async (id) => {

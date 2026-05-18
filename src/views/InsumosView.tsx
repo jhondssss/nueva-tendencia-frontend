@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { Plus, Search, Loader2, Trash2, Edit2, FlaskConical, AlertTriangle, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useInsumoStore } from '@/stores/index';
-import { insumoApi } from '@/api/services';
 import Modal from '@/components/shared/Modal';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import Pagination from '@/components/shared/Pagination';
@@ -98,14 +97,6 @@ function FormError({ message }: { message?: string }) {
     return <p className="text-red-400 text-xs mt-1">{message}</p>;
 }
 
-// ─── Subida de imagen ─────────────────────────────────────────────────────────
-
-async function uploadInsumoImagen(id: number, file: File): Promise<void> {
-    const formData = new FormData();
-    formData.append('imagen', file);
-    await insumoApi.uploadImagen(id, formData);
-    toast.success('Imagen subida correctamente');
-}
 
 // ─── Vista principal ──────────────────────────────────────────────────────────
 
@@ -126,7 +117,7 @@ export default function InsumosView() {
     const [editPreview, setEditPreview] = useState<string | null>(null);
     const editFileRef = useRef<HTMLInputElement>(null);
 
-    const { insumos, alertas, isLoading, fetchAll, fetchAlertas, create, update, remove } = useInsumoStore();
+    const { insumos, alertas, isLoading, fetchAll, fetchAlertas, create, update, uploadImagen, remove } = useInsumoStore();
     const { canCreate, canEdit, canDelete } = useRole();
 
     useEffect(() => { fetchAll(); fetchAlertas(); }, [fetchAll, fetchAlertas]);
@@ -161,7 +152,11 @@ export default function InsumosView() {
 
     const onCreateSubmit = async (data: FormData) => {
         const newInsumo = await create(data as CreateInsumoDto);
-        if (createImagen) await uploadInsumoImagen(newInsumo.id_insumo, createImagen);
+        if (createImagen) {
+            const fd = new FormData();
+            fd.append('imagen', createImagen);
+            await uploadImagen(newInsumo.id_insumo, fd);
+        }
         setCreateOpen(false);
         createForm.reset(DEFAULT_VALUES);
         setCreateImagen(null);
@@ -202,7 +197,11 @@ export default function InsumosView() {
     const onEditSubmit = async (data: FormData) => {
         if (!editTarget) return;
         await update(editTarget.id_insumo, data);
-        if (editImagen) await uploadInsumoImagen(editTarget.id_insumo, editImagen);
+        if (editImagen) {
+            const fd = new FormData();
+            fd.append('imagen', editImagen);
+            await uploadImagen(editTarget.id_insumo, fd);
+        }
         setEditTarget(null);
         editForm.reset(DEFAULT_VALUES);
         setEditImagen(null);
