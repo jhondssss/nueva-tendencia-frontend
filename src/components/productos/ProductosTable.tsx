@@ -51,7 +51,7 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                 </tr>
                             ) : (
                                 pagination.pageData.map(p => {
-                                    const lowStock = p.stock <= p.nivel_minimo;
+                                    const lowStock = Number(p.stock) <= Number(p.nivel_minimo);
                                     return (
                                         <tr key={p.id_producto} className={clsx(lowStock && 'bg-red-950/10')}>
                                             <td>

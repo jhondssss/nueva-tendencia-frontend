@@ -325,7 +325,7 @@ export default function InsumosView() {
                             </tr>
                         ) : (
                             pagination.pageData.map(insumo => {
-                                const stockBajo = insumo.activo && insumo.stock <= insumo.nivel_minimo;
+                                const stockBajo = insumo.activo && Number(insumo.stock) <= Number(insumo.nivel_minimo);
                                 return (
                                     <tr key={insumo.id_insumo}
                                         className={clsx(stockBajo && 'bg-red-950/20')}>
