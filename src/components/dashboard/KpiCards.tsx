@@ -4,6 +4,11 @@ import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import type { DashboardKpis } from '@/types';
 
+interface DetailLine {
+    label: string;
+    value: number;
+}
+
 interface KpiCardProps {
     label:        string;
     value:        string | number;
@@ -17,9 +22,10 @@ interface KpiCardProps {
     valueColor?:  string;
     financiero?:  boolean;
     className?:   string;
+    detailLines?: DetailLine[];
 }
 
-function KpiCard({ label, value, icon: Icon, color, bg, trend, accentColor, alert, sub, valueColor, className }: KpiCardProps) {
+function KpiCard({ label, value, icon: Icon, color, bg, trend, accentColor, alert, sub, valueColor, className, detailLines }: KpiCardProps) {
     return (
         <div
             className={clsx('kpi-card relative overflow-hidden', alert && 'border-red-300', className)}
@@ -39,6 +45,16 @@ function KpiCard({ label, value, icon: Icon, color, bg, trend, accentColor, aler
                     {value}
                 </p>
                 {sub && <p className="text-xs text-cafe-400 mt-0.5">{sub}</p>}
+                {detailLines && detailLines.length > 0 && (
+                    <div className="mt-1 space-y-0.5">
+                        {detailLines.map(line => (
+                            <p key={line.label} className="text-[11px] text-cafe-500 leading-tight">
+                                <span className="font-medium text-cafe-700">[{line.label}]</span>{' '}
+                                {line.value} {line.label === 'Productos' ? 'requieren reposición' : 'bajo nivel mínimo'}
+                            </p>
+                        ))}
+                    </div>
+                )}
             </div>
             <div className="w-full h-px bg-surface-border my-2" />
             <div className="flex items-center gap-1 text-xs text-cafe-500">
@@ -56,7 +72,9 @@ interface Props {
 
 export default function KpiCards({ kpis, isLoading }: Props) {
     const { isOperario } = useRole();
-    const alertasStock = Number(kpis?.alertasStock ?? 0);
+    const alertasStock   = Number(kpis?.alertasStock   ?? 0);
+    const alertasInsumos = Number(kpis?.alertasInsumos ?? 0);
+    const alertasTotal   = alertasStock + alertasInsumos;
     const allCards: KpiCardProps[] = kpis ? [
         {
             label: 'Ventas Totales',
@@ -82,14 +100,18 @@ export default function KpiCards({ kpis, isLoading }: Props) {
         },
         {
             label: 'Alertas de Stock',
-            value: alertasStock,
+            value: alertasTotal,
             icon: AlertTriangle,
-            color:       alertasStock === 0 ? 'text-cafe-700' : 'text-red-600',
-            bg:          alertasStock === 0 ? 'bg-cafe-200/40' : 'bg-red-500/10',
-            trend: 'Requieren reposición',
-            accentColor: alertasStock > 0 ? '#C04530' : '#8B5E3C',
-            alert:       alertasStock > 0,
-            valueColor:  alertasStock === 0 ? 'text-cafe-700' : 'text-red-600',
+            color:       alertasTotal === 0 ? 'text-cafe-700' : 'text-red-600',
+            bg:          alertasTotal === 0 ? 'bg-cafe-200/40' : 'bg-red-500/10',
+            trend: 'Alertas de inventario',
+            accentColor: alertasTotal > 0 ? '#C04530' : '#8B5E3C',
+            alert:       alertasTotal > 0,
+            valueColor:  alertasTotal === 0 ? 'text-cafe-700' : 'text-red-600',
+            detailLines: [
+                { label: 'Productos', value: alertasStock },
+                { label: 'Insumos',   value: alertasInsumos },
+            ],
         },
         ...(kpis.produccionMensual !== undefined ? [{
             label: 'Producción Mensual',

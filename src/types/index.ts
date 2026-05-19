@@ -212,6 +212,7 @@ export interface DashboardKpis {
     totalPedidos:       number;
     itemsInventario:    number;
     alertasStock:       number;
+    alertasInsumos:     number;
     produccionMensual?: number;
 }
 export interface OrdersStatus    { estado: EstadoPedido; cantidad: number; }
