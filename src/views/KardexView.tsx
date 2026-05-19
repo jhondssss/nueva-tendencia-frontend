@@ -166,7 +166,7 @@ export default function KardexView() {
             <div className="page-header">
                 <div>
                     <h1 className="page-title section-title">Kardex</h1>
-                    <p className="page-subtitle">Movimientos de inventario</p>
+                    <p className="page-subtitle">Movimientos de insumos</p>
                 </div>
             </div>
 
