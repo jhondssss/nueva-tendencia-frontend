@@ -84,7 +84,7 @@ export default function KardexView() {
                 kardexApi.getAll(),
                 insumoApi.getAll(),
             ]);
-            setMovimientos(movRes.data);
+            setMovimientos(movRes.data.filter(m => m.insumo != null));
             setInsumos(insRes.data);
         } catch {
             toast.error('Error al cargar datos');

@@ -18,6 +18,11 @@ import { clsx } from 'clsx';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
+function resolveImageUrl(url?: string | null): string | null {
+    if (!url) return null;
+    return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+}
+
 // ─── Catálogos ────────────────────────────────────────────────────────────────
 
 const CATEGORIAS: CategoriaInsumo[] = ['adhesivo', 'material', 'herramienta', 'quimico', 'otro'];
@@ -192,7 +197,7 @@ export default function InsumosView() {
             activo:          insumo.activo,
         });
         setEditImagen(null);
-        setEditPreview(insumo.imagen_url ? `${BACKEND_URL}${insumo.imagen_url}` : null);
+        setEditPreview(resolveImageUrl(insumo.imagen_url));
     };
 
     const onEditSubmit = async (data: FormData) => {
@@ -334,11 +339,11 @@ export default function InsumosView() {
                                             {insumo.imagen_url ? (
                                                 <button
                                                     type="button"
-                                                    onClick={() => setLightboxUrl(`${BACKEND_URL}${insumo.imagen_url}`)}
+                                                    onClick={() => setLightboxUrl(resolveImageUrl(insumo.imagen_url))}
                                                     className="block w-10 h-10 rounded-lg overflow-hidden border border-ink-600
                                                                hover:border-dorado-500 hover:scale-105 transition-all cursor-zoom-in">
                                                     <img
-                                                        src={`${BACKEND_URL}${insumo.imagen_url}`}
+                                                        src={resolveImageUrl(insumo.imagen_url)!}
                                                         alt={insumo.nombre}
                                                         className="w-full h-full object-cover"
                                                     />
