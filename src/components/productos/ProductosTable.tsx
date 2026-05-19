@@ -25,7 +25,8 @@ interface Props {
 }
 
 export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, isLoading, pagination, total }: Props) {
-    const [hoverImg, setHoverImg] = useState<{ url: string; top: number; left: number } | null>(null);
+    const [hoverImg, setHoverImg]     = useState<{ url: string; top: number; left: number } | null>(null);
+    const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
     return (
         <>
@@ -70,8 +71,14 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                                     onMouseLeave={() => setHoverImg(null)}
                                                 >
                                                     {p.imagen_url ? (
-                                                        <img src={resolveImageUrl(p.imagen_url)!} alt={p.nombre_modelo}
-                                                             className="w-10 h-10 object-cover rounded border border-ink-600 cursor-zoom-in" />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { const url = resolveImageUrl(p.imagen_url); if (url) setLightboxUrl(url); }}
+                                                            className="block w-10 h-10 rounded border border-ink-600 overflow-hidden
+                                                                       hover:border-dorado-500 hover:scale-105 transition-all cursor-zoom-in">
+                                                            <img src={resolveImageUrl(p.imagen_url)!} alt={p.nombre_modelo}
+                                                                 className="w-full h-full object-cover" />
+                                                        </button>
                                                     ) : (
                                                         <div className="w-10 h-10 rounded bg-ink-700 border border-ink-600
                                                                          flex items-center justify-center text-ink-400">
@@ -142,6 +149,19 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                     <div className="bg-ink-900 border border-ink-600 rounded-xl p-2 shadow-2xl">
                         <img src={hoverImg.url} alt="Vista previa" className="w-48 h-48 object-contain rounded-lg" />
                     </div>
+                </div>
+            )}
+
+            {lightboxUrl && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    onClick={() => setLightboxUrl(null)}>
+                    <img
+                        src={lightboxUrl}
+                        alt="Vista previa"
+                        className="max-w-[90vw] max-h-[90vh] rounded-xl shadow-2xl object-contain"
+                        onClick={e => e.stopPropagation()}
+                    />
                 </div>
             )}
         </>
