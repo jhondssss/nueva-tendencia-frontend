@@ -56,7 +56,7 @@ interface Props {
 
 export default function KpiCards({ kpis, isLoading }: Props) {
     const { isOperario } = useRole();
-    const alertasStock = kpis?.alertasStock ?? 0;
+    const alertasStock = Number(kpis?.alertasStock ?? 0);
     const allCards: KpiCardProps[] = kpis ? [
         {
             label: 'Ventas Totales',

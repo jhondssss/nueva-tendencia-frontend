@@ -10,15 +10,16 @@ function SemanasBar({ semanas }: { semanas: number | null }) {
     if (semanas === null) {
         return <span className="text-cafe-300 font-mono text-xs">Sin historial</span>;
     }
-    const pct = Math.min((semanas / 20) * 100, 100);
-    const barColor = semanas <= 2 ? '#C04530' : semanas <= 4 ? '#C6A75E' : '#8B5E3C';
+    const n = Number(semanas);
+    const pct = Math.min((n / 20) * 100, 100);
+    const barColor = n <= 2 ? '#C04530' : n <= 4 ? '#C6A75E' : '#8B5E3C';
     return (
         <div className="flex items-center gap-2 justify-end">
             <div className="w-14 h-1.5 bg-crema-dark rounded-full overflow-hidden">
                 <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor }} />
             </div>
             <span className="font-mono text-xs text-cafe-600 min-w-[44px] text-right">
-                {semanas.toFixed(1)} sem
+                {n.toFixed(1)} sem
             </span>
         </div>
     );
@@ -32,14 +33,15 @@ function EstadoBadge({ semanas }: { semanas: number | null }) {
             </span>
         );
     }
-    if (semanas <= 2) {
+    const n = Number(semanas);
+    if (n <= 2) {
         return (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200 animate-pulse">
                 Crítico
             </span>
         );
     }
-    if (semanas <= 4) {
+    if (n <= 4) {
         return (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-dorado-500/10 text-dorado-700 border border-dorado-300">
                 Bajo
@@ -82,7 +84,7 @@ export default function PrediccionStock({ prediccionStock, isLoading }: Props) {
                             </thead>
                             <tbody>
                                 {prediccionStock.map(p => {
-                                    const critico = p.semanas_restantes !== null && p.semanas_restantes <= 2;
+                                    const critico = p.semanas_restantes !== null && Number(p.semanas_restantes) <= 2;
                                     return (
                                         <tr key={p.id} className={critico ? 'bg-red-50' : undefined}>
                                             <td className="text-cafe-950 font-medium">{p.nombre}</td>
