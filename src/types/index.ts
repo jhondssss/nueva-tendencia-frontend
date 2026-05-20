@@ -130,7 +130,7 @@ export interface KardexMovimiento {
 }
 
 export interface CreateKardexDto {
-    insumoId: number;
+    insumo_id: number;
     tipo:     TipoMovimiento;
     cantidad: number;
     motivo?:  string;
