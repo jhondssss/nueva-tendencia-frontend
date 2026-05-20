@@ -108,12 +108,15 @@ export const usePedidoStore = create<PedidoState>((set, get) => ({
 
     fetchAll: async (cliente, producto) => {
         set({ isLoading: true });
-        try { const { data } = await pedidoApi.getAll(cliente, producto); set({ pedidos: data }); }
+        try {
+            const { data } = await pedidoApi.getAll(cliente, producto);
+            set({ pedidos: [...data].sort((a, b) => a.id_pedido - b.id_pedido) });
+        }
         finally { set({ isLoading: false }); }
     },
     create: async (dto) => {
         const { data } = await pedidoApi.create(dto);
-        set({ pedidos: [data, ...get().pedidos] });
+        set({ pedidos: [...get().pedidos, data].sort((a, b) => a.id_pedido - b.id_pedido) });
         toast.success('Pedido creado exitosamente');
     },
     update: async (id, dto) => {
@@ -151,7 +154,10 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
 
     fetchAll: async () => {
         set({ isLoading: true });
-        try { const { data } = await insumoApi.getAll(); set({ insumos: data }); }
+        try {
+            const { data } = await insumoApi.getAll();
+            set({ insumos: [...data].sort((a, b) => a.id_insumo - b.id_insumo) });
+        }
         finally { set({ isLoading: false }); }
     },
     fetchAlertas: async () => {
