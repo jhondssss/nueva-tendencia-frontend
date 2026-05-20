@@ -102,7 +102,7 @@ export default function KardexView() {
         setSubmitting(true);
         try {
             await kardexApi.registrar({
-                insumoId: values.insumoId,
+                insumo_id: values.insumoId,
                 tipo:     values.tipo,
                 cantidad: values.cantidad,
                 motivo:   values.motivo || undefined,
