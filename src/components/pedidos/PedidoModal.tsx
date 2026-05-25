@@ -11,8 +11,8 @@ import type { TallaItem } from './TallaInfoBox';
 import type { Pedido, Cliente, Producto, CategoriaCalzado, UnidadPedido, CreatePedidoDto } from '@/types';
 
 const schema = z.object({
-    clienteId:     z.number({ error: 'Selecciona un cliente' }).min(1, 'Selecciona un cliente'),
-    productoId:    z.number({ error: 'Selecciona un producto' }).min(1, 'Selecciona un producto'),
+    cliente_id:    z.number({ error: 'Selecciona un cliente' }).min(1, 'Selecciona un cliente'),
+    producto_id:   z.number({ error: 'Selecciona un producto' }).min(1, 'Selecciona un producto'),
     cantidad:      z.number({ error: 'Ingresa una cantidad' }).int('Debe ser un número entero').min(1, 'Mínimo 1'),
     unidad:        z.enum(['docena', 'media_docena', 'par']),
     total:         z.number().positive('Debe ser mayor a 0'),
@@ -32,8 +32,8 @@ const DEFAULT_VALUES: Partial<PedidoFormData> = { cantidad: 1, unidad: 'par', ca
 function buildDefaultValues(pedido: Pedido | null | undefined): Partial<PedidoFormData> {
     if (!pedido) return DEFAULT_VALUES;
     return {
-        clienteId:     pedido.cliente.id_cliente,
-        productoId:    pedido.producto?.id_producto ?? 0,
+        cliente_id:    pedido.cliente.id_cliente,
+        producto_id:   pedido.producto?.id_producto ?? 0,
         cantidad:      pedido.cantidad ?? 1,
         unidad:        pedido.unidad   ?? 'par',
         total:         Number(pedido.total),
@@ -127,9 +127,9 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
 
                 <div>
                     <label className="label">Cliente *</label>
-                    <select className={`select ${errors.clienteId ? 'input-error' : ''}`}
-                            value={watch('clienteId') ?? ''}
-                            onChange={e => setValue('clienteId', Number(e.target.value), { shouldValidate: true })}>
+                    <select className={`select ${errors.cliente_id ? 'input-error' : ''}`}
+                            value={watch('cliente_id') ?? ''}
+                            onChange={e => setValue('cliente_id', Number(e.target.value), { shouldValidate: true })}>
                         <option value="" disabled>Selecciona un cliente</option>
                         {clientes.map(c => (
                             <option key={c.id_cliente} value={c.id_cliente}>
@@ -137,14 +137,14 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                             </option>
                         ))}
                     </select>
-                    {errors.clienteId && <p className="text-red-400 text-xs mt-1">{errors.clienteId.message}</p>}
+                    {errors.cliente_id && <p className="text-red-400 text-xs mt-1">{errors.cliente_id.message}</p>}
                 </div>
 
                 <div>
                     <label className="label">Producto *</label>
-                    <select className={`select ${errors.productoId ? 'input-error' : ''}`}
-                            value={watch('productoId') ?? ''}
-                            onChange={e => setValue('productoId', Number(e.target.value), { shouldValidate: true })}>
+                    <select className={`select ${errors.producto_id ? 'input-error' : ''}`}
+                            value={watch('producto_id') ?? ''}
+                            onChange={e => setValue('producto_id', Number(e.target.value), { shouldValidate: true })}>
                         <option value="" disabled>Selecciona un producto</option>
                         {productos.map(p => (
                             <option key={p.id_producto} value={p.id_producto}>
@@ -152,7 +152,7 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                             </option>
                         ))}
                     </select>
-                    {errors.productoId && <p className="text-red-400 text-xs mt-1">{errors.productoId.message}</p>}
+                    {errors.producto_id && <p className="text-red-400 text-xs mt-1">{errors.producto_id.message}</p>}
                 </div>
 
                 <div>

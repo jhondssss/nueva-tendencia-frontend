@@ -82,8 +82,8 @@ export interface Pedido {
     token_seguimiento?: string | null;
 }
 export interface CreatePedidoDto {
-    clienteId:              number;
-    productoId:             number;
+    cliente_id:             number;
+    producto_id:            number;
     cantidad:               number;
     unidad:                 UnidadPedido;
     total:                  number;
