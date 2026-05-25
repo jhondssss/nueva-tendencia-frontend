@@ -1,20 +1,34 @@
+import { lazy, Suspense, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
-import AppLayout      from '@/components/layout/AppLayout';
-import LoginView      from '@/views/LoginView';
-import DashboardView  from '@/views/DashboardView';
-import PedidosView    from '@/views/PedidosView';
-import ProductosView  from '@/views/ProductosView';
-import ClientesView   from '@/views/ClientesView';
-import TimelineView   from '@/views/TimelineView';
-import NotFoundView   from '@/views/NotFoundView';
-import ReportesView   from '@/views/ReportesView';
-import KardexView     from '@/views/KardexView';
-import AuditoriaView  from '@/views/AuditoriaView';
-import InsumosView        from '@/views/InsumosView';
-import ReporteDiarioView  from '@/views/ReporteDiarioView';
-import SeguimientoView   from '@/views/SeguimientoView';
+import AppLayout from '@/components/layout/AppLayout';
+
+const LoginView         = lazy(() => import('@/views/LoginView'));
+const DashboardView     = lazy(() => import('@/views/DashboardView'));
+const PedidosView       = lazy(() => import('@/views/PedidosView'));
+const ProductosView     = lazy(() => import('@/views/ProductosView'));
+const ClientesView      = lazy(() => import('@/views/ClientesView'));
+const TimelineView      = lazy(() => import('@/views/TimelineView'));
+const NotFoundView      = lazy(() => import('@/views/NotFoundView'));
+const ReportesView      = lazy(() => import('@/views/ReportesView'));
+const KardexView        = lazy(() => import('@/views/KardexView'));
+const AuditoriaView     = lazy(() => import('@/views/AuditoriaView'));
+const InsumosView       = lazy(() => import('@/views/InsumosView'));
+const ReporteDiarioView = lazy(() => import('@/views/ReporteDiarioView'));
+const SeguimientoView   = lazy(() => import('@/views/SeguimientoView'));
+
+function PageLoader() {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-crema">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-cafe-200 border-t-cafe-700" />
+        </div>
+    );
+}
+
+function Lazy({ children }: { children: ReactNode }) {
+    return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
+}
 
 function isTokenValid(token: string | null): boolean {
     if (!token) return false;
@@ -51,15 +65,15 @@ function PublicRoute() {
 export const router = createBrowserRouter([
     {
         element: <PublicRoute />,
-        children: [{ path: '/login', element: <LoginView /> }],
+        children: [{ path: '/login', element: <Lazy><LoginView /></Lazy> }],
     },
     {
         path: '/seguimiento/:id',
-        element: <SeguimientoView />,
+        element: <Lazy><SeguimientoView /></Lazy>,
     },
     {
         path: '/seguimiento/token/:token',
-        element: <SeguimientoView />,
+        element: <Lazy><SeguimientoView /></Lazy>,
     },
     {
         element: <PrivateRoute />,
@@ -67,20 +81,20 @@ export const router = createBrowserRouter([
             {
                 element: <AppLayout />,
                 children: [
-                    { index: true,         element: <Navigate to="/dashboard" replace /> },
-                    { path: '/dashboard',  element: <DashboardView /> },
-                    { path: '/pedidos',    element: <PedidosView /> },
-                    { path: '/productos',  element: <ProductosView /> },
-                    { path: '/clientes',   element: <ClientesView /> },
-                    { path: '/timeline',   element: <TimelineView /> },
-                    { path: '/reportes',   element: <ReportesView /> },
-                    { path: '/kardex',     element: <KardexView /> },
-                    { path: '/auditoria',  element: <AuditoriaView /> },
-                    { path: '/insumos',          element: <InsumosView /> },
-                    { path: '/reporte-diario',   element: <ReporteDiarioView /> },
+                    { index: true,               element: <Navigate to="/dashboard" replace /> },
+                    { path: '/dashboard',        element: <Lazy><DashboardView /></Lazy> },
+                    { path: '/pedidos',          element: <Lazy><PedidosView /></Lazy> },
+                    { path: '/productos',        element: <Lazy><ProductosView /></Lazy> },
+                    { path: '/clientes',         element: <Lazy><ClientesView /></Lazy> },
+                    { path: '/timeline',         element: <Lazy><TimelineView /></Lazy> },
+                    { path: '/reportes',         element: <Lazy><ReportesView /></Lazy> },
+                    { path: '/kardex',           element: <Lazy><KardexView /></Lazy> },
+                    { path: '/auditoria',        element: <Lazy><AuditoriaView /></Lazy> },
+                    { path: '/insumos',          element: <Lazy><InsumosView /></Lazy> },
+                    { path: '/reporte-diario',   element: <Lazy><ReporteDiarioView /></Lazy> },
                 ],
             },
         ],
     },
-    { path: '*', element: <NotFoundView /> },
+    { path: '*', element: <Lazy><NotFoundView /></Lazy> },
 ]);

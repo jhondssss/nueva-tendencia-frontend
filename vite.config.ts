@@ -7,6 +7,17 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'charts':       ['recharts'],
+          'ui':           ['lucide-react', 'zustand', 'axios'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     strictPort: true,
