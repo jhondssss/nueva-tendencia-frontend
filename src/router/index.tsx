@@ -17,6 +17,8 @@ const AuditoriaView     = lazy(() => import('@/views/AuditoriaView'));
 const InsumosView       = lazy(() => import('@/views/InsumosView'));
 const ReporteDiarioView = lazy(() => import('@/views/ReporteDiarioView'));
 const SeguimientoView   = lazy(() => import('@/views/SeguimientoView'));
+const UsuariosView      = lazy(() => import('@/views/UsuariosView'));
+const ResetPasswordView = lazy(() => import('@/views/ResetPasswordView'));
 
 function PageLoader() {
     return (
@@ -76,6 +78,10 @@ export const router = createBrowserRouter([
         element: <Lazy><SeguimientoView /></Lazy>,
     },
     {
+        path: '/reset-password',
+        element: <Lazy><ResetPasswordView /></Lazy>,
+    },
+    {
         element: <PrivateRoute />,
         children: [
             {
@@ -92,6 +98,7 @@ export const router = createBrowserRouter([
                     { path: '/auditoria',        element: <Lazy><AuditoriaView /></Lazy> },
                     { path: '/insumos',          element: <Lazy><InsumosView /></Lazy> },
                     { path: '/reporte-diario',   element: <Lazy><ReporteDiarioView /></Lazy> },
+                    { path: '/usuarios',         element: <Lazy><UsuariosView /></Lazy> },
                 ],
             },
         ],

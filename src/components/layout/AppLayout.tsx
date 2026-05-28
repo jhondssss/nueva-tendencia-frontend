@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, FlaskConical, CalendarCheck, LogOut, Menu, X, ChevronRight, Bell } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, FlaskConical, CalendarCheck, LogOut, Menu, X, ChevronRight, Bell } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
@@ -45,7 +45,8 @@ const NAV_GROUPS = [
     {
         label: 'ADMINISTRACIÓN',
         items: [
-            { to: '/auditoria', icon: ClipboardList, label: 'Auditoría', desc: 'Log de actividad', roles: ['admin'] },
+            { to: '/usuarios',  icon: UserCog,       label: 'Usuarios',  desc: 'Gestión de usuarios', roles: ['admin'] },
+            { to: '/auditoria', icon: ClipboardList, label: 'Auditoría', desc: 'Log de actividad',    roles: ['admin'] },
         ],
     },
 ];

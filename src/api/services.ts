@@ -10,12 +10,24 @@ import type {
     KardexMovimiento, CreateKardexDto,
     AuditoriaLog,
     ReporteDiario,
+    UsuarioAdmin, CreateUsuarioDto, UpdateUsuarioDto,
 } from '@/types';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const authApi = {
-    login:    (dto: LoginDto)    => api.post<AuthResponse>('/auth/login', dto),
-    register: (dto: LoginDto)    => api.post<AuthResponse>('/auth/register', dto),
+    login:          (dto: LoginDto)                            => api.post<AuthResponse>('/auth/login', dto),
+    register:       (dto: LoginDto)                            => api.post<AuthResponse>('/auth/register', dto),
+    forgotPassword: (email: string)                            => api.post('/auth/forgot-password', { email }),
+    resetPassword:  (token: string, password: string)          => api.post('/auth/reset-password', { token, password }),
+};
+
+// ─── Usuarios (gestión admin) ─────────────────────────────────────────────────
+export const usuariosApi = {
+    getAll:  ()                                  => api.get<UsuarioAdmin[]>('/users'),
+    create:  (dto: CreateUsuarioDto)             => api.post<UsuarioAdmin>('/users', dto),
+    update:  (id: number, dto: UpdateUsuarioDto) => api.patch<UsuarioAdmin>(`/users/${id}`, dto),
+    toggle:  (id: number)                        => api.patch<UsuarioAdmin>(`/users/${id}/toggle`),
+    remove:  (id: number)                        => api.delete(`/users/${id}`),
 };
 
 // ─── Clientes ─────────────────────────────────────────────────────────────────

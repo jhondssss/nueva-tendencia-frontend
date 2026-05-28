@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
+import { authApi } from '@/api/services';
 import toast from 'react-hot-toast';
 
 const schema = z.object({
@@ -14,7 +15,11 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function LoginView() {
-    const [showPass, setShowPass] = useState(false);
+    const [showPass, setShowPass]       = useState(false);
+    const [forgotOpen, setForgotOpen]   = useState(false);
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [forgotSent, setForgotSent]   = useState(false);
+    const [forgotLoading, setForgotLoading] = useState(false);
     const { login, isLoading } = useAuthStore();
 
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
@@ -27,6 +32,25 @@ export default function LoginView() {
         } catch {
             toast.error('Credenciales inválidas');
         }
+    };
+
+    const handleForgot = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setForgotLoading(true);
+        try {
+            await authApi.forgotPassword(forgotEmail);
+            setForgotSent(true);
+        } catch {
+            toast.error('No se pudo enviar el correo. Verifica el email ingresado.');
+        } finally {
+            setForgotLoading(false);
+        }
+    };
+
+    const closeForgot = () => {
+        setForgotOpen(false);
+        setForgotEmail('');
+        setForgotSent(false);
     };
 
     return (
@@ -104,6 +128,15 @@ export default function LoginView() {
                                 : 'Ingresar al sistema'
                             }
                         </button>
+
+                        <div className="text-center pt-1">
+                            <button
+                                type="button"
+                                onClick={() => setForgotOpen(true)}
+                                className="text-sm text-cafe-500 hover:text-cafe-700 transition-colors">
+                                ¿Olvidaste tu contraseña?
+                            </button>
+                        </div>
                     </form>
                 </div>
 
@@ -112,6 +145,65 @@ export default function LoginView() {
                 </p>
                 <p className="text-center text-cafe-600 text-2xs mt-1">v1.0.0</p>
             </div>
+
+            {/* Modal: Olvidé mi contraseña */}
+            {forgotOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                     onClick={closeForgot}>
+                    <div className="bg-white border border-surface-border rounded-lg p-8 w-full max-w-sm"
+                         onClick={e => e.stopPropagation()}>
+
+                        {forgotSent ? (
+                            <div className="flex flex-col items-center gap-3 py-2 text-center">
+                                <CheckCircle size={36} className="text-green-500" />
+                                <p className="font-display text-lg font-medium text-cafe-950">¡Correo enviado!</p>
+                                <p className="text-sm text-cafe-500">
+                                    Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.
+                                </p>
+                                <button onClick={closeForgot} className="btn-primary w-full justify-center mt-2">
+                                    Entendido
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="mb-5">
+                                    <h2 className="font-display text-xl font-medium text-cafe-950">
+                                        ¿Olvidaste tu contraseña?
+                                    </h2>
+                                    <p className="text-sm text-cafe-500 mt-1">
+                                        Ingresa tu email y te enviaremos un enlace para restablecerla.
+                                    </p>
+                                </div>
+                                <form onSubmit={handleForgot} className="space-y-4" noValidate>
+                                    <div>
+                                        <label className="label">Correo electrónico</label>
+                                        <input
+                                            type="email"
+                                            value={forgotEmail}
+                                            onChange={e => setForgotEmail(e.target.value)}
+                                            placeholder="tu@correo.com"
+                                            className="input"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="flex gap-2 pt-1">
+                                        <button type="button" onClick={closeForgot}
+                                                className="btn-secondary flex-1 justify-center">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" disabled={forgotLoading}
+                                                className="btn-primary flex-1 justify-center">
+                                            {forgotLoading
+                                                ? <><Loader2 size={14} className="animate-spin" /> Enviando...</>
+                                                : 'Enviar enlace'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

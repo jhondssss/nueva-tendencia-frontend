@@ -6,6 +6,25 @@ export interface AuthResponse { access_token: string; user: User; }
 // ─── User ─────────────────────────────────────────────────────────────────────
 export interface User { id: number; email: string; role: string; }
 
+// ─── Usuario (gestión admin) ───────────────────────────────────────────────────
+export type RolUsuario = 'admin' | 'operario';
+export interface UsuarioAdmin {
+    id:       number;
+    email:    string;
+    nombre:   string;
+    apellido: string;
+    role:     RolUsuario;
+    activo:   boolean;
+}
+export interface CreateUsuarioDto {
+    email:    string;
+    password: string;
+    nombre:   string;
+    apellido: string;
+    role:     RolUsuario;
+}
+export type UpdateUsuarioDto = Partial<Omit<CreateUsuarioDto, 'password'> & { password?: string }>;
+
 // ─── Cliente ──────────────────────────────────────────────────────────────────
 export interface Cliente {
     id_cliente: number;
