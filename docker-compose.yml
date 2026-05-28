@@ -1,0 +1,11 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # docker-compose lee VITE_API_URL del archivo .env automáticamente
+        - VITE_API_URL=${VITE_API_URL}
+    ports:
+      - "80:80"
+    restart: unless-stopped
