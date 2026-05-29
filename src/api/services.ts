@@ -23,7 +23,7 @@ export const authApi = {
 
 // ─── Usuarios (gestión admin) ─────────────────────────────────────────────────
 export const usuariosApi = {
-    getAll:  ()                                  => api.get<UsuarioAdmin[]>('/users'),
+    getAll:  ()                                  => api.get<{ data: UsuarioAdmin[]; total: number; page: number; totalPages: number }>('/users'),
     create:  (dto: CreateUsuarioDto)             => api.post<UsuarioAdmin>('/users', dto),
     update:  (id: number, dto: UpdateUsuarioDto) => api.patch<UsuarioAdmin>(`/users/${id}`, dto),
     toggle:  (id: number)                        => api.patch<UsuarioAdmin>(`/users/${id}/toggle`),

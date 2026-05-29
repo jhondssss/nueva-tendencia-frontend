@@ -44,7 +44,7 @@ export default function UsuariosView() {
         try {
             setIsLoading(true);
             const res = await usuariosApi.getAll();
-            setUsuarios(res.data);
+            setUsuarios(res.data.data);
         } catch {
             toast.error('Error al cargar usuarios');
         } finally {
