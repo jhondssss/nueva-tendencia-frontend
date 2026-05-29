@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { ResponsiveContainer, Tooltip, FunnelChart, Funnel, LabelList, Cell } from 'recharts';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+    ResponsiveContainer, Tooltip, FunnelChart, Funnel, LabelList, Cell,
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Legend,
+} from 'recharts';
 import { Clock, Scissors, Hammer, Layers, Package, CheckCircle } from 'lucide-react';
-import { useDashboardStore } from '@/stores/index';
+import { useDashboardStore, usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { Skeleton } from '@/components/shared/Skeleton';
 import KpiCards from '@/components/dashboard/KpiCards';
@@ -36,6 +39,9 @@ const STATUS_COLORS: Record<string, string> = {
     Pendiente: '#C6A75E', Cortado: '#9A6B1A', Aparado: '#8B5E3C', Solado: '#6B4020', Empaque: '#4A2810', Terminado: '#2C1810',
 };
 const FUNNEL_COLORS = ['#C6A75E', '#9A6B1A', '#8B5E3C', '#6B4020', '#4A2810', '#2C1810'];
+const MESES_ABR_DASH = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const CAT_COLORS     = ['#2C1810', '#8B5E3C', '#C6A75E'];
+const CAT_LABELS: Record<string, string> = { adulto: 'Adulto', juvenil: 'Juvenil', nino: 'Niño' };
 const TOOLTIP_STYLE = {
     contentStyle: { background: '#FFFFFF', border: '1px solid #E8DDD4', borderRadius: 6 },
     labelStyle:   { color: '#1C1008', fontSize: 12 },
@@ -103,10 +109,40 @@ export default function DashboardView() {
     const { kpis, ordersStatus, productionFunnel, recentActivity,
             topProductos, ventasPorMes, prediccionStock, proximosAEntregar, isLoading, fetchAll } = useDashboardStore();
 
-    const { isOperario } = useRole();
+    const { isAdmin, isOperario } = useRole();
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-    useEffect(() => { fetchAll(); }, [fetchAll]);
+    const pedidos       = usePedidoStore(s => s.pedidos);
+    const fetchPedidos  = usePedidoStore(s => s.fetchAll);
+
+    useEffect(() => { fetchAll(); fetchPedidos(); }, [fetchAll, fetchPedidos]);
+
+    const barData = useMemo(() => {
+        const currentYear = new Date().getFullYear();
+        const base = MESES_ABR_DASH.map(m => ({ mes: m, total: 0 }));
+        ventasPorMes.forEach(item => {
+            const s     = String(item.mes);
+            const yearM = s.match(/\b(20\d{2})\b/);
+            const year  = yearM ? parseInt(yearM[1]) : null;
+            if (year !== null && year !== currentYear) return;
+            const isoM  = s.match(/(\d{4})-(\d{1,2})/);
+            const month = isoM ? parseInt(isoM[2]) : parseInt(s);
+            if (month >= 1 && month <= 12) base[month - 1].total = Number(item.total);
+        });
+        return base;
+    }, [ventasPorMes]);
+
+    const categoriasData = useMemo(() => {
+        const counts: Record<string, number> = { adulto: 0, juvenil: 0, nino: 0 };
+        pedidos.forEach(p => { if (p.categoria) counts[p.categoria] = (counts[p.categoria] ?? 0) + 1; });
+        return (['adulto', 'juvenil', 'nino'] as const)
+            .map(cat => ({ name: CAT_LABELS[cat], value: counts[cat] }))
+            .filter(d => d.value > 0);
+    }, [pedidos]);
+
+    const totalCategorias = useMemo(() =>
+        categoriasData.reduce((s, d) => s + d.value, 0),
+    [categoriasData]);
     useEffect(() => { document.title = 'Dashboard | NT'; }, []);
     useEffect(() => { console.log('[Dashboard] ordersStatus:', ordersStatus); }, [ordersStatus]);
 
@@ -177,6 +213,78 @@ export default function DashboardView() {
                     )}
                 </div>
             </div>
+
+            {isAdmin && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* BarChart — Pedidos por mes */}
+                    <div className="card p-5">
+                        <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Pedidos por Mes</h3>
+                        {isLoading ? (
+                            <Skeleton className="h-52 w-full rounded-lg" />
+                        ) : barData.every(d => d.total === 0) ? (
+                            <div className="flex items-center justify-center h-52 text-cafe-400 text-sm">Sin datos disponibles</div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height={200}>
+                                <BarChart data={barData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#E8DDD4" vertical={false} />
+                                    <XAxis dataKey="mes" tick={{ fill: '#8B5E3C', fontSize: 11 }}
+                                           axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fill: '#8B5E3C', fontSize: 11 }}
+                                           axisLine={false} tickLine={false} allowDecimals={false} />
+                                    <Tooltip
+                                        {...TOOLTIP_STYLE}
+                                        formatter={(v) => [v, 'Pedidos']}
+                                    />
+                                    <Bar dataKey="total" fill="#C6A75E" radius={[4, 4, 0, 0]} maxBarSize={36} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
+
+                    {/* PieChart — Producción por categoría */}
+                    <div className="card p-5">
+                        <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Producción por Categoría</h3>
+                        {isLoading ? (
+                            <Skeleton className="h-52 w-full rounded-lg" />
+                        ) : categoriasData.length === 0 ? (
+                            <div className="flex items-center justify-center h-52 text-cafe-400 text-sm">Sin datos disponibles</div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height={200}>
+                                <PieChart>
+                                    <Pie data={categoriasData} dataKey="value" nameKey="name"
+                                         cx="50%" cy="45%" outerRadius={72} paddingAngle={2}>
+                                        {categoriasData.map((entry, i) => (
+                                            <Cell key={entry.name} fill={CAT_COLORS[i % CAT_COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ background: '#FFFFFF', border: '1px solid #E8DDD4', borderRadius: 6 }}
+                                        labelStyle={{ color: '#1C1008', fontSize: 12 }}
+                                        itemStyle={{ color: '#4E3020', fontSize: 12 }}
+                                        formatter={(value, name) => {
+                                            const pct = totalCategorias > 0
+                                                ? ((Number(value) / totalCategorias) * 100).toFixed(1)
+                                                : '0';
+                                            return [`${value} (${pct}%)`, name];
+                                        }}
+                                    />
+                                    <Legend
+                                        iconSize={10}
+                                        iconType="circle"
+                                        formatter={(value) => {
+                                            const item = categoriasData.find(d => d.name === value);
+                                            const pct  = item && totalCategorias > 0
+                                                ? ((item.value / totalCategorias) * 100).toFixed(1)
+                                                : '0';
+                                            return `${value}  ${pct}%`;
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <TopProductos topProductos={topProductos} isLoading={isLoading} />
 
