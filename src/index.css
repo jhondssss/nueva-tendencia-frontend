@@ -7,11 +7,7 @@
   html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
   body { @apply bg-crema font-body text-cafe-950; font-size: 14px; line-height: 1.6; }
 
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { @apply bg-crema-dark; }
-  ::-webkit-scrollbar-thumb { @apply bg-dorado-400 rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-dorado-500; }
-  ::selection { @apply bg-cafe-800 text-crema; }
+::selection { @apply bg-cafe-800 text-crema; }
 }
 
 @layer components {
@@ -232,4 +228,20 @@
   .page-transition {
     @apply animate-fade-in;
   }
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1ece8;
+}
+::-webkit-scrollbar-thumb {
+  background: #9A6B1A;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C6A75E;
 }
