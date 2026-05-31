@@ -85,7 +85,7 @@ export default function AppLayout() {
             <aside className={clsx(
                 'flex flex-col bg-cafe-900 border-r border-cafe-800 shadow-sidebar transition-all duration-300',
                 'fixed inset-y-0 left-0 z-30 w-64 md:relative md:z-auto md:translate-x-0',
-                sidebarOpen ? 'translate-x-0 md:w-64' : '-translate-x-full md:w-16',
+                sidebarOpen ? 'translate-x-0 md:w-64' : '-translate-x-full md:w-20',
             )}>
                 {/* Logo */}
                 <div className={clsx(
@@ -127,7 +127,7 @@ export default function AppLayout() {
                                                  )}
                                                  title={!sidebarOpen ? itemLabel : undefined}
                                         >
-                                            <Icon size={17} className="flex-shrink-0" />
+                                            <Icon size={20} className="flex-shrink-0" />
                                             {sidebarOpen ? (
                                                 <div className="animate-fade-in min-w-0">
                                                     <p className="text-sm leading-tight">{itemLabel}</p>
