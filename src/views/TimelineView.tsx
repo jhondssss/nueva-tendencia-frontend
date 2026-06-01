@@ -4,6 +4,7 @@ import { usePedidoStore } from '@/stores/index';
 import PageLoader from '@/components/shared/PageLoader';
 import type { EstadoPedido, UnidadPedido, Pedido } from '@/types';
 import { clsx } from 'clsx';
+import { parseLocalDate } from '@/utils/dates';
 
 const PARES_POR_UNIDAD: Record<UnidadPedido, number> = {
     docena:       12,
@@ -44,8 +45,7 @@ function PedidoCard({ p }: { p: Pedido }) {
 
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-    const fechaEntrega = new Date(p.fecha_entrega);
-    fechaEntrega.setHours(0, 0, 0, 0);
+    const fechaEntrega = parseLocalDate(p.fecha_entrega);
     const vencido = fechaEntrega < hoy && p.estado !== 'Terminado';
 
     return (
@@ -152,7 +152,7 @@ export default function TimelineView() {
     const filtered = pedidos.filter(p => {
         if (filterEstado && p.estado !== filterEstado) return false;
         if (filterAnioTimeline !== 0 || filterMesTimeline !== 0) {
-            const d = new Date(p.fecha_entrega + 'T12:00:00');
+            const d = parseLocalDate(p.fecha_entrega);
             if (filterAnioTimeline !== 0 && d.getFullYear() !== filterAnioTimeline) return false;
             if (filterMesTimeline  !== 0 && d.getMonth() + 1 !== filterMesTimeline)  return false;
         }

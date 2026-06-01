@@ -9,6 +9,7 @@ import PedidosTable from '@/components/pedidos/PedidosTable';
 import PedidoModal from '@/components/pedidos/PedidoModal';
 import { clsx } from 'clsx';
 import type { Pedido, EstadoPedido, CreatePedidoDto } from '@/types';
+import { parseLocalDate } from '@/utils/dates';
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
 
@@ -68,7 +69,7 @@ export default function PedidosView() {
 
         // Date filter only for Terminado
         if (filterEstado === 'Terminado' && (filterAnio !== 0 || filterMes !== 0)) {
-            const d = new Date(p.fecha_entrega);
+            const d = parseLocalDate(p.fecha_entrega);
             if (filterAnio !== 0 && d.getFullYear() !== filterAnio) return false;
             if (filterMes  !== 0 && d.getMonth() + 1 !== filterMes)  return false;
         }
@@ -77,11 +78,11 @@ export default function PedidosView() {
 
         // Global delivery date filter
         if (filterAnioPedido !== 0) {
-            const d = new Date(p.fecha_entrega + 'T12:00:00');
+            const d = parseLocalDate(p.fecha_entrega);
             if (d.getFullYear() !== filterAnioPedido) return false;
         }
         if (filterMesPedido !== 0) {
-            const d = new Date(p.fecha_entrega + 'T12:00:00');
+            const d = parseLocalDate(p.fecha_entrega);
             if (d.getMonth() + 1 !== filterMesPedido) return false;
         }
 

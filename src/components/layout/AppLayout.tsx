@@ -6,6 +6,7 @@ import { usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import NTAssistant from '@/components/NTAssistant/NTAssistant';
+import { parseLocalDate } from '@/utils/dates';
 
 const NAV_GROUPS = [
     {
@@ -65,7 +66,7 @@ export default function AppLayout() {
     const vencidosCount = useMemo(() => {
         const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
         return pedidos.filter(p => {
-            const fecha = new Date(p.fecha_entrega); fecha.setHours(0, 0, 0, 0);
+            const fecha = parseLocalDate(p.fecha_entrega); fecha.setHours(0, 0, 0, 0);
             return fecha < hoy && p.estado !== 'Terminado';
         }).length;
     }, [pedidos]);

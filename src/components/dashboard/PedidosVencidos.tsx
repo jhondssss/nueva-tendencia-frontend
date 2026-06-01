@@ -1,6 +1,7 @@
 import { Clock } from 'lucide-react';
 import StatusBadge from '@/components/shared/StatusBadge';
 import type { ProximoPedido } from '@/types';
+import { parseLocalDate } from '@/utils/dates';
 
 interface Props {
     pedidosVencidos: ProximoPedido[];
@@ -41,7 +42,7 @@ export default function PedidosVencidos({ pedidosVencidos }: Props) {
                                 <td className="font-medium text-cafe-950">{p.cliente}</td>
                                 <td className="text-cafe-700">{p.producto ?? '—'}</td>
                                 <td className="font-mono text-amber-600 text-xs">
-                                    {new Date(p.fecha_entrega).toLocaleDateString('es-BO')}
+                                    {parseLocalDate(p.fecha_entrega).toLocaleDateString('es-BO')}
                                 </td>
                                 <td><StatusBadge estado={p.estado} /></td>
                             </tr>

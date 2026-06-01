@@ -9,6 +9,7 @@ import { clsx } from 'clsx';
 import type { Pedido, EstadoPedido, CategoriaCalzado, UnidadPedido } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
 import { TALLAS_POR_CATEGORIA, CATEGORIA_INFO, defaultTallas } from './TallaInfoBox';
+import { parseLocalDate } from '@/utils/dates';
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
 
@@ -45,7 +46,7 @@ function CategoriaBadge({ categoria }: { categoria: CategoriaCalzado }) {
 function isArchivedPedido(p: Pedido): boolean {
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    return p.estado === 'Terminado' && new Date(p.fecha_entrega) < oneYearAgo;
+    return p.estado === 'Terminado' && parseLocalDate(p.fecha_entrega) < oneYearAgo;
 }
 
 function isPersonalizado(p: Pedido): boolean {
@@ -140,7 +141,7 @@ export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDe
                                         </td>
                                         {!hideTotals && <td className="font-mono text-amber-400">Bs. {Number(p.total).toFixed(2)}</td>}
                                         <td className="text-ink-100">
-                                            {new Date(p.fecha_entrega + 'T12:00:00').toLocaleDateString('es-BO')}
+                                            {parseLocalDate(p.fecha_entrega).toLocaleDateString('es-BO')}
                                         </td>
                                         <td>
                                             <div className="flex flex-wrap items-center gap-1">
