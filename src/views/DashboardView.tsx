@@ -31,8 +31,13 @@ const ACTIVITY_BADGE: Record<string, string> = {
     Terminado: 'bg-cafe-800 text-crema border-cafe-900',
 };
 function formatFechaBO(iso: string) {
-    const d = new Date(new Date(iso).getTime() - 4 * 60 * 60 * 1000);
-    return d.toLocaleString('es-BO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleString('es-BO', {
+        timeZone: 'America/La_Paz',
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
 }
 
 const STATUS_COLORS: Record<string, string> = {
