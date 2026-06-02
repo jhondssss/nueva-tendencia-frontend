@@ -98,7 +98,7 @@ export default function ReportesView() {
 
             <ReportesPDF onDescargar={descargar} onVistaPrevia={vistaPreviaUrl} loading={loading} />
 
-            <ReportesExcel onDescargar={descargar} loading={loading} />
+            <ReportesExcel onDescargar={descargar} onVistaPrevia={vistaPreviaUrl} loading={loading} />
 
             <section className="space-y-4">
                 <div className="flex items-center gap-2.5">
@@ -168,17 +168,31 @@ export default function ReportesView() {
                                         </button>
                                     </div>
                                 ) : (
-                                    <button
-                                        onClick={() => void descargarConApi(key, fetcher, filename)}
-                                        disabled={!!loading[key]}
-                                        className={`mt-auto flex items-center justify-center gap-2 w-full px-4 py-2
-                                                    rounded-lg text-white text-sm font-medium
-                                                    disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${btnClass}`}>
-                                        {loading[key]
-                                            ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
-                                            : <><Icon2 size={13} /> {label}</>
-                                        }
-                                    </button>
+                                    <div className="mt-auto grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={() => void vistaPreviaConApi(`preview-${key}`,
+                                                fetcher)}
+                                            disabled={!!loading[`preview-${key}`]}
+                                            className="flex items-center justify-center gap-1.5 w-full px-3 py-2
+                                                       rounded-lg border border-green-300 text-green-700 hover:bg-green-50
+                                                       text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+                                            {loading[`preview-${key}`]
+                                                ? <><Loader2 size={13} className="animate-spin" /> Cargando...</>
+                                                : <><Eye size={13} /> Vista previa</>
+                                            }
+                                        </button>
+                                        <button
+                                            onClick={() => void descargarConApi(key, fetcher, filename)}
+                                            disabled={!!loading[key]}
+                                            className={`flex items-center justify-center gap-1.5 w-full px-3 py-2
+                                                        rounded-lg text-white text-sm font-medium
+                                                        disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${btnClass}`}>
+                                            {loading[key]
+                                                ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
+                                                : <><Icon2 size={13} /> {label}</>
+                                            }
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         ))}

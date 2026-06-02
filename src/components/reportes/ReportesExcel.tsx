@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { FileSpreadsheet, Users, Package, Loader2 } from 'lucide-react';
+import { FileSpreadsheet, Users, Package, Loader2, Eye, Download } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -40,11 +40,12 @@ const CARDS: ExcelCard[] = [
 ];
 
 interface Props {
-    onDescargar: (key: string, url: string, filename: string) => Promise<void>;
-    loading:     Record<string, boolean>;
+    onDescargar:   (key: string, url: string, filename: string) => Promise<void>;
+    onVistaPrevia: (key: string, url: string) => Promise<void>;
+    loading:       Record<string, boolean>;
 }
 
-export default function ReportesExcel({ onDescargar, loading }: Props) {
+export default function ReportesExcel({ onDescargar, onVistaPrevia, loading }: Props) {
     return (
         <section className="space-y-4">
             <div className="flex items-center gap-2.5">
@@ -63,16 +64,30 @@ export default function ReportesExcel({ onDescargar, loading }: Props) {
                                 <p className="text-xs text-cafe-500 mt-0.5 leading-relaxed">{desc}</p>
                             </div>
                         </div>
-                        <button onClick={() => void onDescargar(key, url, filename)}
+                        <div className="mt-auto grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => void onVistaPrevia(key, url)}
+                                disabled={!!loading[`preview-${key}`]}
+                                className="flex items-center justify-center gap-1.5 w-full px-3 py-2
+                                           rounded-lg border border-green-300 text-green-700 hover:bg-green-50
+                                           text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+                                {loading[`preview-${key}`]
+                                    ? <><Loader2 size={13} className="animate-spin" /> Cargando...</>
+                                    : <><Eye size={13} /> Vista previa</>
+                                }
+                            </button>
+                            <button
+                                onClick={() => void onDescargar(key, url, filename)}
                                 disabled={!!loading[key]}
-                                className="mt-auto flex items-center justify-center gap-2 w-full px-4 py-2
+                                className="flex items-center justify-center gap-1.5 w-full px-3 py-2
                                            rounded-lg bg-green-700 hover:bg-green-600 text-white text-sm font-medium
                                            disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
-                            {loading[key]
-                                ? <><Loader2 size={13} className="animate-spin" /> Exportando...</>
-                                : <><FileSpreadsheet size={13} /> Exportar Excel</>
-                            }
-                        </button>
+                                {loading[key]
+                                    ? <><Loader2 size={13} className="animate-spin" /> Exportando...</>
+                                    : <><Download size={13} /> Descargar</>
+                                }
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
