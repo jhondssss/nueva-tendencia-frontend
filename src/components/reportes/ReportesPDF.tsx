@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { TrendingUp, ClipboardList, AlertTriangle, Loader2, Download } from 'lucide-react';
+import { TrendingUp, ClipboardList, AlertTriangle, Loader2, Download, Eye } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -15,11 +15,12 @@ interface PdfCard {
 }
 
 interface Props {
-    onDescargar: (key: string, url: string, filename: string) => Promise<void>;
-    loading:     Record<string, boolean>;
+    onDescargar:   (key: string, url: string, filename: string) => Promise<void>;
+    onVistaPrevia: (key: string, url: string) => Promise<void>;
+    loading:       Record<string, boolean>;
 }
 
-export default function ReportesPDF({ onDescargar, loading }: Props) {
+export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Props) {
     const currentYear = new Date().getFullYear();
     const [yearVentas, setYearVentas] = useState(currentYear);
     const years = [currentYear - 2, currentYear - 1, currentYear];
@@ -75,16 +76,30 @@ export default function ReportesPDF({ onDescargar, loading }: Props) {
                             </div>
                         </div>
                         {extra}
-                        <button onClick={() => void onDescargar(key, url(), filename())}
+                        <div className="mt-auto grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => void onVistaPrevia(key, url())}
+                                disabled={!!loading[`preview-${key}`]}
+                                className="flex items-center justify-center gap-1.5 w-full px-3 py-2
+                                           rounded-lg border border-red-200 text-red-600 hover:bg-red-50
+                                           text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+                                {loading[`preview-${key}`]
+                                    ? <><Loader2 size={13} className="animate-spin" /> Cargando...</>
+                                    : <><Eye size={13} /> Vista previa</>
+                                }
+                            </button>
+                            <button
+                                onClick={() => void onDescargar(key, url(), filename())}
                                 disabled={!!loading[key]}
-                                className="mt-auto flex items-center justify-center gap-2 w-full px-4 py-2
+                                className="flex items-center justify-center gap-1.5 w-full px-3 py-2
                                            rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium
                                            disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
-                            {loading[key]
-                                ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
-                                : <><Download size={13} /> Descargar PDF</>
-                            }
-                        </button>
+                                {loading[key]
+                                    ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
+                                    : <><Download size={13} /> Descargar</>
+                                }
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
