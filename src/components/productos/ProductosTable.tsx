@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Edit2, Trash2, Package, AlertTriangle } from 'lucide-react';
 import Pagination from '@/components/shared/Pagination';
-import PageLoader from '@/components/shared/PageLoader';
+import { TableSkeleton } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { clsx } from 'clsx';
 import type { Producto } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
@@ -30,105 +33,108 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
 
     return (
         <>
-            <div className="card-interactive overflow-hidden">
-                <div className="table-container">
-                    <table className="table table-highlight">
-                        <thead>
-                            <tr>
-                                <th>Imagen</th><th>Modelo</th><th>Marca</th><th>Tipo</th>
-                                <th>Color</th><th>Precio</th><th>Stock</th><th>Mín.</th><th>Estado</th><th />
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {isLoading ? (
-                                <tr><td colSpan={10}><PageLoader /></td></tr>
-                            ) : pagination.pageData.length === 0 ? (
-                                <tr>
-                                    <td colSpan={10}>
-                                        <EmptyState icon={Package}
-                                                    title="Sin productos en inventario"
-                                                    description="Agrega el primer producto con el botón 'Nuevo producto'." />
-                                    </td>
-                                </tr>
-                            ) : (
-                                pagination.pageData.map(p => {
-                                    const lowStock = Number(p.stock) <= Number(p.nivel_minimo);
-                                    return (
-                                        <tr key={p.id_producto} className={clsx(lowStock && 'bg-red-950/10')}>
-                                            <td>
-                                                <div
-                                                    className="w-10"
-                                                    onMouseEnter={e => {
-                                                        const url = resolveImageUrl(p.imagen_url);
-                                                        if (!url) return;
-                                                        const rect = e.currentTarget.getBoundingClientRect();
-                                                        setHoverImg({
-                                                            url,
-                                                            top:  Math.max(8, rect.top - 104),
-                                                            left: rect.right + 10,
-                                                        });
-                                                    }}
-                                                    onMouseLeave={() => setHoverImg(null)}
-                                                >
-                                                    {p.imagen_url ? (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => { const url = resolveImageUrl(p.imagen_url); if (url) setLightboxUrl(url); }}
-                                                            className="block w-10 h-10 rounded border border-ink-600 overflow-hidden
-                                                                       hover:border-dorado-500 hover:scale-105 transition-all cursor-zoom-in">
-                                                            <img src={resolveImageUrl(p.imagen_url)!} alt={p.nombre_modelo}
-                                                                 className="w-full h-full object-cover" />
-                                                        </button>
-                                                    ) : (
-                                                        <div className="w-10 h-10 rounded bg-ink-700 border border-ink-600
-                                                                         flex items-center justify-center text-ink-400">
-                                                            <Package size={15} />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="font-medium">{p.nombre_modelo}</td>
-                                            <td className="text-ink-100">{p.marca}</td>
-                                            <td className="text-ink-100">{p.tipo_calzado}</td>
-                                            <td className="text-ink-100">{p.color}</td>
-                                            <td className="font-mono text-amber-400">Bs. {Number(p.precio_venta).toFixed(2)}</td>
-                                            <td className={clsx('font-mono font-medium', lowStock ? 'text-red-400' : 'text-cream')}>
-                                                {p.stock} {lowStock && <AlertTriangle size={11} className="inline ml-1 text-red-400" />}
-                                            </td>
-                                            <td className="font-mono text-ink-100">{p.nivel_minimo}</td>
-                                            <td>
-                                                <span className={clsx('text-xs px-2 py-0.5 rounded border',
-                                                    p.activo
-                                                        ? 'bg-green-950/40 text-green-400 border-green-800/50'
-                                                        : 'bg-ink-700 text-ink-200 border-ink-600')}>
-                                                    {p.activo ? 'Activo' : 'Inactivo'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {(canEdit || canDelete) && (
-                                                    <div className="flex gap-1">
-                                                        {canEdit && (
-                                                            <button onClick={() => onEdit(p)}
-                                                                    className="p-1.5 rounded text-ink-300 hover:text-amber-400 hover:bg-amber-500/10 transition-colors">
-                                                                <Edit2 size={13} />
-                                                            </button>
-                                                        )}
-                                                        {canDelete && (
-                                                            <button onClick={() => onDelete(p)}
-                                                                    className="p-1.5 rounded text-ink-300 hover:text-red-400 hover:bg-red-950/40 transition-colors">
-                                                                <Trash2 size={13} />
-                                                            </button>
-                                                        )}
+            <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden
+                             transition-all duration-300 hover:shadow-lg">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead>Imagen</TableHead><TableHead>Modelo</TableHead><TableHead>Marca</TableHead><TableHead>Tipo</TableHead>
+                            <TableHead>Color</TableHead><TableHead>Precio</TableHead><TableHead>Stock</TableHead><TableHead>Mín.</TableHead>
+                            <TableHead>Estado</TableHead><TableHead />
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading ? (
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={10}><TableSkeleton rows={5} /></TableCell>
+                            </TableRow>
+                        ) : pagination.pageData.length === 0 ? (
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={10}>
+                                    <EmptyState icon={Package}
+                                                title="Sin productos en inventario"
+                                                description="Agrega el primer producto con el botón 'Nuevo producto'." />
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            pagination.pageData.map(p => {
+                                const lowStock = Number(p.stock) <= Number(p.nivel_minimo);
+                                return (
+                                    <TableRow key={p.id_producto} className={clsx(lowStock && 'bg-destructive/5 hover:bg-destructive/10')}>
+                                        <TableCell>
+                                            <div
+                                                className="w-10"
+                                                onMouseEnter={e => {
+                                                    const url = resolveImageUrl(p.imagen_url);
+                                                    if (!url) return;
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    setHoverImg({
+                                                        url,
+                                                        top:  Math.max(8, rect.top - 104),
+                                                        left: rect.right + 10,
+                                                    });
+                                                }}
+                                                onMouseLeave={() => setHoverImg(null)}
+                                            >
+                                                {p.imagen_url ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { const url = resolveImageUrl(p.imagen_url); if (url) setLightboxUrl(url); }}
+                                                        className="block w-10 h-10 rounded-lg border border-border overflow-hidden
+                                                                   hover:border-primary/50 hover:scale-105 transition-all cursor-zoom-in">
+                                                        <img src={resolveImageUrl(p.imagen_url)!} alt={p.nombre_modelo}
+                                                             className="w-full h-full object-cover" />
+                                                    </button>
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-lg bg-muted border border-border
+                                                                     flex items-center justify-center text-muted-foreground">
+                                                        <Package size={15} />
                                                     </div>
                                                 )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="font-medium text-foreground">{p.nombre_modelo}</TableCell>
+                                        <TableCell className="text-muted-foreground">{p.marca}</TableCell>
+                                        <TableCell className="text-muted-foreground">{p.tipo_calzado}</TableCell>
+                                        <TableCell className="text-muted-foreground">{p.color}</TableCell>
+                                        <TableCell className="font-mono text-primary">Bs. {Number(p.precio_venta).toFixed(2)}</TableCell>
+                                        <TableCell className={clsx('font-mono font-medium', lowStock ? 'text-destructive' : 'text-foreground')}>
+                                            {p.stock} {lowStock && <AlertTriangle size={11} className="inline ml-1 text-destructive" />}
+                                        </TableCell>
+                                        <TableCell className="font-mono text-muted-foreground">{p.nivel_minimo}</TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant="outline"
+                                                className={clsx('font-medium', p.activo
+                                                    ? 'bg-secondary/10 text-secondary border-secondary/30'
+                                                    : 'bg-muted text-muted-foreground border-border')}>
+                                                {p.activo ? 'Activo' : 'Inactivo'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {(canEdit || canDelete) && (
+                                                <div className="flex gap-1">
+                                                    {canEdit && (
+                                                        <Button variant="ghost" size="icon" onClick={() => onEdit(p)}
+                                                                className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                                            <Edit2 size={13} />
+                                                        </Button>
+                                                    )}
+                                                    {canDelete && (
+                                                        <Button variant="ghost" size="icon" onClick={() => onDelete(p)}
+                                                                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                                                            <Trash2 size={13} />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
+                        )}
+                    </TableBody>
+                </Table>
 
                 {!isLoading && (
                     <div className="px-4 pb-4">
@@ -146,7 +152,7 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
 
             {hoverImg && (
                 <div className="fixed z-50 pointer-events-none" style={{ top: hoverImg.top, left: hoverImg.left }}>
-                    <div className="bg-ink-900 border border-ink-600 rounded-xl p-2 shadow-2xl">
+                    <div className="bg-popover border border-border rounded-xl p-2 shadow-modal">
                         <img src={hoverImg.url} alt="Vista previa" className="w-48 h-48 object-contain rounded-lg" />
                     </div>
                 </div>

@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Upload, Loader2 } from 'lucide-react';
 import Modal from '@/components/shared/Modal';
+import { Button } from '@/components/ui/button';
 import type { Producto, CreateProductoDto } from '@/types';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
@@ -109,12 +110,12 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 <div>
                     <label className="label">Imagen del producto</label>
                     <div onClick={() => fileRef.current?.click()}
-                         className="border-2 border-dashed border-ink-500 rounded-lg p-4 text-center
-                                    cursor-pointer hover:border-amber-500 transition-colors group">
+                         className="border-2 border-dashed border-border rounded-lg p-4 text-center
+                                    cursor-pointer hover:border-primary/50 transition-colors group">
                         {preview ? (
                             <img src={preview} alt="preview" className="mx-auto h-28 object-contain rounded" />
                         ) : (
-                            <div className="flex flex-col items-center gap-2 text-ink-200 group-hover:text-amber-400 transition-colors">
+                            <div className="flex flex-col items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
                                 <Upload size={24} />
                                 <span className="text-xs">Haz clic para subir imagen</span>
                                 <span className="text-2xs">JPG, PNG, WEBP — máx. 5MB</span>
@@ -130,7 +131,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                             <label className="label">{label} *</label>
                             <input {...register(name)} placeholder={placeholder}
                                    className={`input ${errors[name] ? 'input-error' : ''}`} />
-                            {errors[name] && <p className="text-red-400 text-xs mt-1">{errors[name]?.message}</p>}
+                            {errors[name] && <p className="text-destructive text-xs mt-1">{errors[name]?.message}</p>}
                         </div>
                     ))}
                 </div>
@@ -142,7 +143,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                                {...register('precio_venta', { valueAsNumber: true })}
                                placeholder="0.00"
                                className={`input ${errors.precio_venta ? 'input-error' : ''}`} />
-                        {errors.precio_venta && <p className="text-red-400 text-xs mt-1">{errors.precio_venta.message}</p>}
+                        {errors.precio_venta && <p className="text-destructive text-xs mt-1">{errors.precio_venta.message}</p>}
                     </div>
                     <div>
                         <label className="label">Costo unidad (Bs.) *</label>
@@ -150,7 +151,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                                {...register('costo_unidad', { valueAsNumber: true })}
                                placeholder="0.00"
                                className={`input ${errors.costo_unidad ? 'input-error' : ''}`} />
-                        {errors.costo_unidad && <p className="text-red-400 text-xs mt-1">{errors.costo_unidad.message}</p>}
+                        {errors.costo_unidad && <p className="text-destructive text-xs mt-1">{errors.costo_unidad.message}</p>}
                     </div>
                     <div>
                         <label className="label">Stock actual</label>
@@ -158,7 +159,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                                {...register('stock', { valueAsNumber: true })}
                                placeholder="0"
                                className={`input ${errors.stock ? 'input-error' : ''}`} />
-                        {errors.stock && <p className="text-red-400 text-xs mt-1">{errors.stock.message}</p>}
+                        {errors.stock && <p className="text-destructive text-xs mt-1">{errors.stock.message}</p>}
                     </div>
                 </div>
 
@@ -169,7 +170,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                                {...register('nivel_minimo', { valueAsNumber: true })}
                                placeholder="5"
                                className={`input ${errors.nivel_minimo ? 'input-error' : ''}`} />
-                        {errors.nivel_minimo && <p className="text-red-400 text-xs mt-1">{errors.nivel_minimo.message}</p>}
+                        {errors.nivel_minimo && <p className="text-destructive text-xs mt-1">{errors.nivel_minimo.message}</p>}
                     </div>
                     <div>
                         <label className="label">Unidad de medida</label>
@@ -193,20 +194,20 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                                 id="activo"
                                 checked={field.value ?? true}
                                 onChange={e => field.onChange(e.target.checked)}
-                                className="w-4 h-4 rounded border-ink-500 accent-amber-500"
+                                className="w-4 h-4 rounded border-border accent-primary"
                             />
                         )}
                     />
-                    <label htmlFor="activo" className="text-sm text-cream cursor-pointer">Producto activo</label>
+                    <label htmlFor="activo" className="text-sm text-foreground cursor-pointer">Producto activo</label>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2 border-t border-ink-600">
-                    <button type="button" onClick={onClose} className="btn-secondary">Cancelar</button>
-                    <button type="submit" disabled={isSubmitting} className="btn-primary">
+                <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                    <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+                    <Button type="submit" disabled={isSubmitting} className="hover:scale-[1.02] transition-transform">
                         {isSubmitting
                             ? <><Loader2 size={14} className="animate-spin" /> Guardando...</>
                             : producto ? 'Actualizar' : 'Crear producto'}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </Modal>

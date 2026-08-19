@@ -9,8 +9,11 @@ import { useInsumoStore } from '@/stores/index';
 import Modal from '@/components/shared/Modal';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import Pagination from '@/components/shared/Pagination';
-import PageLoader from '@/components/shared/PageLoader';
+import { TableSkeleton } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { usePagination } from '@/hooks/usePagination';
 import { useRole } from '@/hooks/useRole';
 import type { CategoriaInsumo, UnidadMedida, CreateInsumoDto, Insumo } from '@/types';
@@ -52,12 +55,13 @@ const UNIDAD_SHORT: Record<UnidadMedida, string> = {
     galon:  'gal',
 };
 
+/** Acento cromático por categoría — coherente con el resto del sistema (tokens shadcn) */
 const CATEGORIA_BADGE: Record<CategoriaInsumo, string> = {
-    adhesivo:    'bg-dorado-500/15 text-dorado-300 border-dorado-500/25',
-    material:    'bg-blue-500/15 text-blue-300 border-blue-500/25',
-    herramienta: 'bg-ink-600 text-ink-50 border-ink-500',
-    quimico:     'bg-red-500/15 text-red-300 border-red-500/25',
-    otro:        'bg-cafe-500/15 text-cafe-300 border-cafe-500/25',
+    adhesivo:    'bg-chart-3/10 text-chart-3 border-chart-3/30',
+    material:    'bg-chart-1/10 text-chart-1 border-chart-1/30',
+    herramienta: 'bg-secondary/10 text-secondary border-secondary/30',
+    quimico:     'bg-destructive/10 text-destructive border-destructive/30',
+    otro:        'bg-chart-4/10 text-chart-4 border-chart-4/30',
 };
 
 // ─── Validación de imagen ─────────────────────────────────────────────────────
@@ -99,7 +103,7 @@ const DEFAULT_VALUES: Partial<FormData> = {
 
 function FormError({ message }: { message?: string }) {
     if (!message) return null;
-    return <p className="text-red-400 text-xs mt-1">{message}</p>;
+    return <p className="text-destructive text-xs mt-1">{message}</p>;
 }
 
 
@@ -254,16 +258,16 @@ export default function InsumosView() {
 
             {/* Banner alertas */}
             {!isLoading && alertas.length > 0 && (
-                <div className="card p-4 border-red-400/40">
+                <div className="rounded-xl border border-destructive/30 bg-card/50 backdrop-blur p-4">
                     <div className="flex items-center gap-2 mb-3">
-                        <div className="p-1.5 rounded-lg bg-red-500/10 flex-shrink-0">
-                            <AlertTriangle size={14} className="text-red-400" />
+                        <div className="p-1.5 rounded-lg bg-destructive/10 flex-shrink-0">
+                            <AlertTriangle size={14} className="text-destructive" />
                         </div>
-                        <h3 className="text-sm font-semibold text-cream">
+                        <h3 className="text-sm font-semibold text-foreground">
                             {alertas.length} insumo{alertas.length !== 1 ? 's' : ''} bajo nivel mínimo
                         </h3>
                         <span className="ml-auto text-xs font-mono font-semibold px-2 py-0.5 rounded
-                                         bg-red-500/10 text-red-400 border border-red-500/20">
+                                         bg-destructive/10 text-destructive border border-destructive/20">
                             {alertas.length}
                         </span>
                     </div>
@@ -271,8 +275,8 @@ export default function InsumosView() {
                         {alertas.map(a => (
                             <span key={a.id_insumo}
                                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs
-                                             bg-red-500/10 text-red-300 border border-red-500/20">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse flex-shrink-0" />
+                                             bg-destructive/10 text-destructive border border-destructive/20">
+                                <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse flex-shrink-0" />
                                 {a.nombre} — {a.stock} / {a.nivel_minimo} {UNIDAD_SHORT[a.unidad_medida]}
                             </span>
                         ))}
@@ -283,7 +287,7 @@ export default function InsumosView() {
             {/* Filtros */}
             <div className="flex flex-wrap gap-3">
                 <div className="relative">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-200" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input value={search} onChange={e => setSearch(e.target.value)}
                            placeholder="Buscar insumo..." className="input pl-9 w-64" />
                 </div>
@@ -298,50 +302,52 @@ export default function InsumosView() {
             </div>
 
             {/* Tabla */}
-            <div className="card overflow-hidden">
-                <div className="table-container">
-                    <table className="table table-highlight">
-                        <thead>
-                        <tr>
-                            <th className="w-14">Imagen</th>
-                            <th>#</th>
-                            <th>Nombre</th>
-                            <th>Categoría</th>
-                            <th>Stock</th>
-                            <th>Unidad</th>
-                            <th>Nivel mín.</th>
-                            <th>Precio unit.</th>
-                            <th>Estado</th>
-                            <th />
-                        </tr>
-                        </thead>
-                        <tbody>
+            <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden
+                             transition-all duration-300 hover:shadow-lg">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="w-14">Imagen</TableHead>
+                            <TableHead>#</TableHead>
+                            <TableHead>Nombre</TableHead>
+                            <TableHead>Categoría</TableHead>
+                            <TableHead>Stock</TableHead>
+                            <TableHead>Unidad</TableHead>
+                            <TableHead>Nivel mín.</TableHead>
+                            <TableHead>Precio unit.</TableHead>
+                            <TableHead>Estado</TableHead>
+                            <TableHead />
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {isLoading ? (
-                            <tr><td colSpan={10}><PageLoader /></td></tr>
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={10}><TableSkeleton rows={5} /></TableCell>
+                            </TableRow>
                         ) : pagination.pageData.length === 0 ? (
-                            <tr>
-                                <td colSpan={10}>
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={10}>
                                     <EmptyState
                                         icon={FlaskConical}
                                         title="Sin insumos registrados"
                                         description="Registra el primer insumo con el botón 'Nuevo insumo'."
                                     />
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         ) : (
                             pagination.pageData.map(insumo => {
                                 const stockBajo = insumo.activo && Number(insumo.stock) <= Number(insumo.nivel_minimo);
                                 return (
-                                    <tr key={insumo.id_insumo}
-                                        className={clsx(stockBajo && 'bg-red-950/20')}>
+                                    <TableRow key={insumo.id_insumo}
+                                        className={clsx(stockBajo && 'bg-destructive/5 hover:bg-destructive/10')}>
                                         {/* Imagen */}
-                                        <td>
+                                        <TableCell>
                                             {insumo.imagen_url ? (
                                                 <button
                                                     type="button"
                                                     onClick={() => setLightboxUrl(resolveImageUrl(insumo.imagen_url))}
-                                                    className="block w-10 h-10 rounded-lg overflow-hidden border border-ink-600
-                                                               hover:border-dorado-500 hover:scale-105 transition-all cursor-zoom-in">
+                                                    className="block w-10 h-10 rounded-lg overflow-hidden border border-border
+                                                               hover:border-primary/50 hover:scale-105 transition-all cursor-zoom-in">
                                                     <img
                                                         src={resolveImageUrl(insumo.imagen_url)!}
                                                         alt={insumo.nombre}
@@ -349,83 +355,76 @@ export default function InsumosView() {
                                                     />
                                                 </button>
                                             ) : (
-                                                <div className="w-10 h-10 rounded-lg bg-ink-700 border border-ink-600
+                                                <div className="w-10 h-10 rounded-lg bg-muted border border-border
                                                                 flex items-center justify-center">
-                                                    <FlaskConical size={16} className="text-ink-300" />
+                                                    <FlaskConical size={16} className="text-muted-foreground" />
                                                 </div>
                                             )}
-                                        </td>
-                                        <td className="font-mono text-ink-100">#{insumo.id_insumo}</td>
-                                        <td>
-                                            <p className="font-medium text-cream">{insumo.nombre}</p>
+                                        </TableCell>
+                                        <TableCell className="font-mono text-muted-foreground">#{insumo.id_insumo}</TableCell>
+                                        <TableCell>
+                                            <p className="font-medium text-foreground">{insumo.nombre}</p>
                                             {insumo.descripcion && (
-                                                <p className="text-xs text-ink-200 truncate max-w-[200px]">
+                                                <p className="text-xs text-muted-foreground truncate max-w-[200px]">
                                                     {insumo.descripcion}
                                                 </p>
                                             )}
-                                        </td>
-                                        <td>
-                                            <span className={clsx(
-                                                'inline-flex px-2 py-0.5 rounded text-xs border',
-                                                CATEGORIA_BADGE[insumo.categoria],
-                                            )}>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={clsx('font-medium', CATEGORIA_BADGE[insumo.categoria])}>
                                                 {CATEGORIA_LABEL[insumo.categoria]}
-                                            </span>
-                                        </td>
-                                        <td className={clsx(
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className={clsx(
                                             'font-mono font-semibold',
-                                            stockBajo ? 'text-red-400' : 'text-ink-50',
+                                            stockBajo ? 'text-destructive' : 'text-foreground',
                                         )}>
                                             {insumo.stock}
-                                        </td>
-                                        <td className="text-ink-100 text-xs whitespace-nowrap">
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                                             {UNIDAD_LABEL[insumo.unidad_medida]}
-                                        </td>
-                                        <td className="font-mono text-ink-200">{insumo.nivel_minimo}</td>
-                                        <td className="font-mono text-amber-400">
+                                        </TableCell>
+                                        <TableCell className="font-mono text-muted-foreground">{insumo.nivel_minimo}</TableCell>
+                                        <TableCell className="font-mono text-primary">
                                             Bs. {Number(insumo.precio_unitario).toFixed(2)}
-                                        </td>
-                                        <td>
+                                        </TableCell>
+                                        <TableCell>
                                             {!insumo.activo ? (
-                                                <span className="inline-flex px-2 py-0.5 rounded text-xs
-                                                                 bg-ink-700 text-ink-300 border border-ink-600">
+                                                <Badge variant="outline" className="font-medium bg-muted text-muted-foreground border-border">
                                                     Inactivo
-                                                </span>
+                                                </Badge>
                                             ) : stockBajo ? (
-                                                <span className="inline-flex px-2 py-0.5 rounded text-xs
-                                                                 bg-red-500/10 text-red-400 border border-red-500/20">
+                                                <Badge variant="outline" className="font-medium bg-destructive/10 text-destructive border-destructive/30">
                                                     Stock bajo
-                                                </span>
+                                                </Badge>
                                             ) : (
-                                                <span className="inline-flex px-2 py-0.5 rounded text-xs
-                                                                 bg-green-500/10 text-green-400 border border-green-500/20">
+                                                <Badge variant="outline" className="font-medium bg-secondary/10 text-secondary border-secondary/30">
                                                     Activo
-                                                </span>
+                                                </Badge>
                                             )}
-                                        </td>
-                                        <td>
+                                        </TableCell>
+                                        <TableCell>
                                             <div className="flex gap-1">
                                                 {canEdit && (
-                                                    <button onClick={() => openEdit(insumo)}
-                                                            className="p-1.5 rounded text-ink-300 hover:text-amber-400 hover:bg-amber-500/10 transition-colors">
+                                                    <Button variant="ghost" size="icon" onClick={() => openEdit(insumo)}
+                                                            className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
                                                         <Edit2 size={13} />
-                                                    </button>
+                                                    </Button>
                                                 )}
                                                 {canDelete && (
-                                                    <button onClick={() => setDeleteTarget(insumo)}
-                                                            className="p-1.5 rounded text-ink-300 hover:text-red-400 hover:bg-red-950/40 transition-colors">
+                                                    <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(insumo)}
+                                                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                                                         <Trash2 size={13} />
-                                                    </button>
+                                                    </Button>
                                                 )}
                                             </div>
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 );
                             })
                         )}
-                        </tbody>
-                    </table>
-                </div>
+                    </TableBody>
+                </Table>
 
                 {!isLoading && (
                     <div className="px-4 pb-4">
@@ -453,17 +452,17 @@ export default function InsumosView() {
                     <div>
                         <label className="label">Imagen del insumo</label>
                         <div onClick={() => createFileRef.current?.click()}
-                             className="border-2 border-dashed border-ink-500 rounded-lg p-4 text-center
-                                        cursor-pointer hover:border-dorado-500 transition-colors group">
+                             className="border-2 border-dashed border-border rounded-lg p-4 text-center
+                                        cursor-pointer hover:border-primary/50 transition-colors group">
                             {createPreview ? (
                                 <img src={createPreview} alt="preview"
                                      className="mx-auto h-24 object-contain rounded" />
                             ) : (
-                                <div className="flex flex-col items-center gap-2 text-ink-200
-                                                group-hover:text-dorado-400 transition-colors">
+                                <div className="flex flex-col items-center gap-2 text-muted-foreground
+                                                group-hover:text-primary transition-colors">
                                     <Upload size={22} />
                                     <span className="text-xs">Haz clic para subir imagen</span>
-                                    <span className="text-[11px] text-ink-300">JPG, PNG, WEBP — máx. 5MB</span>
+                                    <span className="text-[11px] text-muted-foreground">JPG, PNG, WEBP — máx. 5MB</span>
                                 </div>
                             )}
                             <input ref={createFileRef} type="file"
@@ -473,7 +472,7 @@ export default function InsumosView() {
                         {createPreview && (
                             <button type="button"
                                     onClick={() => { setCreateImagen(null); setCreatePreview(null); }}
-                                    className="mt-1 text-xs text-ink-300 hover:text-red-400 transition-colors">
+                                    className="mt-1 text-xs text-muted-foreground hover:text-destructive transition-colors">
                                 Quitar imagen
                             </button>
                         )}
@@ -481,15 +480,15 @@ export default function InsumosView() {
 
                     <InsumoFormFields form={createForm} idPrefix="create" />
 
-                    <div className="flex justify-end gap-2 pt-2 border-t border-ink-600">
-                        <button type="button" onClick={closeCreate} className="btn-secondary">
+                    <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                        <Button type="button" variant="outline" onClick={closeCreate}>
                             Cancelar
-                        </button>
-                        <button type="submit" disabled={createForm.formState.isSubmitting} className="btn-primary">
+                        </Button>
+                        <Button type="submit" disabled={createForm.formState.isSubmitting} className="hover:scale-[1.02] transition-transform">
                             {createForm.formState.isSubmitting
                                 ? <><Loader2 size={14} className="animate-spin" /> Creando...</>
                                 : 'Crear insumo'}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -506,17 +505,17 @@ export default function InsumosView() {
                     <div>
                         <label className="label">Imagen del insumo</label>
                         <div onClick={() => editFileRef.current?.click()}
-                             className="border-2 border-dashed border-ink-500 rounded-lg p-4 text-center
-                                        cursor-pointer hover:border-dorado-500 transition-colors group">
+                             className="border-2 border-dashed border-border rounded-lg p-4 text-center
+                                        cursor-pointer hover:border-primary/50 transition-colors group">
                             {editPreview ? (
                                 <img src={editPreview} alt="preview"
                                      className="mx-auto h-24 object-contain rounded" />
                             ) : (
-                                <div className="flex flex-col items-center gap-2 text-ink-200
-                                                group-hover:text-dorado-400 transition-colors">
+                                <div className="flex flex-col items-center gap-2 text-muted-foreground
+                                                group-hover:text-primary transition-colors">
                                     <Upload size={22} />
                                     <span className="text-xs">Haz clic para cambiar imagen</span>
-                                    <span className="text-[11px] text-ink-300">JPG, PNG, WEBP — máx. 5MB</span>
+                                    <span className="text-[11px] text-muted-foreground">JPG, PNG, WEBP — máx. 5MB</span>
                                 </div>
                             )}
                             <input ref={editFileRef} type="file"
@@ -526,7 +525,7 @@ export default function InsumosView() {
                         {editPreview && (
                             <button type="button"
                                     onClick={() => { setEditImagen(null); setEditPreview(null); }}
-                                    className="mt-1 text-xs text-ink-300 hover:text-red-400 transition-colors">
+                                    className="mt-1 text-xs text-muted-foreground hover:text-destructive transition-colors">
                                 Quitar imagen
                             </button>
                         )}
@@ -534,15 +533,15 @@ export default function InsumosView() {
 
                     <InsumoFormFields form={editForm} idPrefix="edit" />
 
-                    <div className="flex justify-end gap-2 pt-2 border-t border-ink-600">
-                        <button type="button" onClick={closeEdit} className="btn-secondary">
+                    <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                        <Button type="button" variant="outline" onClick={closeEdit}>
                             Cancelar
-                        </button>
-                        <button type="submit" disabled={editForm.formState.isSubmitting} className="btn-primary">
+                        </Button>
+                        <Button type="submit" disabled={editForm.formState.isSubmitting} className="hover:scale-[1.02] transition-transform">
                             {editForm.formState.isSubmitting
                                 ? <><Loader2 size={14} className="animate-spin" /> Guardando...</>
                                 : 'Guardar cambios'}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -652,12 +651,12 @@ function InsumoFormFields({ form, idPrefix }: { form: FormInstance; idPrefix: st
             </div>
 
             {/* Activo */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-ink-700/50 border border-ink-600">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border">
                 <input type="checkbox" id={`${idPrefix}-activo`}
                        {...register('activo')}
-                       className="w-4 h-4 rounded cursor-pointer accent-dorado-500" />
+                       className="w-4 h-4 rounded cursor-pointer accent-primary" />
                 <label htmlFor={`${idPrefix}-activo`}
-                       className="text-sm text-cream cursor-pointer select-none">
+                       className="text-sm text-foreground cursor-pointer select-none">
                     Insumo activo (disponible para uso en producción)
                 </label>
             </div>

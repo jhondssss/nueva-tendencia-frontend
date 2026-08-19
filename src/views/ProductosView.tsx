@@ -51,7 +51,7 @@ export default function ProductosView() {
                 <div className="flex gap-2">
                     {alertas.length > 0 && (
                         <button onClick={() => setShowAlertas(v => !v)}
-                                className={clsx('btn-secondary', showAlertas && 'border-red-600 text-red-400')}>
+                                className={clsx('btn-secondary', showAlertas && 'border-destructive/50 text-destructive')}>
                             <AlertTriangle size={14} /> {alertas.length} alertas
                         </button>
                     )}
@@ -64,9 +64,9 @@ export default function ProductosView() {
             </div>
 
             {showAlertas && alertas.length > 0 && (
-                <div className="bg-red-950/40 border border-red-700/50 rounded-lg p-4 flex items-center gap-3">
-                    <AlertTriangle size={16} className="text-red-400 flex-shrink-0" />
-                    <p className="text-sm text-red-300">
+                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 flex items-center gap-3">
+                    <AlertTriangle size={16} className="text-destructive flex-shrink-0" />
+                    <p className="text-sm text-destructive">
                         <strong>{alertas.length} productos</strong> tienen stock por debajo del nivel mínimo.
                     </p>
                 </div>
@@ -74,7 +74,7 @@ export default function ProductosView() {
 
             <div className="flex flex-wrap gap-3 items-center">
                 <div className="relative">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-200" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input value={search} onChange={e => setSearch(e.target.value)}
                            placeholder="Buscar modelo o marca..." className="input pl-9 w-72" />
                 </div>
@@ -90,10 +90,10 @@ export default function ProductosView() {
                     <button key={value}
                             onClick={() => setFilterActivo(value)}
                             className={clsx(
-                                'flex items-center gap-2 px-3 py-1.5 rounded border text-xs transition-all',
+                                'flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all duration-200',
                                 filterActivo === value
-                                    ? 'bg-ink-600 border-ink-400 text-cream'
-                                    : 'bg-ink-800 border-ink-600 text-ink-100 hover:border-ink-400',
+                                    ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                                    : 'bg-card/50 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground hover:scale-[1.02]',
                             )}>
                         {label} <span className="font-mono">{count}</span>
                     </button>
