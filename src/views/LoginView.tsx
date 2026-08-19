@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { authApi } from '@/api/services';
 import { Button } from '@/components/ui/button';
 import Modal from '@/components/shared/Modal';
+import LeatherSeal from '@/components/shared/LeatherSeal';
 import toast from 'react-hot-toast';
 
 const schema = z.object({
@@ -63,33 +64,16 @@ export default function LoginView() {
                 <div className="absolute -top-40 -right-40 w-[28rem] h-[28rem] rounded-full bg-dorado-400/15 blur-3xl" />
                 <div className="absolute -bottom-40 -left-40 w-[28rem] h-[28rem] rounded-full bg-secondary/20 blur-3xl" />
                 {/* Textura tipo cuero: puntos finos */}
-                <div className="absolute inset-0 opacity-[0.05]"
-                     style={{
-                         backgroundImage: 'radial-gradient(#F5EECE 1px, transparent 1px)',
-                         backgroundSize: '22px 22px',
-                     }}
-                />
+                <div className="absolute inset-0 bg-texture-dots text-dorado-100 opacity-[0.05]" />
                 {/* Líneas diagonales sutiles tipo pespunte */}
-                <div className="absolute inset-0 opacity-[0.035]"
-                     style={{
-                         backgroundImage: 'repeating-linear-gradient(45deg, #F5EECE 0px, #F5EECE 1px, transparent 1px, transparent 14px)',
-                     }}
-                />
+                <div className="absolute inset-0 bg-texture-stitch text-dorado-100 opacity-[0.035]" />
             </div>
 
             <div className="w-full max-w-sm relative z-10">
 
                 {/* Sello de marca */}
                 <div className="text-center mb-9">
-                    <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6
-                                     animate-in fade-in zoom-in-50 duration-500">
-                        <div className="absolute inset-0 rounded-full border-2 border-dorado-400/70" />
-                        <div className="absolute inset-[5px] rounded-full border border-dashed border-dorado-300/40" />
-                        <div className="relative w-14 h-14 rounded-full bg-cafe-gradient shadow-glow-cafe
-                                         ring-4 ring-cafe-950/40 flex items-center justify-center">
-                            <span className="font-display font-bold text-dorado-100 text-xl tracking-wide">NT</span>
-                        </div>
-                    </div>
+                    <LeatherSeal size="lg" animated className="mb-6" />
                     <h1 className="font-display text-3xl sm:text-4xl font-bold uppercase tracking-[0.12em]
                                     text-sidebar-foreground mb-3
                                     animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-backwards">

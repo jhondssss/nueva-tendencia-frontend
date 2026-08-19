@@ -6,6 +6,7 @@ import { usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import NTAssistant from '@/components/NTAssistant/NTAssistant';
+import LeatherSeal from '@/components/shared/LeatherSeal';
 import { parseLocalDate } from '@/utils/dates';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -99,21 +100,22 @@ export default function AppLayout() {
 
                 {/* ── Sidebar ───────────────────────────────────────────────── */}
                 <aside className={clsx(
-                    'flex flex-col bg-sidebar border-r border-sidebar-border shadow-sidebar transition-all duration-300',
+                    'relative flex flex-col bg-sidebar border-r border-sidebar-border shadow-sidebar transition-all duration-300',
                     'fixed inset-y-0 left-0 z-30 w-64 md:relative md:z-auto md:translate-x-0',
                     sidebarOpen ? 'translate-x-0 md:w-64' : '-translate-x-full md:w-20',
                 )}>
+                    {/* Textura de cuero, casi imperceptible — mismo motivo del login */}
+                    <div className="absolute inset-0 bg-texture-stitch text-dorado-400 opacity-[0.025] pointer-events-none" />
+
                     {/* Logo */}
                     <div className={clsx(
                         'flex items-center gap-3 px-4 py-5 border-b border-sidebar-border/60',
                         !sidebarOpen && 'justify-center px-0',
                     )}>
-                        <div className="w-8 h-8 rounded-md bg-gradient-to-br from-sidebar-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-glow-sm">
-                            <span className="font-display font-bold text-sidebar-primary-foreground text-sm">NT</span>
-                        </div>
+                        <LeatherSeal size="sm" />
                         {sidebarOpen && (
                             <div className="animate-fade-in min-w-0">
-                                <p className="font-display font-semibold text-sidebar-foreground text-sm leading-tight truncate">Nueva Tendencia</p>
+                                <p className="font-display font-semibold text-sidebar-foreground text-sm leading-tight tracking-wide truncate">Nueva Tendencia</p>
                                 <p className="text-sidebar-foreground/50 text-2xs">Sistema de Gestión</p>
                             </div>
                         )}

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth.store';
 import AppLayout from '@/components/layout/AppLayout';
+import LeatherSeal from '@/components/shared/LeatherSeal';
 
 const LoginView         = lazy(() => import('@/views/LoginView'));
 const DashboardView     = lazy(() => import('@/views/DashboardView'));
@@ -22,8 +23,8 @@ const ResetPasswordView = lazy(() => import('@/views/ResetPasswordView'));
 
 function PageLoader() {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-crema">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-cafe-200 border-t-cafe-700" />
+        <div className="flex min-h-screen items-center justify-center bg-background">
+            <LeatherSeal size="md" pulse />
         </div>
     );
 }

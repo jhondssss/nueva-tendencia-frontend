@@ -165,6 +165,17 @@
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
 
+  /* ── Motivo "sello de cuero" — puntos finos y pespunte diagonal ──
+     Usan currentColor para adaptarse al contexto (fondo oscuro o claro);
+     controlar intensidad con la clase de color de texto + opacity-[]. */
+  .bg-texture-dots {
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .bg-texture-stitch {
+    background-image: repeating-linear-gradient(45deg, currentColor 0px, currentColor 1px, transparent 1px, transparent 14px);
+  }
+
   /* ── Stagger delays para animaciones escalonadas ─────────────── */
   .stagger-1 { animation-delay:   0ms; animation-fill-mode: both; }
   .stagger-2 { animation-delay: 100ms; animation-fill-mode: both; }
