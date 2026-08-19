@@ -3,13 +3,23 @@ import {
     ResponsiveContainer, AreaChart, Area,
     XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts';
-import { Skeleton } from '@/components/shared/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import type { VentaMes } from '@/types';
 
 const MESES_ABR  = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+const CHART_STROKE = 'hsl(var(--chart-1))';
+const GRID_STROKE  = 'hsl(var(--border))';
+const AXIS_TICK    = 'hsl(var(--muted-foreground))';
+const TOOLTIP_STYLE = {
+    contentStyle: { background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6 },
+    labelStyle:   { color: 'hsl(var(--popover-foreground))', fontSize: 12, fontWeight: 600 },
+    itemStyle:    { color: 'hsl(var(--muted-foreground))', fontSize: 12 },
+};
 
 function extractYear(mes: string): number | null {
     const m = mes.match(/\b(20\d{2})\b/);
@@ -81,25 +91,25 @@ export default function GraficoVentas({ ventasPorMes, selectedYear, onYearChange
     if (isOperario) return null;
 
     return (
-        <div className="card p-5">
+        <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
             <div className="flex items-center justify-between mb-5">
-                <h3 className="font-display text-base font-medium text-cafe-950">
+                <h3 className="font-display text-base font-semibold tracking-tight text-foreground">
                     Tendencia de Ventas por Mes
                 </h3>
                 <div className="flex items-center gap-1.5">
                     {availableYears.length > 1
                         ? availableYears.map(y => (
-                            <button key={y} onClick={() => onYearChange(y)}
-                                    className={clsx(
-                                        'px-2.5 py-1 rounded text-xs font-medium transition-colors',
-                                        selectedYear === y
-                                            ? 'bg-cafe-800 text-white'
-                                            : 'bg-crema text-cafe-600 hover:bg-crema-dark border border-surface-border',
-                                    )}>
+                            <Button
+                                key={y}
+                                size="sm"
+                                variant={selectedYear === y ? 'default' : 'outline'}
+                                onClick={() => onYearChange(y)}
+                                className={clsx('h-7 px-2.5 text-xs transition-all duration-200 hover:scale-[1.01]')}
+                            >
                                 {y}
-                            </button>
+                            </Button>
                         ))
-                        : <span className="text-xs text-cafe-400 font-mono">{selectedYear}</span>
+                        : <span className="text-xs text-muted-foreground font-mono">{selectedYear}</span>
                     }
                 </div>
             </div>
@@ -109,23 +119,21 @@ export default function GraficoVentas({ ventasPorMes, selectedYear, onYearChange
                     <ResponsiveContainer width="100%" height={300}>
                         <AreaChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
                             <defs>
-                                <linearGradient id="gradDorado" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%"  stopColor="#C6A75E" stopOpacity={0.22} />
-                                    <stop offset="95%" stopColor="#C6A75E" stopOpacity={0}    />
+                                <linearGradient id="gradPrimary" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%"  stopColor={CHART_STROKE} stopOpacity={0.22} />
+                                    <stop offset="95%" stopColor={CHART_STROKE} stopOpacity={0}    />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#E8DDD4" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
                             <XAxis dataKey="mes"
-                                   tick={{ fill: '#8B5E3C', fontSize: 11 }}
+                                   tick={{ fill: AXIS_TICK, fontSize: 11 }}
                                    axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fill: '#8B5E3C', fontSize: 11 }}
+                            <YAxis tick={{ fill: AXIS_TICK, fontSize: 11 }}
                                    axisLine={false} tickLine={false}
                                    tickFormatter={v => `Bs. ${Number(v).toLocaleString('en-US')}`}
                                    width={92} />
                             <Tooltip
-                                contentStyle={{ background: '#FFFFFF', border: '1px solid #E8DDD4', borderRadius: 6 }}
-                                labelStyle={{ color: '#1C1008', fontSize: 12, fontWeight: 600 }}
-                                itemStyle={{ color: '#4E3020', fontSize: 12 }}
+                                {...TOOLTIP_STYLE}
                                 labelFormatter={label => {
                                     const idx = MESES_ABR.indexOf(String(label));
                                     return idx >= 0 ? `${MESES_FULL[idx]} ${selectedYear}` : String(label);
@@ -136,47 +144,47 @@ export default function GraficoVentas({ ventasPorMes, selectedYear, onYearChange
                                 ]}
                             />
                             <Area type="monotone" dataKey="total"
-                                  stroke="#C6A75E" strokeWidth={2}
-                                  fill="url(#gradDorado)"
-                                  dot={{ fill: '#C6A75E', stroke: '#fff', strokeWidth: 2, r: 4 }}
-                                  activeDot={{ fill: '#8B5E3C', r: 6, strokeWidth: 0 }} />
+                                  stroke={CHART_STROKE} strokeWidth={2}
+                                  fill="url(#gradPrimary)"
+                                  dot={{ fill: CHART_STROKE, stroke: 'hsl(var(--card))', strokeWidth: 2, r: 4 }}
+                                  activeDot={{ fill: 'hsl(var(--chart-2))', r: 6, strokeWidth: 0 }} />
                         </AreaChart>
                     </ResponsiveContainer>
 
-                    <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-surface-border">
+                    <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-border/50">
                         <div className="text-center">
-                            <p className="text-2xs text-cafe-400 uppercase tracking-wider mb-1.5">Mejor mes</p>
+                            <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-1.5">Mejor mes</p>
                             {mejorMes.total > 0 ? (
                                 <>
-                                    <p className="text-sm font-semibold text-cafe-900">
+                                    <p className="text-sm font-semibold text-foreground">
                                         {MESES_FULL[MESES_ABR.indexOf(mejorMes.mes)]}
                                     </p>
-                                    <p className="text-xs font-mono text-dorado-600">
+                                    <p className="text-xs font-mono text-chart-1">
                                         Bs. {mejorMes.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </p>
                                 </>
                             ) : (
-                                <p className="text-xs text-cafe-400">Sin datos</p>
+                                <p className="text-xs text-muted-foreground">Sin datos</p>
                             )}
                         </div>
 
-                        <div className="text-center border-x border-surface-border">
-                            <p className="text-2xs text-cafe-400 uppercase tracking-wider mb-1.5">Promedio mensual</p>
+                        <div className="text-center border-x border-border/50">
+                            <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-1.5">Promedio mensual</p>
                             {promedioMensual > 0 ? (
-                                <p className="text-sm font-mono font-semibold text-cafe-900">
+                                <p className="text-sm font-mono font-semibold text-foreground">
                                     Bs. {promedioMensual.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             ) : (
-                                <p className="text-xs text-cafe-400">Sin datos</p>
+                                <p className="text-xs text-muted-foreground">Sin datos</p>
                             )}
                         </div>
 
                         <div className="text-center">
-                            <p className="text-2xs text-cafe-400 uppercase tracking-wider mb-1.5">Tendencia</p>
+                            <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-1.5">Tendencia</p>
                             {tendencia ? (
                                 <div>
                                     <p className={clsx('text-lg font-bold leading-none',
-                                        tendencia.sube ? 'text-green-600' : 'text-red-500')}>
+                                        tendencia.sube ? 'text-chart-2' : 'text-destructive')}>
                                         {tendencia.sube ? '↑' : '↓'}
                                         {tendencia.pct !== null && (
                                             <span className="text-sm ml-0.5">
@@ -184,10 +192,10 @@ export default function GraficoVentas({ ventasPorMes, selectedYear, onYearChange
                                             </span>
                                         )}
                                     </p>
-                                    <p className="text-2xs text-cafe-400 mt-0.5">vs mes anterior</p>
+                                    <p className="text-2xs text-muted-foreground mt-0.5">vs mes anterior</p>
                                 </div>
                             ) : (
-                                <p className="text-xs text-cafe-400">Sin comparativa</p>
+                                <p className="text-xs text-muted-foreground">Sin comparativa</p>
                             )}
                         </div>
                     </div>

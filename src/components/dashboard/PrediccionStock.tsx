@@ -1,4 +1,7 @@
-import { Skeleton } from '@/components/shared/Skeleton';
+import { ShieldCheck } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import type { PrediccionStock as PrediccionStockItem } from '@/types';
 
 interface Props {
@@ -8,17 +11,17 @@ interface Props {
 
 function SemanasBar({ semanas }: { semanas: number | null }) {
     if (semanas === null) {
-        return <span className="text-cafe-300 font-mono text-xs">Sin historial</span>;
+        return <span className="text-muted-foreground/60 font-mono text-xs">Sin historial</span>;
     }
     const n = Number(semanas);
     const pct = Math.min((n / 20) * 100, 100);
-    const barColor = n <= 2 ? '#C04530' : n <= 4 ? '#C6A75E' : '#8B5E3C';
+    const barColor = n <= 2 ? 'bg-destructive' : n <= 4 ? 'bg-chart-3' : 'bg-chart-2';
     return (
         <div className="flex items-center gap-2 justify-end">
-            <div className="w-14 h-1.5 bg-crema-dark rounded-full overflow-hidden">
-                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor }} />
+            <div className="w-14 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
             </div>
-            <span className="font-mono text-xs text-cafe-600 min-w-[44px] text-right">
+            <span className="font-mono text-xs text-muted-foreground min-w-[44px] text-right">
                 {n.toFixed(1)} sem
             </span>
         </div>
@@ -27,84 +30,81 @@ function SemanasBar({ semanas }: { semanas: number | null }) {
 
 function EstadoBadge({ semanas }: { semanas: number | null }) {
     if (semanas === null) {
-        return (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-cafe-50 text-cafe-400 border border-cafe-200">
-                Sin historial
-            </span>
-        );
+        return <Badge variant="outline" className="text-muted-foreground border-border font-medium">Sin historial</Badge>;
     }
     const n = Number(semanas);
     if (n <= 2) {
         return (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200 animate-pulse">
+            <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10 font-medium animate-pulse">
                 Crítico
-            </span>
+            </Badge>
         );
     }
     if (n <= 4) {
         return (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-dorado-500/10 text-dorado-700 border border-dorado-300">
+            <Badge variant="outline" className="text-chart-3 border-chart-3/30 bg-chart-3/10 font-medium">
                 Bajo
-            </span>
+            </Badge>
         );
     }
     return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-cafe-100 text-cafe-700 border border-cafe-300">
+        <Badge variant="outline" className="text-chart-2 border-chart-2/30 bg-chart-2/10 font-medium">
             Normal
-        </span>
+        </Badge>
     );
 }
 
 export default function PrediccionStock({ prediccionStock, isLoading }: Props) {
     return (
-        <div className="card p-5">
-            <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Predicción de Stock</h3>
+        <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
+            <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Predicción de Stock</h3>
 
             {isLoading ? (
                 <div className="space-y-2">
                     {Array.from({ length: 4 }).map((_, i) => (
-                        <Skeleton key={i} className="h-9 w-full rounded" />
+                        <Skeleton key={i} className="h-9 w-full rounded-md" />
                     ))}
                 </div>
             ) : prediccionStock.length === 0 ? (
-                <p className="text-cafe-400 text-sm">Todos los productos tienen stock saludable.</p>
+                <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                    <ShieldCheck size={28} className="text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">Todos los productos tienen stock saludable.</p>
+                </div>
             ) : (
                 <>
-                    <div className="overflow-x-auto">
-                        <table className="table w-full">
-                            <thead>
-                                <tr>
-                                    <th className="text-left">Producto</th>
-                                    <th className="text-right">Stock actual</th>
-                                    <th className="text-right">Nivel mínimo</th>
-                                    <th className="text-right">Demanda mensual</th>
-                                    <th className="text-right">Semanas restantes</th>
-                                    <th className="text-center">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {prediccionStock.map(p => {
-                                    const critico = p.semanas_restantes !== null && Number(p.semanas_restantes) <= 2;
-                                    return (
-                                        <tr key={p.id} className={critico ? 'bg-red-50' : undefined}>
-                                            <td className="text-cafe-950 font-medium">{p.nombre}</td>
-                                            <td className="text-right font-mono text-cafe-950">{p.stock}</td>
-                                            <td className="text-right font-mono text-cafe-500">{p.nivel_minimo}</td>
-                                            <td className="text-right font-mono text-cafe-600">{p.demanda_mensual}</td>
-                                            <td className="text-right font-mono text-cafe-600">
-                                                <SemanasBar semanas={p.semanas_restantes} />
-                                            </td>
-                                            <td className="text-center">
-                                                <EstadoBadge semanas={p.semanas_restantes} />
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Producto</TableHead>
+                                <TableHead className="text-right">Stock actual</TableHead>
+                                <TableHead className="text-right">Nivel mínimo</TableHead>
+                                <TableHead className="text-right">Demanda mensual</TableHead>
+                                <TableHead className="text-right">Semanas restantes</TableHead>
+                                <TableHead className="text-center">Estado</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {prediccionStock.map(p => {
+                                const critico = p.semanas_restantes !== null && Number(p.semanas_restantes) <= 2;
+                                return (
+                                    <TableRow key={p.id} className={critico ? 'bg-destructive/5' : undefined}>
+                                        <TableCell className="text-foreground font-medium">{p.nombre}</TableCell>
+                                        <TableCell className="text-right font-mono text-foreground">{p.stock}</TableCell>
+                                        <TableCell className="text-right font-mono text-muted-foreground">{p.nivel_minimo}</TableCell>
+                                        <TableCell className="text-right font-mono text-muted-foreground">{p.demanda_mensual}</TableCell>
+                                        <TableCell className="text-right font-mono text-muted-foreground">
+                                            <SemanasBar semanas={p.semanas_restantes} />
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <EstadoBadge semanas={p.semanas_restantes} />
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
 
-                    <p className="mt-3 text-xs text-cafe-400 italic">
+                    <p className="mt-3 text-xs text-muted-foreground italic">
                         La predicción se calcula en base al historial de pedidos.
                         Productos sin pedidos muestran "Sin historial".
                     </p>

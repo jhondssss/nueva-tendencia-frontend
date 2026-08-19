@@ -3,10 +3,12 @@ import {
     ResponsiveContainer, Tooltip, FunnelChart, Funnel, LabelList, Cell,
     BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Legend,
 } from 'recharts';
-import { Clock, Scissors, Hammer, Layers, Package, CheckCircle } from 'lucide-react';
+import { Clock, Scissors, Hammer, Layers, Package, CheckCircle, PieChart as PieChartIcon, GitBranch, Inbox } from 'lucide-react';
 import { useDashboardStore, usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
-import { Skeleton } from '@/components/shared/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
+import StatusBadge from '@/components/shared/StatusBadge';
+import type { EstadoPedido } from '@/types';
 import KpiCards from '@/components/dashboard/KpiCards';
 import GraficoVentas from '@/components/dashboard/GraficoVentas';
 import TopProductos from '@/components/dashboard/TopProductos';
@@ -14,21 +16,13 @@ import PrediccionStock from '@/components/dashboard/PrediccionStock';
 import PedidosVencidos from '@/components/dashboard/PedidosVencidos';
 
 // ── Actividad reciente ──────────────────────────────────────────────────────
-const ACTIVITY_ICON: Record<string, { icon: React.ElementType; iconClass: string; bgClass: string }> = {
-    Pendiente: { icon: Clock,        iconClass: 'text-dorado-600',  bgClass: 'bg-dorado-500/10 border-dorado-300' },
-    Cortado:   { icon: Scissors,     iconClass: 'text-cafe-600',    bgClass: 'bg-cafe-100 border-cafe-300'        },
-    Aparado:   { icon: Hammer,       iconClass: 'text-cafe-700',    bgClass: 'bg-cafe-200/60 border-cafe-300'     },
-    Solado:    { icon: Layers,       iconClass: 'text-cafe-800',    bgClass: 'bg-cafe-200 border-cafe-400'        },
-    Empaque:   { icon: Package,      iconClass: 'text-dorado-700',  bgClass: 'bg-dorado-500/10 border-dorado-300' },
-    Terminado: { icon: CheckCircle,  iconClass: 'text-cafe-900',    bgClass: 'bg-cafe-100 border-cafe-400'        },
-};
-const ACTIVITY_BADGE: Record<string, string> = {
-    Pendiente: 'bg-dorado-500/10 text-dorado-700 border-dorado-300',
-    Cortado:   'bg-cafe-100 text-cafe-700 border-cafe-300',
-    Aparado:   'bg-cafe-200/60 text-cafe-800 border-cafe-300',
-    Solado:    'bg-cafe-200 text-cafe-900 border-cafe-400',
-    Empaque:   'bg-dorado-500/10 text-dorado-800 border-dorado-400',
-    Terminado: 'bg-cafe-800 text-crema border-cafe-900',
+const ACTIVITY_ICON: Record<string, { icon: React.ElementType; text: string; bg: string }> = {
+    Pendiente: { icon: Clock,       text: 'text-chart-3',   bg: 'bg-chart-3/10 border-chart-3/30'     },
+    Cortado:   { icon: Scissors,    text: 'text-chart-4',   bg: 'bg-chart-4/10 border-chart-4/30'     },
+    Aparado:   { icon: Hammer,      text: 'text-chart-1',   bg: 'bg-chart-1/10 border-chart-1/30'     },
+    Solado:    { icon: Layers,      text: 'text-chart-5',   bg: 'bg-chart-5/10 border-chart-5/30'     },
+    Empaque:   { icon: Package,     text: 'text-chart-2',   bg: 'bg-chart-2/10 border-chart-2/30'     },
+    Terminado: { icon: CheckCircle, text: 'text-secondary', bg: 'bg-secondary/10 border-secondary/30' },
 };
 function formatFechaBO(iso: string) {
     return new Date(iso).toLocaleString('es-BO', {
@@ -40,18 +34,26 @@ function formatFechaBO(iso: string) {
     });
 }
 
+// Colores atados a los CSS custom properties del tema (--chart-1..5, --secondary)
+// para que el pipeline Pendiente→Terminado use la misma paleta en todo el dashboard.
 const STATUS_COLORS: Record<string, string> = {
-    Pendiente: '#C6A75E', Cortado: '#9A6B1A', Aparado: '#8B5E3C', Solado: '#6B4020', Empaque: '#4A2810', Terminado: '#2C1810',
+    Pendiente: 'hsl(var(--chart-3))', Cortado: 'hsl(var(--chart-4))', Aparado: 'hsl(var(--chart-1))',
+    Solado: 'hsl(var(--chart-5))', Empaque: 'hsl(var(--chart-2))', Terminado: 'hsl(var(--secondary))',
 };
-const FUNNEL_COLORS = ['#C6A75E', '#9A6B1A', '#8B5E3C', '#6B4020', '#4A2810', '#2C1810'];
+const FUNNEL_COLORS = [
+    'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-1))',
+    'hsl(var(--chart-5))', 'hsl(var(--chart-2))', 'hsl(var(--secondary))',
+];
 const MESES_ABR_DASH = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const CAT_COLORS     = ['#2C1810', '#8B5E3C', '#C6A75E'];
+const CAT_COLORS     = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
 const CAT_LABELS: Record<string, string> = { adulto: 'Adulto', juvenil: 'Juvenil', nino: 'Niño' };
 const TOOLTIP_STYLE = {
-    contentStyle: { background: '#FFFFFF', border: '1px solid #E8DDD4', borderRadius: 6 },
-    labelStyle:   { color: '#1C1008', fontSize: 12 },
-    itemStyle:    { color: '#4E3020', fontSize: 12 },
+    contentStyle: { background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6 },
+    labelStyle:   { color: 'hsl(var(--popover-foreground))', fontSize: 12 },
+    itemStyle:    { color: 'hsl(var(--muted-foreground))', fontSize: 12 },
 };
+const GRID_STROKE = 'hsl(var(--border))';
+const AXIS_TICK   = 'hsl(var(--muted-foreground))';
 
 // ── SVG Donut puro ──────────────────────────────────────────────────────────
 const CX = 90, CY = 90, R_OUT = 80, R_IN = 50;
@@ -88,7 +90,7 @@ function DonutChart({ data }: { data: { estado: string; cantidad: number }[] }) 
     const slices = data.map(d => {
         const sweep = (d.cantidad / total) * 360;
         const path = slicePath(currentAngle, currentAngle + sweep);
-        const result = { ...d, path, color: STATUS_COLORS[d.estado] ?? '#C6A75E' };
+        const result = { ...d, path, color: STATUS_COLORS[d.estado] ?? STATUS_COLORS.Pendiente };
         currentAngle += sweep;
         return result;
     });
@@ -99,14 +101,23 @@ function DonutChart({ data }: { data: { estado: string; cantidad: number }[] }) 
                 <path key={s.estado} d={s.path} fill={s.color} />
             ))}
             <text x={CX} y={CY - 6} textAnchor="middle" fontSize={22} fontWeight={600}
-                  fontFamily="'Playfair Display', Georgia, serif" fill="#1C1008">
+                  fontFamily="'Playfair Display', Georgia, serif" className="fill-foreground">
                 {total}
             </text>
             <text x={CX} y={CY + 12} textAnchor="middle" fontSize={9} fontFamily="'DM Sans', system-ui, sans-serif"
-                  fill="#8B5E3C" letterSpacing="0.08em">
+                  className="fill-muted-foreground" letterSpacing="0.08em">
                 PEDIDOS
             </text>
         </svg>
+    );
+}
+
+function EmptyChartState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center h-48 gap-2 text-center">
+            <Icon size={26} className="text-muted-foreground/50" />
+            <p className="text-muted-foreground text-sm">{message}</p>
+        </div>
     );
 }
 
@@ -149,17 +160,16 @@ export default function DashboardView() {
         categoriasData.reduce((s, d) => s + d.value, 0),
     [categoriasData]);
     useEffect(() => { document.title = 'Dashboard | NT'; }, []);
-    useEffect(() => { console.log('[Dashboard] ordersStatus:', ordersStatus); }, [ordersStatus]);
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="page-header">
+            <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="page-title">Centro de Mando</h1>
-                    <p className="page-subtitle">Resumen operativo en tiempo real</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Centro de Mando</h1>
+                    <p className="text-muted-foreground text-sm mt-0.5">Resumen operativo en tiempo real</p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-cafe-500">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
                     Sistema activo
                 </div>
             </div>
@@ -169,12 +179,12 @@ export default function DashboardView() {
             {!isLoading && <PedidosVencidos pedidosVencidos={proximosAEntregar} />}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="card p-5">
-                    <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Estado de Pedidos</h3>
+                <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
+                    <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Estado de Pedidos</h3>
                     {isLoading ? (
                         <Skeleton className="h-48 w-full rounded-lg" />
                     ) : ordersStatus.length === 0 ? (
-                        <div className="flex items-center justify-center h-48 text-cafe-400 text-sm">Sin datos disponibles</div>
+                        <EmptyChartState icon={PieChartIcon} message="Sin datos disponibles" />
                     ) : (
                         <div className="flex items-center gap-4">
                             <div style={{ flexShrink: 0 }}>
@@ -186,11 +196,11 @@ export default function DashboardView() {
                                         <div className="flex items-center gap-2">
                                             <span
                                                 className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-                                                style={{ background: STATUS_COLORS[estado] ?? '#C6A75E' }}
+                                                style={{ background: STATUS_COLORS[estado] ?? STATUS_COLORS.Pendiente }}
                                             />
-                                            <span className="text-cafe-700">{estado}</span>
+                                            <span className="text-muted-foreground">{estado}</span>
                                         </div>
-                                        <span className="font-mono font-medium text-cafe-950">{cantidad}</span>
+                                        <span className="font-mono font-medium text-foreground">{cantidad}</span>
                                     </div>
                                 ))}
                             </div>
@@ -198,10 +208,10 @@ export default function DashboardView() {
                     )}
                 </div>
 
-                <div className="card p-5">
-                    <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Embudo de Producción</h3>
+                <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
+                    <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Embudo de Producción</h3>
                     {isLoading ? <Skeleton className="h-48 w-full rounded-lg" /> : productionFunnel.length === 0 ? (
-                        <div className="flex items-center justify-center h-48 text-cafe-400 text-sm">Sin datos disponibles</div>
+                        <EmptyChartState icon={GitBranch} message="Sin datos disponibles" />
                     ) : (
                         <ResponsiveContainer width="100%" height={180}>
                             <FunnelChart>
@@ -210,7 +220,7 @@ export default function DashboardView() {
                                     {productionFunnel.map((_, i) => (
                                         <Cell key={i} fill={FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
                                     ))}
-                                    <LabelList position="center" fill="#F7EDE4" stroke="none" dataKey="etapa"
+                                    <LabelList position="center" fill="hsl(var(--primary-foreground))" stroke="none" dataKey="etapa"
                                                style={{ fontSize: 11, fontFamily: 'DM Sans', fontWeight: 500 }} />
                                 </Funnel>
                             </FunnelChart>
@@ -222,37 +232,37 @@ export default function DashboardView() {
             {isAdmin && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* BarChart — Pedidos por mes */}
-                    <div className="card p-5">
-                        <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Pedidos por Mes</h3>
+                    <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
+                        <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Pedidos por Mes</h3>
                         {isLoading ? (
                             <Skeleton className="h-52 w-full rounded-lg" />
                         ) : barData.every(d => d.total === 0) ? (
-                            <div className="flex items-center justify-center h-52 text-cafe-400 text-sm">Sin datos disponibles</div>
+                            <EmptyChartState icon={Package} message="Sin datos disponibles" />
                         ) : (
                             <ResponsiveContainer width="100%" height={200}>
                                 <BarChart data={barData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#E8DDD4" vertical={false} />
-                                    <XAxis dataKey="mes" tick={{ fill: '#8B5E3C', fontSize: 11 }}
+                                    <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
+                                    <XAxis dataKey="mes" tick={{ fill: AXIS_TICK, fontSize: 11 }}
                                            axisLine={false} tickLine={false} />
-                                    <YAxis tick={{ fill: '#8B5E3C', fontSize: 11 }}
+                                    <YAxis tick={{ fill: AXIS_TICK, fontSize: 11 }}
                                            axisLine={false} tickLine={false} allowDecimals={false} />
                                     <Tooltip
                                         {...TOOLTIP_STYLE}
                                         formatter={(v) => [v, 'Pedidos']}
                                     />
-                                    <Bar dataKey="total" fill="#C6A75E" radius={[4, 4, 0, 0]} maxBarSize={36} />
+                                    <Bar dataKey="total" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={36} />
                                 </BarChart>
                             </ResponsiveContainer>
                         )}
                     </div>
 
                     {/* PieChart — Producción por categoría */}
-                    <div className="card p-5">
-                        <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Producción por Categoría</h3>
+                    <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
+                        <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Producción por Categoría</h3>
                         {isLoading ? (
                             <Skeleton className="h-52 w-full rounded-lg" />
                         ) : categoriasData.length === 0 ? (
-                            <div className="flex items-center justify-center h-52 text-cafe-400 text-sm">Sin datos disponibles</div>
+                            <EmptyChartState icon={PieChartIcon} message="Sin datos disponibles" />
                         ) : (
                             <ResponsiveContainer width="100%" height={200}>
                                 <PieChart>
@@ -263,9 +273,7 @@ export default function DashboardView() {
                                         ))}
                                     </Pie>
                                     <Tooltip
-                                        contentStyle={{ background: '#FFFFFF', border: '1px solid #E8DDD4', borderRadius: 6 }}
-                                        labelStyle={{ color: '#1C1008', fontSize: 12 }}
-                                        itemStyle={{ color: '#4E3020', fontSize: 12 }}
+                                        {...TOOLTIP_STYLE}
                                         formatter={(value, name) => {
                                             const pct = totalCategorias > 0
                                                 ? ((Number(value) / totalCategorias) * 100).toFixed(1)
@@ -298,51 +306,53 @@ export default function DashboardView() {
 
             <PrediccionStock prediccionStock={prediccionStock} isLoading={isLoading} />
 
-            {!isOperario && <div className="card p-5">
-                <h3 className="font-display text-base font-medium text-cafe-950 mb-4">Actividad Reciente</h3>
-                {isLoading ? (
-                    <div className="space-y-3">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i} className="flex gap-3">
-                                <div className="w-8 h-8 rounded-full bg-crema-dark animate-pulse" />
-                                <div className="flex-1 space-y-1">
-                                    <div className="h-3 w-3/4 bg-crema-dark rounded animate-pulse" />
-                                    <div className="h-3 w-1/3 bg-crema-dark rounded animate-pulse" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : recentActivity.length === 0 ? (
-                    <p className="text-cafe-400 text-sm">No hay actividad reciente</p>
-                ) : (
-                    <div className="space-y-3">
-                        {recentActivity.map(act => {
-                            const cfg = ACTIVITY_ICON[act.estado] ?? ACTIVITY_ICON['Pendiente'];
-                            const IconComp = cfg.icon;
-                            const badgeCls = ACTIVITY_BADGE[act.estado] ?? ACTIVITY_BADGE['Pendiente'];
-                            return (
-                                <div key={act.id} className="flex items-start gap-3">
-                                    <div className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bgClass}`}>
-                                        <IconComp size={13} className={cfg.iconClass} />
+            {!isOperario && (
+                <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
+                    <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Actividad Reciente</h3>
+                    {isLoading ? (
+                        <div className="space-y-3">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="flex gap-3">
+                                    <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                                    <div className="flex-1 space-y-1.5">
+                                        <Skeleton className="h-3 w-3/4" />
+                                        <Skeleton className="h-3 w-1/3" />
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-cafe-900 leading-snug">{act.descripcion}</p>
-                                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium border ${badgeCls}`}>
-                                                {act.estado}
-                                            </span>
-                                            {act.cliente && (
-                                                <span className="text-xs text-cafe-500 truncate">{act.cliente}</span>
-                                            )}
-                                            <span className="text-xs text-cafe-400 ml-auto">{formatFechaBO(act.fecha)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : recentActivity.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
+                            <Inbox size={26} className="text-muted-foreground/50" />
+                            <p className="text-muted-foreground text-sm">No hay actividad reciente</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {recentActivity.map(act => {
+                                const cfg = ACTIVITY_ICON[act.estado] ?? ACTIVITY_ICON['Pendiente'];
+                                const IconComp = cfg.icon;
+                                return (
+                                    <div key={act.id} className="flex items-start gap-3">
+                                        <div className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bg}`}>
+                                            <IconComp size={13} className={cfg.text} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm text-foreground leading-snug">{act.descripcion}</p>
+                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                <StatusBadge estado={act.estado as EstadoPedido} size="sm" />
+                                                {act.cliente && (
+                                                    <span className="text-xs text-muted-foreground truncate">{act.cliente}</span>
+                                                )}
+                                                <span className="text-xs text-muted-foreground/70 ml-auto">{formatFechaBO(act.fecha)}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>}
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

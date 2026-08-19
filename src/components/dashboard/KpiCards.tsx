@@ -1,8 +1,19 @@
 import { TrendingUp, Package, Package2, AlertTriangle, Users } from 'lucide-react';
-import { KpiSkeleton } from '@/components/shared/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import type { DashboardKpis } from '@/types';
+
+type Accent = 'chart-1' | 'chart-2' | 'chart-3' | 'chart-4' | 'destructive';
+
+const ACCENT: Record<Accent, { text: string; bg: string; border: string }> = {
+    'chart-1':     { text: 'text-chart-1',    bg: 'bg-chart-1/10',    border: 'border-t-chart-1' },
+    'chart-2':     { text: 'text-chart-2',    bg: 'bg-chart-2/10',    border: 'border-t-chart-2' },
+    'chart-3':     { text: 'text-chart-3',    bg: 'bg-chart-3/10',    border: 'border-t-chart-3' },
+    'chart-4':     { text: 'text-chart-4',    bg: 'bg-chart-4/10',    border: 'border-t-chart-4' },
+    'destructive': { text: 'text-destructive', bg: 'bg-destructive/10', border: 'border-t-destructive' },
+};
 
 interface DetailLine {
     label: string;
@@ -13,54 +24,67 @@ interface KpiCardProps {
     label:        string;
     value:        string | number;
     icon:         React.ElementType;
-    color:        string;
-    bg:           string;
+    accent:       Accent;
     trend:        string;
-    accentColor:  string;
     alert?:       boolean;
     sub?:         string;
-    valueColor?:  string;
     financiero?:  boolean;
     className?:   string;
     detailLines?: DetailLine[];
 }
 
-function KpiCard({ label, value, icon: Icon, color, bg, trend, accentColor, alert, sub, valueColor, className, detailLines }: KpiCardProps) {
+function KpiCard({ label, value, icon: Icon, accent, trend, alert, sub, className, detailLines }: KpiCardProps) {
+    const a = ACCENT[accent];
     return (
         <div
-            className={clsx('kpi-card relative overflow-hidden', alert && 'border-red-300', className)}
-            style={{ borderTop: `2px solid ${accentColor}` }}
+            className={clsx(
+                'relative overflow-hidden rounded-xl border border-t-2 border-border/50 bg-card/50 p-6',
+                'flex flex-col gap-3 backdrop-blur transition-all duration-200 hover:scale-[1.01]',
+                a.border,
+                alert && 'ring-1 ring-destructive/40',
+                className,
+            )}
         >
             <div className="absolute top-3 right-3">
-                <div className={clsx('w-7 h-7 rounded-lg flex items-center justify-center', bg)}>
-                    <Icon size={15} className={color} />
+                <div className={clsx('w-7 h-7 rounded-lg flex items-center justify-center', a.bg)}>
+                    <Icon size={15} className={a.text} />
                 </div>
             </div>
             <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-cafe-500">{label}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
             </div>
             <div>
-                <p className={clsx('font-display text-2xl font-semibold',
-                    valueColor ?? (alert ? 'text-red-600' : 'text-cafe-950'))}>
+                <p className={clsx('font-display text-2xl font-bold tracking-tight',
+                    alert ? 'text-destructive' : 'text-foreground')}>
                     {value}
                 </p>
-                {sub && <p className="text-xs text-cafe-400 mt-0.5">{sub}</p>}
+                {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
                 {detailLines && detailLines.length > 0 && (
                     <div className="mt-1 space-y-0.5">
                         {detailLines.map(line => (
-                            <p key={line.label} className="text-[11px] text-cafe-500 leading-tight">
-                                <span className="font-medium text-cafe-700">[{line.label}]</span>{' '}
+                            <p key={line.label} className="text-[11px] text-muted-foreground leading-tight">
+                                <span className="font-medium text-foreground">[{line.label}]</span>{' '}
                                 {line.value} {line.label === 'Productos' ? 'requieren reposición' : 'bajo nivel mínimo'}
                             </p>
                         ))}
                     </div>
                 )}
             </div>
-            <div className="w-full h-px bg-surface-border my-2" />
-            <div className="flex items-center gap-1 text-xs text-cafe-500">
-                <TrendingUp size={11} style={{ color: accentColor }} />
+            <Separator />
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <TrendingUp size={11} className={a.text} />
                 {trend}
             </div>
+        </div>
+    );
+}
+
+function KpiCardSkeleton() {
+    return (
+        <div className="rounded-xl border border-border/50 bg-card/50 p-6 flex flex-col gap-3 backdrop-blur">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-3 w-20" />
         </div>
     );
 }
@@ -79,35 +103,29 @@ export default function KpiCards({ kpis, isLoading }: Props) {
         {
             label: 'Ventas Totales',
             value: `Bs. ${Number(kpis.totalVentas ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            icon: TrendingUp, color: 'text-dorado-600', bg: 'bg-dorado-500/10',
+            icon: TrendingUp, accent: 'chart-1',
             trend: 'Ventas del mes',
-            accentColor: '#C6A75E',
             financiero: true,
         },
         {
             label: 'Total Pedidos',
             value: kpis.totalPedidos ?? 0,
-            icon: Users, color: 'text-cafe-600', bg: 'bg-cafe-500/10',
+            icon: Users, accent: 'chart-2',
             trend: 'Con entrega este mes',
-            accentColor: '#8B5E3C',
         },
         {
             label: 'Stock Total',
             value: kpis.itemsInventario ?? 0,
-            icon: Package, color: 'text-cafe-700', bg: 'bg-cafe-200/40',
+            icon: Package, accent: 'chart-4',
             trend: 'Productos activos',
-            accentColor: '#6B4020',
         },
         {
             label: 'Alertas de Stock',
             value: alertasTotal,
             icon: AlertTriangle,
-            color:       alertasTotal === 0 ? 'text-cafe-700' : 'text-red-600',
-            bg:          alertasTotal === 0 ? 'bg-cafe-200/40' : 'bg-red-500/10',
+            accent: alertasTotal > 0 ? 'destructive' : 'chart-4',
             trend: 'Alertas de inventario',
-            accentColor: alertasTotal > 0 ? '#C04530' : '#8B5E3C',
-            alert:       alertasTotal > 0,
-            valueColor:  alertasTotal === 0 ? 'text-cafe-700' : 'text-red-600',
+            alert: alertasTotal > 0,
             detailLines: [
                 { label: 'Productos', value: alertasStock },
                 { label: 'Insumos',   value: alertasInsumos },
@@ -116,9 +134,8 @@ export default function KpiCards({ kpis, isLoading }: Props) {
         ...(kpis.produccionMensual !== undefined ? [{
             label: 'Producción Mensual',
             value: `${kpis.produccionMensual} pares`,
-            icon: Package2, color: 'text-dorado-700', bg: 'bg-dorado-500/10',
+            icon: Package2, accent: 'chart-3' as Accent,
             trend: 'Pares producidos este mes',
-            accentColor: '#9A6B1A',
             financiero: true,
         }] : []),
     ] : [];
@@ -131,7 +148,7 @@ export default function KpiCards({ kpis, isLoading }: Props) {
     return (
         <div className={clsx('grid grid-cols-1 sm:grid-cols-2 gap-4', colsClass)}>
             {isLoading
-                ? Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
+                ? Array.from({ length: 4 }).map((_, i) => <KpiCardSkeleton key={i} />)
                 : cards.map((card, i) => (
                     <KpiCard
                         key={card.label}
