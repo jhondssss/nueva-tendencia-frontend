@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    ResponsiveContainer, Tooltip, FunnelChart, Funnel, LabelList, Cell,
+    ResponsiveContainer, Tooltip, Cell,
     BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Legend,
 } from 'recharts';
 import { Clock, Scissors, Hammer, Layers, Package, CheckCircle, PieChart as PieChartIcon, GitBranch, Inbox } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useDashboardStore, usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import StatusBadge from '@/components/shared/StatusBadge';
-import type { EstadoPedido } from '@/types';
+import type { EstadoPedido, ProductionFunnel } from '@/types';
 import KpiCards from '@/components/dashboard/KpiCards';
 import GraficoVentas from '@/components/dashboard/GraficoVentas';
 import TopProductos from '@/components/dashboard/TopProductos';
@@ -40,10 +40,6 @@ const STATUS_COLORS: Record<string, string> = {
     Pendiente: 'hsl(var(--chart-3))', Cortado: 'hsl(var(--chart-4))', Aparado: 'hsl(var(--chart-1))',
     Solado: 'hsl(var(--chart-5))', Empaque: 'hsl(var(--chart-2))', Terminado: 'hsl(var(--secondary))',
 };
-const FUNNEL_COLORS = [
-    'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-1))',
-    'hsl(var(--chart-5))', 'hsl(var(--chart-2))', 'hsl(var(--secondary))',
-];
 const MESES_ABR_DASH = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const CAT_COLORS     = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
 const CAT_LABELS: Record<string, string> = { adulto: 'Adulto', juvenil: 'Juvenil', nino: 'Niño' };
@@ -112,6 +108,37 @@ function DonutChart({ data }: { data: { estado: string; cantidad: number }[] }) 
     );
 }
 
+// ── Barras horizontales de producción por etapa ─────────────────────────────
+function StageBarChart({ data }: { data: ProductionFunnel[] }) {
+    const max = Math.max(...data.map(d => d.cantidad), 1);
+    const lastIndex = data.length - 1;
+
+    return (
+        <div className="space-y-3">
+            {data.map((d, i) => {
+                const pct = Math.max((d.cantidad / max) * 100, d.cantidad > 0 ? 2 : 0);
+                const isLast = i === lastIndex;
+                return (
+                    <div key={d.etapa} className="flex items-center gap-3">
+                        <span className="w-16 flex-shrink-0 text-xs text-muted-foreground truncate" title={d.etapa}>
+                            {d.etapa}
+                        </span>
+                        <div className="flex-1 h-3 rounded-full bg-muted overflow-hidden">
+                            <div
+                                className={`h-full rounded-full ${isLast ? 'bg-success' : 'bg-primary'}`}
+                                style={{ width: `${pct}%`, transition: 'width 0.3s ease' }}
+                            />
+                        </div>
+                        <span className="w-6 flex-shrink-0 text-right font-mono text-xs font-medium text-foreground">
+                            {d.cantidad}
+                        </span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 function EmptyChartState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
     return (
         <div className="flex flex-col items-center justify-center h-48 gap-2 text-center">
@@ -122,7 +149,7 @@ function EmptyChartState({ icon: Icon, message }: { icon: React.ElementType; mes
 }
 
 export default function DashboardView() {
-    const { kpis, ordersStatus, productionFunnel, recentActivity,
+    const { kpis, ordersStatus, productionFunnel: produccionPorEtapa, recentActivity,
             topProductos, ventasPorMes, prediccionStock, proximosAEntregar, isLoading, fetchAll } = useDashboardStore();
 
     const { isAdmin, isOperario } = useRole();
@@ -209,22 +236,11 @@ export default function DashboardView() {
                 </div>
 
                 <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
-                    <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Embudo de Producción</h3>
-                    {isLoading ? <Skeleton className="h-48 w-full rounded-lg" /> : productionFunnel.length === 0 ? (
+                    <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Producción por Etapa</h3>
+                    {isLoading ? <Skeleton className="h-48 w-full rounded-lg" /> : produccionPorEtapa.length === 0 ? (
                         <EmptyChartState icon={GitBranch} message="Sin datos disponibles" />
                     ) : (
-                        <ResponsiveContainer width="100%" height={180}>
-                            <FunnelChart>
-                                <Tooltip {...TOOLTIP_STYLE} />
-                                <Funnel dataKey="cantidad" data={productionFunnel} isAnimationActive>
-                                    {productionFunnel.map((_, i) => (
-                                        <Cell key={i} fill={FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
-                                    ))}
-                                    <LabelList position="center" fill="hsl(var(--primary-foreground))" stroke="none" dataKey="etapa"
-                                               style={{ fontSize: 11, fontFamily: 'DM Sans', fontWeight: 500 }} />
-                                </Funnel>
-                            </FunnelChart>
-                        </ResponsiveContainer>
+                        <StageBarChart data={produccionPorEtapa} />
                     )}
                 </div>
             </div>
