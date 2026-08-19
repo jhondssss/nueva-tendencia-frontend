@@ -14,14 +14,23 @@ const CATEGORIA_INFO: Record<CategoriaCalzado, { label: string; rango: string }>
     adulto:  { label: 'Adulto',  rango: 'Tallas 37–42' },
 };
 
-/** Acento cromático por categoría — cognac / verde / dorado, coherente con el resto del sistema */
-const CATEGORIA_ACCENT: Record<CategoriaCalzado, string> = {
-    nino:    'chart-1',
-    juvenil: 'chart-2',
-    adulto:  'chart-3',
+/**
+ * Acento cromático por categoría — cognac / verde / dorado, coherente con el resto del sistema.
+ * Clases completas y literales (no interpoladas) para que el JIT de Tailwind las detecte en build-time.
+ */
+const CATEGORIA_ACCENT_TEXT: Record<CategoriaCalzado, string> = {
+    nino:    'text-chart-1',
+    juvenil: 'text-chart-2',
+    adulto:  'text-chart-3',
 };
 
-export { TALLAS_POR_CATEGORIA, CATEGORIA_INFO, CATEGORIA_ACCENT };
+const CATEGORIA_ACCENT_BADGE: Record<CategoriaCalzado, string> = {
+    nino:    'bg-chart-1/10 text-chart-1 border-chart-1/30',
+    juvenil: 'bg-chart-2/10 text-chart-2 border-chart-2/30',
+    adulto:  'bg-chart-3/10 text-chart-3 border-chart-3/30',
+};
+
+export { TALLAS_POR_CATEGORIA, CATEGORIA_INFO, CATEGORIA_ACCENT_TEXT, CATEGORIA_ACCENT_BADGE };
 
 export interface TallaItem { talla: number; cantidad_pares: number; }
 
@@ -38,9 +47,9 @@ interface Props {
 }
 
 export default function TallaInfoBox({ categoria, editable = false, value, onChange, cantidad = 1 }: Props) {
-    const info   = CATEGORIA_INFO[categoria];
-    const accent = CATEGORIA_ACCENT[categoria];
-    const tallas = value ?? defaultTallas(categoria);
+    const info       = CATEGORIA_INFO[categoria];
+    const accentText = CATEGORIA_ACCENT_TEXT[categoria];
+    const tallas     = value ?? defaultTallas(categoria);
     const total  = tallas.reduce((s, t) => s + t.cantidad_pares, 0);
     const ok     = total === 12;
 
@@ -53,7 +62,7 @@ export default function TallaInfoBox({ categoria, editable = false, value, onCha
         return (
             <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
                 <p className="text-xs text-muted-foreground font-medium">
-                    Distribución por docena — <span className={`text-${accent} font-semibold`}>{info.label} ({info.rango})</span>
+                    Distribución por docena — <span className={`${accentText} font-semibold`}>{info.label} ({info.rango})</span>
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                     {tallas.map(({ talla, cantidad_pares }) => (
@@ -71,7 +80,7 @@ export default function TallaInfoBox({ categoria, editable = false, value, onCha
     return (
         <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
             <p className="text-xs text-muted-foreground font-medium">
-                Distribución por docena — <span className={`text-${accent} font-semibold`}>{info.label} ({info.rango})</span>
+                Distribución por docena — <span className={`${accentText} font-semibold`}>{info.label} ({info.rango})</span>
             </p>
             <div className="flex flex-wrap gap-3">
                 {tallas.map(({ talla, cantidad_pares }) => (

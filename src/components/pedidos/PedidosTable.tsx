@@ -11,7 +11,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { clsx } from 'clsx';
 import type { Pedido, EstadoPedido, CategoriaCalzado, UnidadPedido } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
-import { TALLAS_POR_CATEGORIA, CATEGORIA_INFO, CATEGORIA_ACCENT, defaultTallas } from './TallaInfoBox';
+import { TALLAS_POR_CATEGORIA, CATEGORIA_INFO, CATEGORIA_ACCENT_TEXT, CATEGORIA_ACCENT_BADGE, defaultTallas } from './TallaInfoBox';
 import { parseLocalDate } from '@/utils/dates';
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
@@ -34,11 +34,10 @@ function formatCantidad(cantidad: number, unidad: UnidadPedido, cantidadPares?: 
 }
 
 function CategoriaBadge({ categoria }: { categoria: CategoriaCalzado }) {
-    const accent = CATEGORIA_ACCENT[categoria];
     return (
         <Badge
             variant="outline"
-            className={clsx('font-medium', `bg-${accent}/10 text-${accent} border-${accent}/30`)}>
+            className={clsx('font-medium', CATEGORIA_ACCENT_BADGE[categoria])}>
             {CATEGORIA_INFO[categoria].label}
         </Badge>
     );
@@ -216,7 +215,7 @@ export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDe
                                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                                                         Distribución de tallas
                                                         {p.categoria && (
-                                                            <span className={clsx('ml-2 normal-case font-normal', `text-${CATEGORIA_ACCENT[p.categoria]}`)}>
+                                                            <span className={clsx('ml-2 normal-case font-normal', CATEGORIA_ACCENT_TEXT[p.categoria])}>
                                                                 — {CATEGORIA_INFO[p.categoria].label} ({CATEGORIA_INFO[p.categoria].rango})
                                                             </span>
                                                         )}
