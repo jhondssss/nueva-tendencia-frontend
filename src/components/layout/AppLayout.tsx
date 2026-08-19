@@ -1,12 +1,25 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, FlaskConical, CalendarCheck, LogOut, Menu, X, ChevronRight, Bell } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, FlaskConical, CalendarCheck, LogOut, Menu, X, Bell } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import NTAssistant from '@/components/NTAssistant/NTAssistant';
 import { parseLocalDate } from '@/utils/dates';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 const NAV_GROUPS = [
     {
@@ -72,152 +85,185 @@ export default function AppLayout() {
     }, [pedidos]);
 
     const handleLogout = () => { logout(); navigate('/login'); };
+    const userRole = isAdmin ? 'admin' : isOperario ? 'operario' : '';
 
     return (
-        <div className="flex h-screen bg-crema overflow-hidden">
+        <TooltipProvider delayDuration={200}>
+            <div className="flex h-screen bg-background overflow-hidden">
 
-            {/* Mobile overlay */}
-            {sidebarOpen && (
-                <div className="fixed inset-0 bg-black/50 z-20 md:hidden"
-                     onClick={() => setSidebarOpen(false)} />
-            )}
+                {/* Mobile overlay */}
+                {sidebarOpen && (
+                    <div className="fixed inset-0 z-20 bg-foreground/40 backdrop-blur-sm md:hidden"
+                         onClick={() => setSidebarOpen(false)} />
+                )}
 
-            {/* ── Sidebar ───────────────────────────────────────────────── */}
-            <aside className={clsx(
-                'flex flex-col bg-cafe-900 border-r border-cafe-800 shadow-sidebar transition-all duration-300',
-                'fixed inset-y-0 left-0 z-30 w-64 md:relative md:z-auto md:translate-x-0',
-                sidebarOpen ? 'translate-x-0 md:w-64' : '-translate-x-full md:w-20',
-            )}>
-                {/* Logo */}
-                <div className={clsx(
-                    'flex items-center gap-3 px-4 py-5 sidebar-glass',
-                    !sidebarOpen && 'justify-center px-0',
+                {/* ── Sidebar ───────────────────────────────────────────────── */}
+                <aside className={clsx(
+                    'flex flex-col bg-sidebar border-r border-sidebar-border shadow-sidebar transition-all duration-300',
+                    'fixed inset-y-0 left-0 z-30 w-64 md:relative md:z-auto md:translate-x-0',
+                    sidebarOpen ? 'translate-x-0 md:w-64' : '-translate-x-full md:w-20',
                 )}>
-                    <div className="w-8 h-8 rounded bg-cafe-gradient flex items-center justify-center flex-shrink-0 shadow-glow-sm">
-                        <span className="font-display font-bold text-white text-sm">NT</span>
-                    </div>
-                    {sidebarOpen && (
-                        <div className="animate-fade-in">
-                            <p className="font-display font-semibold text-white text-sm leading-tight">Nueva Tendencia</p>
-                            <p className="text-cafe-200 text-2xs">Sistema de Gestión</p>
+                    {/* Logo */}
+                    <div className={clsx(
+                        'flex items-center gap-3 px-4 py-5 border-b border-sidebar-border/60',
+                        !sidebarOpen && 'justify-center px-0',
+                    )}>
+                        <div className="w-8 h-8 rounded-md bg-gradient-to-br from-sidebar-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-glow-sm">
+                            <span className="font-display font-bold text-sidebar-primary-foreground text-sm">NT</span>
                         </div>
-                    )}
-                </div>
-
-                {/* Nav */}
-                <nav className="flex-1 p-2 overflow-y-auto scrollbar-hide space-y-1">
-                    {NAV_GROUPS.map(({ label, items }) => {
-                        const userRole = isAdmin ? 'admin' : isOperario ? 'operario' : '';
-                        const visible = items.filter(item => item.roles.includes(userRole));
-                        if (visible.length === 0) return null;
-                        return (
-                            <div key={label}>
-                                {sidebarOpen && (
-                                    <p className="text-2xs text-cafe-400 uppercase tracking-widest px-3 pt-3 pb-1 select-none">
-                                        {label}
-                                    </p>
-                                )}
-                                {!sidebarOpen && <div className="my-1 border-t border-cafe-700/60" />}
-                                <div className="space-y-0.5">
-                                    {visible.map(({ to, icon: Icon, label: itemLabel, desc }) => (
-                                        <NavLink key={to} to={to}
-                                                 className={({ isActive }) => clsx(
-                                                     'nav-item group relative',
-                                                     !sidebarOpen && 'justify-center px-0 py-3',
-                                                     isActive && 'nav-item-active',
-                                                 )}
-                                                 title={!sidebarOpen ? itemLabel : undefined}
-                                        >
-                                            <Icon size={20} className="flex-shrink-0" />
-                                            {sidebarOpen ? (
-                                                <div className="animate-fade-in min-w-0">
-                                                    <p className="text-sm leading-tight">{itemLabel}</p>
-                                                    <p className="text-2xs text-cafe-300">{desc}</p>
-                                                </div>
-                                            ) : (
-                                                <div className="absolute left-full ml-3 px-2 py-1 bg-cafe-800 border border-cafe-700
-                                                               rounded text-xs text-white whitespace-nowrap opacity-0 pointer-events-none
-                                                               group-hover:opacity-100 transition-opacity z-50">
-                                                    {itemLabel}
-                                                </div>
-                                            )}
-                                            {sidebarOpen && (
-                                                <ChevronRight size={13} className="ml-auto text-cafe-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            )}
-                                        </NavLink>
-                                    ))}
-                                </div>
+                        {sidebarOpen && (
+                            <div className="animate-fade-in min-w-0">
+                                <p className="font-display font-semibold text-sidebar-foreground text-sm leading-tight truncate">Nueva Tendencia</p>
+                                <p className="text-sidebar-foreground/50 text-2xs">Sistema de Gestión</p>
                             </div>
-                        );
-                    })}
-                </nav>
-
-                {/* User */}
-                <div className={clsx('p-3 border-t border-cafe-800', !sidebarOpen && 'flex justify-center')}>
-                    {sidebarOpen ? (
-                        <div className="animate-fade-in">
-                            <div className="flex items-center gap-2 px-2 py-2 rounded bg-cafe-800 mb-2">
-                                <div className="w-7 h-7 rounded bg-dorado-500/20 border border-dorado-500/30
-                               flex items-center justify-center flex-shrink-0">
-                  <span className="text-dorado-400 text-xs font-medium">
-                    {user?.email?.charAt(0).toUpperCase() ?? 'U'}
-                  </span>
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-white truncate">{user?.email}</p>
-                                    {user?.role === 'admin' ? (
-                                        <span className="inline-block text-2xs px-1.5 py-0.5 rounded
-                                               bg-dorado-500/20 text-dorado-400 border border-dorado-500/30 font-medium">
-                                            Admin
-                                        </span>
-                                    ) : (
-                                        <span className="inline-block text-2xs px-1.5 py-0.5 rounded
-                                               bg-amber-900/30 text-amber-300 border border-amber-700/40 font-medium">
-                                            Operario
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            <button onClick={handleLogout}
-                                    className="btn-ghost w-full justify-start text-red-300 hover:bg-red-900/40 hover:text-red-200">
-                                <LogOut size={14} /> Cerrar sesión
-                            </button>
-                        </div>
-                    ) : (
-                        <button onClick={handleLogout} title="Cerrar sesión"
-                                className="p-2 rounded text-red-300 hover:bg-red-900/40 transition-colors">
-                            <LogOut size={16} />
-                        </button>
-                    )}
-                </div>
-            </aside>
-
-            {/* ── Main ──────────────────────────────────────────────────── */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="flex items-center justify-between px-6 py-3 bg-white border-b border-surface-border">
-                    <button onClick={() => setSidebarOpen(v => !v)}
-                            className="p-1.5 rounded text-cafe-500 hover:text-cafe-900 hover:bg-crema-dark transition-colors">
-                        {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
-                    </button>
-                    <button onClick={() => navigate('/dashboard')}
-                            className="relative p-1.5 rounded text-cafe-500 hover:text-cafe-900 hover:bg-crema-dark transition-colors">
-                        <Bell size={17} />
-                        {vencidosCount > 0 && (
-                            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-red-500 rounded-full
-                                             flex items-center justify-center text-white text-2xs font-bold px-0.5">
-                                {vencidosCount > 99 ? '99+' : vencidosCount}
-                            </span>
                         )}
-                    </button>
-                </header>
-                <main className="flex-1 overflow-y-auto p-6">
-                    <div className="page-transition">
-                        <Outlet />
                     </div>
-                </main>
-            </div>
 
-            <NTAssistant />
-        </div>
+                    {/* Nav */}
+                    <nav className="flex-1 p-2 overflow-y-auto scrollbar-hide space-y-1">
+                        {NAV_GROUPS.map(({ label, items }) => {
+                            const visible = items.filter(item => item.roles.includes(userRole));
+                            if (visible.length === 0) return null;
+                            return (
+                                <div key={label}>
+                                    {sidebarOpen && (
+                                        <p className="text-2xs text-sidebar-foreground/40 uppercase tracking-widest px-3 pt-3 pb-1 select-none">
+                                            {label}
+                                        </p>
+                                    )}
+                                    {!sidebarOpen && <Separator className="my-1 bg-sidebar-border/60" />}
+                                    <div className="space-y-0.5">
+                                        {visible.map(({ to, icon: Icon, label: itemLabel, desc }) => {
+                                            const link = (
+                                                <NavLink
+                                                    to={to}
+                                                    className={({ isActive }) => clsx(
+                                                        'group relative flex items-center gap-3 rounded-md text-sm font-medium',
+                                                        'px-3 py-2.5 text-sidebar-foreground/70 transition-all duration-200',
+                                                        'hover:bg-sidebar-accent hover:text-sidebar-foreground',
+                                                        !sidebarOpen && 'justify-center px-0 py-3',
+                                                        isActive && 'bg-sidebar-accent text-sidebar-foreground',
+                                                    )}
+                                                >
+                                                    {({ isActive }) => (
+                                                        <>
+                                                            {isActive && (
+                                                                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-[55%] w-[3px] rounded-r-full bg-sidebar-primary" />
+                                                            )}
+                                                            <Icon size={20} className="flex-shrink-0" />
+                                                            {sidebarOpen && (
+                                                                <div className="animate-fade-in min-w-0">
+                                                                    <p className="text-sm leading-tight truncate">{itemLabel}</p>
+                                                                    <p className="text-2xs text-sidebar-foreground/40 truncate">{desc}</p>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </NavLink>
+                                            );
+                                            return sidebarOpen ? (
+                                                <div key={to}>{link}</div>
+                                            ) : (
+                                                <Tooltip key={to}>
+                                                    <TooltipTrigger asChild>{link}</TooltipTrigger>
+                                                    <TooltipContent side="right">{itemLabel}</TooltipContent>
+                                                </Tooltip>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </nav>
+
+                    {/* User */}
+                    <div className={clsx('p-3 border-t border-sidebar-border', !sidebarOpen && 'flex justify-center')}>
+                        {sidebarOpen ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="w-full flex items-center gap-2 px-2 py-2 rounded-md bg-sidebar-accent/60 transition-all duration-200 hover:bg-sidebar-accent hover:scale-[1.01]">
+                                        <Avatar className="h-7 w-7">
+                                            <AvatarFallback className="bg-sidebar-primary/20 text-sidebar-primary text-xs font-medium">
+                                                {user?.email?.charAt(0).toUpperCase() ?? 'U'}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="min-w-0 text-left flex-1">
+                                            <p className="text-xs text-sidebar-foreground truncate">{user?.email}</p>
+                                            <Badge
+                                                variant={user?.role === 'admin' ? 'default' : 'secondary'}
+                                                className="mt-0.5 px-1.5 py-0 h-4 text-2xs font-medium uppercase tracking-wider"
+                                            >
+                                                {user?.role === 'admin' ? 'Admin' : 'Operario'}
+                                            </Badge>
+                                        </div>
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" className="w-56">
+                                    <DropdownMenuLabel className="truncate font-normal text-muted-foreground">{user?.email}</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={handleLogout}
+                                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                    >
+                                        <LogOut size={14} /> Cerrar sesión
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={handleLogout}
+                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                    >
+                                        <LogOut size={16} />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right">Cerrar sesión</TooltipContent>
+                            </Tooltip>
+                        )}
+                    </div>
+                </aside>
+
+                {/* ── Main ──────────────────────────────────────────────────── */}
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    <header className="flex items-center justify-between px-6 py-3 bg-card/50 backdrop-blur border-b border-border/50">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSidebarOpen(v => !v)}
+                            className="text-muted-foreground hover:text-foreground"
+                        >
+                            {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => navigate('/dashboard')}
+                            className="relative text-muted-foreground hover:text-foreground"
+                        >
+                            <Bell size={17} />
+                            {vencidosCount > 0 && (
+                                <Badge
+                                    variant="destructive"
+                                    className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full text-2xs font-bold"
+                                >
+                                    {vencidosCount > 99 ? '99+' : vencidosCount}
+                                </Badge>
+                            )}
+                        </Button>
+                    </header>
+                    <main className="flex-1 overflow-y-auto p-6 bg-background">
+                        <div className="page-transition">
+                            <Outlet />
+                        </div>
+                    </main>
+                </div>
+
+                <NTAssistant />
+            </div>
+        </TooltipProvider>
     );
 }
