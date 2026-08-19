@@ -140,8 +140,8 @@
   .table tbody tr { @apply border-b border-crema-dark transition-colors duration-100 hover:bg-crema; }
   .table tbody td { @apply px-4 py-3 text-sm text-cafe-800; }
 
-  .modal-overlay { @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-cafe-950/50 backdrop-blur-sm animate-fade-in; }
-  .modal-panel { @apply bg-white border border-surface-border rounded-xl shadow-modal w-full max-h-[90vh] overflow-y-auto animate-slide-up; }
+  .modal-overlay { @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/70 backdrop-blur-sm animate-fade-in; }
+  .modal-panel { @apply bg-card border border-border rounded-xl shadow-modal w-full max-h-[90vh] overflow-y-auto animate-slide-up; }
 
   .nav-item {
     @apply flex items-center gap-3 px-3 py-3 rounded text-cafe-200 text-sm font-medium

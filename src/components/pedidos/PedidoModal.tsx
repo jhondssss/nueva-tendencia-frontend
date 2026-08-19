@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Resolver } from 'react-hook-form';
 import Modal from '@/components/shared/Modal';
+import { Button } from '@/components/ui/button';
 import TallaInfoBox, { defaultTallas } from './TallaInfoBox';
 import type { TallaItem } from './TallaInfoBox';
 import type { Pedido, Cliente, Producto, CategoriaCalzado, UnidadPedido, CreatePedidoDto } from '@/types';
@@ -137,7 +138,7 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                             </option>
                         ))}
                     </select>
-                    {errors.cliente_id && <p className="text-red-400 text-xs mt-1">{errors.cliente_id.message}</p>}
+                    {errors.cliente_id && <p className="text-destructive text-xs mt-1">{errors.cliente_id.message}</p>}
                 </div>
 
                 <div>
@@ -152,7 +153,7 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                             </option>
                         ))}
                     </select>
-                    {errors.producto_id && <p className="text-red-400 text-xs mt-1">{errors.producto_id.message}</p>}
+                    {errors.producto_id && <p className="text-destructive text-xs mt-1">{errors.producto_id.message}</p>}
                 </div>
 
                 <div>
@@ -184,7 +185,7 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                                {...register('cantidad', { valueAsNumber: true })}
                                placeholder="1"
                                className={`input ${errors.cantidad ? 'input-error' : ''}`} />
-                        {errors.cantidad && <p className="text-red-400 text-xs mt-1">{errors.cantidad.message}</p>}
+                        {errors.cantidad && <p className="text-destructive text-xs mt-1">{errors.cantidad.message}</p>}
                     </div>
                     <div>
                         <label className="label">Unidad *</label>
@@ -197,8 +198,8 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                         </select>
                     </div>
                 </div>
-                <p className="text-xs text-ink-200 -mt-2">
-                    = <span className="font-mono text-amber-400">{(cantidad || 1) * PARES[unidad]} pares</span> en total
+                <p className="text-xs text-muted-foreground -mt-2">
+                    = <span className="font-mono text-primary font-medium">{(cantidad || 1) * PARES[unidad]} pares</span> en total
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -208,23 +209,23 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                                {...register('total', { valueAsNumber: true })}
                                placeholder="0.00"
                                className={`input ${errors.total ? 'input-error' : ''}`} />
-                        {errors.total && <p className="text-red-400 text-xs mt-1">{errors.total.message}</p>}
+                        {errors.total && <p className="text-destructive text-xs mt-1">{errors.total.message}</p>}
                     </div>
                     <div>
                         <label className="label">Fecha de entrega *</label>
                         <input type="date" {...register('fecha_entrega')}
                                className={`input ${errors.fecha_entrega ? 'input-error' : ''}`} />
-                        {errors.fecha_entrega && <p className="text-red-400 text-xs mt-1">{errors.fecha_entrega.message}</p>}
+                        {errors.fecha_entrega && <p className="text-destructive text-xs mt-1">{errors.fecha_entrega.message}</p>}
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2 border-t border-ink-600">
-                    <button type="button" onClick={handleClose} className="btn-secondary">Cancelar</button>
-                    <button type="submit" disabled={isSubmitting} className="btn-ripple">
+                <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                    <Button type="button" variant="outline" onClick={handleClose}>Cancelar</Button>
+                    <Button type="submit" disabled={isSubmitting} className="hover:scale-[1.02] transition-transform">
                         {isSubmitting
                             ? <><Loader2 size={14} className="animate-spin" /> {isEditing ? 'Guardando...' : 'Creando...'}</>
                             : isEditing ? 'Guardar cambios' : 'Crear pedido'}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </Modal>

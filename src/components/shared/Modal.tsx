@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Button } from '@/components/ui/button';
 
 interface ModalProps {
     isOpen:    boolean;
@@ -30,15 +31,18 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, size
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className={clsx('modal-panel w-full', SIZES[size])} onClick={e => e.stopPropagation()}>
-                <div className="flex items-start justify-between p-5 border-b border-ink-600">
+                <div className="flex items-start justify-between p-5 border-b border-border">
                     <div>
-                        <h2 className="font-display text-lg font-semibold text-cream">{title}</h2>
-                        {subtitle && <p className="text-sm text-ink-100 mt-0.5">{subtitle}</p>}
+                        <h2 className="font-display text-lg font-semibold text-foreground">{title}</h2>
+                        {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
                     </div>
-                    <button onClick={onClose}
-                            className="p-1.5 rounded text-ink-100 hover:text-cream hover:bg-ink-600 transition-colors ml-4">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onClose}
+                        className="h-8 w-8 ml-4 text-muted-foreground hover:text-foreground">
                         <X size={16} />
-                    </button>
+                    </Button>
                 </div>
                 <div className="p-5">{children}</div>
             </div>

@@ -31,8 +31,8 @@ export default function Pagination({ page, totalPages, total, goToPage, nextPage
 
     return (
         <div className="flex items-center justify-between mt-4 px-1 select-none">
-            <span className="text-xs text-ink-200">
-                {total} registros · página <span className="text-ink-50">{page}</span> de {totalPages}
+            <span className="text-xs text-muted-foreground">
+                {total} registros · página <span className="text-foreground font-medium">{page}</span> de {totalPages}
             </span>
 
             <div className="flex items-center gap-1">
@@ -40,23 +40,23 @@ export default function Pagination({ page, totalPages, total, goToPage, nextPage
                     onClick={prevPage}
                     disabled={page === 1}
                     aria-label="Página anterior"
-                    className="p-1.5 rounded text-ink-200 hover:text-cream hover:bg-ink-600
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent
                                disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                     <ChevronLeft size={14} />
                 </button>
 
                 {pages.map((p, i) =>
                     p === '…' ? (
-                        <span key={`el-${i}`} className="w-7 text-center text-ink-300 text-xs">…</span>
+                        <span key={`el-${i}`} className="w-7 text-center text-muted-foreground/60 text-xs">…</span>
                     ) : (
                         <button
                             key={p}
                             onClick={() => goToPage(p as number)}
                             className={clsx(
-                                'min-w-[28px] h-7 px-1 rounded text-xs font-medium transition-colors',
+                                'min-w-[28px] h-7 px-1 rounded-md text-xs font-medium transition-colors',
                                 p === page
-                                    ? 'bg-amber-500 text-ink-900 font-semibold'
-                                    : 'text-ink-100 hover:text-cream hover:bg-ink-600',
+                                    ? 'bg-primary text-primary-foreground font-semibold'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
                             )}>
                             {p}
                         </button>
@@ -67,7 +67,7 @@ export default function Pagination({ page, totalPages, total, goToPage, nextPage
                     onClick={nextPage}
                     disabled={page === totalPages}
                     aria-label="Página siguiente"
-                    className="p-1.5 rounded text-ink-200 hover:text-cream hover:bg-ink-600
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent
                                disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                     <ChevronRight size={14} />
                 </button>

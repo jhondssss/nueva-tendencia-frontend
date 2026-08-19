@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ConfirmDialogProps {
     isOpen:          boolean;
@@ -40,37 +41,32 @@ export default function ConfirmDialog({
 
                     {/* Icono + texto */}
                     <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-red-950/60 border border-red-800/50
+                        <div className="w-10 h-10 rounded-full bg-destructive/10 border border-destructive/30
                                         flex items-center justify-center flex-shrink-0">
-                            <AlertTriangle size={18} className="text-red-400" />
+                            <AlertTriangle size={18} className="text-destructive" />
                         </div>
                         <div>
-                            <h2 className="font-display text-base font-semibold text-cream">{title}</h2>
-                            <p className="text-sm text-ink-100 mt-1 leading-relaxed">{message}</p>
+                            <h2 className="font-display text-base font-semibold text-foreground">{title}</h2>
+                            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{message}</p>
                         </div>
                     </div>
 
                     {/* Advertencia opcional */}
                     {warningMessage && (
-                        <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-600/40 px-3 py-2.5">
-                            <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-                            <p className="text-xs text-amber-300 leading-relaxed">{warningMessage}</p>
+                        <div className="flex items-start gap-2 rounded-lg bg-chart-3/10 border border-chart-3/30 px-3 py-2.5">
+                            <AlertTriangle size={14} className="text-chart-3 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-chart-3 leading-relaxed">{warningMessage}</p>
                         </div>
                     )}
 
                     {/* Acciones */}
-                    <div className="flex justify-end gap-2 pt-1 border-t border-ink-600">
-                        <button type="button" onClick={onClose} className="btn-secondary">
+                    <div className="flex justify-end gap-2 pt-1 border-t border-border">
+                        <Button type="button" variant="outline" onClick={onClose}>
                             Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleConfirm}
-                            className="px-4 py-2 text-sm font-medium rounded-lg
-                                       bg-red-700 hover:bg-red-600 active:bg-red-800
-                                       text-white border border-red-600/80 transition-colors">
+                        </Button>
+                        <Button type="button" variant="destructive" onClick={handleConfirm}>
                             Eliminar
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
