@@ -8,6 +8,77 @@
   body { @apply bg-crema font-body text-cafe-950; font-size: 14px; line-height: 1.6; }
 
 ::selection { @apply bg-cafe-800 text-crema; }
+
+  /* Tokens shadcn/ui — paleta "Nueva Tendencia" (formato HSL requerido por Tailwind v3) */
+  :root {
+    --background: 39 33% 96%;
+    --foreground: 24 22% 13%;
+    --card: 39 40% 98%;
+    --card-foreground: 24 22% 13%;
+    --popover: 39 40% 98%;
+    --popover-foreground: 24 22% 13%;
+    --primary: 21 68% 41%;
+    --primary-foreground: 39 33% 96%;
+    --secondary: 174 55% 27%;
+    --secondary-foreground: 39 33% 96%;
+    --muted: 36 30% 89%;
+    --muted-foreground: 24 15% 35%;
+    --accent: 36 30% 89%;
+    --accent-foreground: 24 22% 13%;
+    --destructive: 6 58% 47%;
+    --destructive-foreground: 39 33% 96%;
+    --border: 24 20% 85%;
+    --input: 24 20% 85%;
+    --ring: 21 68% 41%;
+    --chart-1: 21 68% 41%;
+    --chart-2: 174 55% 27%;
+    --chart-3: 38 47% 55%;
+    --chart-4: 24 15% 35%;
+    --chart-5: 6 58% 47%;
+    --radius: 0.75rem;
+    --sidebar: 24 22% 13%;
+    --sidebar-foreground: 39 33% 96%;
+    --sidebar-primary: 21 68% 41%;
+    --sidebar-primary-foreground: 39 33% 96%;
+    --sidebar-accent: 24 20% 20%;
+    --sidebar-accent-foreground: 39 33% 96%;
+    --sidebar-border: 24 20% 20%;
+    --sidebar-ring: 21 68% 41%;
+  }
+  .dark {
+    --background: 24 22% 8%;
+    --foreground: 39 33% 96%;
+    --card: 24 22% 11%;
+    --card-foreground: 39 33% 96%;
+    --popover: 24 22% 11%;
+    --popover-foreground: 39 33% 96%;
+    --primary: 21 68% 51%;
+    --primary-foreground: 24 22% 8%;
+    --secondary: 174 55% 32%;
+    --secondary-foreground: 39 33% 96%;
+    --muted: 24 15% 18%;
+    --muted-foreground: 36 20% 65%;
+    --accent: 24 15% 18%;
+    --accent-foreground: 39 33% 96%;
+    --destructive: 6 58% 47%;
+    --destructive-foreground: 39 33% 96%;
+    --border: 24 15% 20%;
+    --input: 24 15% 20%;
+    --ring: 21 68% 51%;
+    --chart-1: 21 68% 51%;
+    --chart-2: 174 55% 32%;
+    --chart-3: 38 47% 55%;
+    --chart-4: 36 20% 65%;
+    --chart-5: 6 58% 47%;
+    --sidebar: 24 22% 6%;
+    --sidebar-foreground: 39 33% 96%;
+    --sidebar-primary: 21 68% 51%;
+    --sidebar-primary-foreground: 24 22% 8%;
+    --sidebar-accent: 24 15% 18%;
+    --sidebar-accent-foreground: 39 33% 96%;
+    --sidebar-border: 24 15% 18%;
+    --sidebar-ring: 21 68% 51%;
+  }
 }
 
 @layer components {
@@ -244,4 +315,13 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #C6A75E;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
