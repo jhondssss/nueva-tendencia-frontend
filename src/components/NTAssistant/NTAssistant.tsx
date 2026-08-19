@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Bot, X, Send, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
 
 // ─── Constantes de layout ─────────────────────────────────────────────────────
@@ -130,36 +131,38 @@ export default function NTAssistant() {
                 <div
                     style={{ left: panelLeft, top: panelTop, width: PANEL_W }}
                     className="fixed z-50 flex flex-col animate-slide-up
-                               h-[500px] rounded-xl border border-surface-border
-                               bg-white shadow-modal overflow-hidden"
+                               h-[500px] rounded-xl border border-border/50
+                               bg-card/95 backdrop-blur-md shadow-modal overflow-hidden"
                 >
                     {/* Header */}
-                    <div className="flex items-center gap-2.5 px-4 py-3 bg-cafe-900 border-b border-cafe-800 flex-shrink-0">
+                    <div className="flex items-center gap-2.5 px-4 py-3 bg-sidebar border-b border-sidebar-border flex-shrink-0">
                         <div className="w-7 h-7 rounded-lg bg-cafe-gradient flex items-center justify-center flex-shrink-0 shadow-glow-sm">
                             <Bot size={14} className="text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="font-display font-semibold text-white text-sm leading-tight">NT Assistant</p>
-                            <p className="text-2xs text-cafe-200">Asistente de Nueva Tendencia</p>
+                            <p className="font-display font-semibold text-sidebar-foreground text-sm leading-tight">NT Assistant</p>
+                            <p className="text-2xs text-sidebar-foreground/60">Asistente de Nueva Tendencia</p>
                         </div>
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setOpen(false)}
-                            className="p-1 rounded text-cafe-300 hover:text-white hover:bg-cafe-800 transition-colors"
+                            className="h-7 w-7 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                         >
                             <X size={15} />
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Mensajes */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-crema">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/30">
                         {messages.length === 0 && (
                             <div className="h-full flex flex-col items-center justify-center gap-3 text-center px-4">
-                                <div className="w-12 h-12 rounded-xl bg-dorado-500/10 border border-dorado-500/20
+                                <div className="w-12 h-12 rounded-xl bg-chart-3/10 border border-chart-3/20
                                                flex items-center justify-center">
-                                    <Bot size={22} className="text-dorado-600" />
+                                    <Bot size={22} className="text-chart-3" />
                                 </div>
-                                <p className="text-sm text-cafe-800 font-medium">¿En qué puedo ayudarte?</p>
-                                <p className="text-xs text-cafe-400 leading-relaxed">
+                                <p className="text-sm text-foreground font-medium">¿En qué puedo ayudarte?</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
                                     Puedo ayudarte con pedidos, clientes,<br />inventario y producción.
                                 </p>
                             </div>
@@ -174,8 +177,8 @@ export default function NTAssistant() {
                                     className={clsx(
                                         'max-w-[82%] rounded-xl px-3 py-2 text-sm leading-relaxed',
                                         msg.role === 'user'
-                                            ? 'bg-cafe-900 text-white rounded-br-sm'
-                                            : 'bg-white border border-surface-border text-cafe-800 rounded-bl-sm shadow-card',
+                                            ? 'bg-primary text-primary-foreground rounded-br-sm'
+                                            : 'bg-card border border-border text-foreground rounded-bl-sm shadow-card',
                                     )}
                                 >
                                     {msg.content}
@@ -185,8 +188,8 @@ export default function NTAssistant() {
 
                         {isLoading && (
                             <div className="flex justify-start">
-                                <div className="bg-white border border-surface-border rounded-xl rounded-bl-sm px-3 py-2.5 shadow-card">
-                                    <Loader2 size={14} className="text-cafe-500 animate-spin" />
+                                <div className="bg-card border border-border rounded-xl rounded-bl-sm px-3 py-2.5 shadow-card">
+                                    <Loader2 size={14} className="text-muted-foreground animate-spin" />
                                 </div>
                             </div>
                         )}
@@ -195,7 +198,7 @@ export default function NTAssistant() {
                     </div>
 
                     {/* Input */}
-                    <div className="flex-shrink-0 px-3 py-3 border-t border-surface-border bg-white">
+                    <div className="flex-shrink-0 px-3 py-3 border-t border-border bg-card">
                         <div className="flex items-end gap-2">
                             <textarea
                                 ref={inputRef}
@@ -205,11 +208,7 @@ export default function NTAssistant() {
                                 disabled={isLoading}
                                 placeholder="Escribe tu pregunta…"
                                 rows={1}
-                                className="flex-1 resize-none bg-crema border border-surface-border rounded-lg
-                                           px-3 py-2 text-sm text-cafe-950 placeholder-cafe-300
-                                           focus:outline-none focus:border-cafe-500 focus:ring-1 focus:ring-cafe-500/30
-                                           disabled:opacity-50 transition-colors
-                                           max-h-[80px] overflow-y-auto"
+                                className="input flex-1 resize-none max-h-[80px] overflow-y-auto"
                                 style={{ lineHeight: '1.4' }}
                             />
                             <button
@@ -217,12 +216,13 @@ export default function NTAssistant() {
                                 disabled={!input.trim() || isLoading}
                                 className="flex-shrink-0 p-2 rounded-lg bg-cafe-gradient text-white
                                            disabled:opacity-40 disabled:cursor-not-allowed
-                                           hover:opacity-90 transition-opacity shadow-glow-sm"
+                                           hover:opacity-90 hover:scale-105 active:scale-95
+                                           transition-all duration-200 shadow-glow-sm"
                             >
                                 <Send size={15} />
                             </button>
                         </div>
-                        <p className="text-2xs text-cafe-400 mt-1.5 text-center">
+                        <p className="text-2xs text-muted-foreground mt-1.5 text-center">
                             Enter para enviar · Shift+Enter para nueva línea
                         </p>
 
@@ -233,9 +233,9 @@ export default function NTAssistant() {
                                     key={s}
                                     onClick={() => sendQuick(s)}
                                     disabled={isLoading}
-                                    className="text-2xs px-2 py-1 rounded-full border border-cafe-200
-                                               bg-crema text-cafe-700 hover:bg-cafe-100 hover:border-cafe-400
-                                               disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                    className="text-2xs px-2 py-1 rounded-full border border-border
+                                               bg-muted/40 text-muted-foreground hover:bg-muted hover:border-primary/40 hover:text-foreground
+                                               disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
                                 >
                                     {s}
                                 </button>
