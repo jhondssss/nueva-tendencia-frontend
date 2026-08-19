@@ -56,37 +56,58 @@ export default function LoginView() {
     };
 
     return (
-        <div className="min-h-screen bg-sidebar flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-cafe-gradient flex items-center justify-center p-4 relative overflow-hidden">
 
             {/* Fondo decorativo */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/10 blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-primary/10 blur-3xl" />
-                <div className="absolute inset-0 opacity-[0.03]"
+                <div className="absolute -top-40 -right-40 w-[28rem] h-[28rem] rounded-full bg-dorado-400/15 blur-3xl" />
+                <div className="absolute -bottom-40 -left-40 w-[28rem] h-[28rem] rounded-full bg-secondary/20 blur-3xl" />
+                {/* Textura tipo cuero: puntos finos */}
+                <div className="absolute inset-0 opacity-[0.05]"
                      style={{
-                         backgroundImage: 'linear-gradient(#C6A75E 1px, transparent 1px), linear-gradient(90deg, #C6A75E 1px, transparent 1px)',
-                         backgroundSize: '40px 40px',
+                         backgroundImage: 'radial-gradient(#F5EECE 1px, transparent 1px)',
+                         backgroundSize: '22px 22px',
+                     }}
+                />
+                {/* Líneas diagonales sutiles tipo pespunte */}
+                <div className="absolute inset-0 opacity-[0.035]"
+                     style={{
+                         backgroundImage: 'repeating-linear-gradient(45deg, #F5EECE 0px, #F5EECE 1px, transparent 1px, transparent 14px)',
                      }}
                 />
             </div>
 
-            <div className="w-full max-w-sm relative z-10 animate-slide-up">
+            <div className="w-full max-w-sm relative z-10">
 
-                {/* Logo */}
-                <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl
-                         bg-cafe-gradient shadow-glow-cafe mb-5 animate-fade-in">
-                        <span className="font-display font-bold text-white text-xl">NT</span>
+                {/* Sello de marca */}
+                <div className="text-center mb-9">
+                    <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6
+                                     animate-in fade-in zoom-in-50 duration-500">
+                        <div className="absolute inset-0 rounded-full border-2 border-dorado-400/70" />
+                        <div className="absolute inset-[5px] rounded-full border border-dashed border-dorado-300/40" />
+                        <div className="relative w-14 h-14 rounded-full bg-cafe-gradient shadow-glow-cafe
+                                         ring-4 ring-cafe-950/40 flex items-center justify-center">
+                            <span className="font-display font-bold text-dorado-100 text-xl tracking-wide">NT</span>
+                        </div>
                     </div>
-                    <h1 className="font-display text-3xl font-semibold text-sidebar-foreground mb-1">
+                    <h1 className="font-display text-3xl sm:text-4xl font-bold uppercase tracking-[0.12em]
+                                    text-sidebar-foreground mb-3
+                                    animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-backwards">
                         Nueva Tendencia
                     </h1>
-                    <p className="text-sidebar-foreground/70 text-sm">Sistema de Gestión Integral</p>
+                    <div className="mx-auto w-10 h-[3px] rounded-full bg-secondary mb-3
+                                     animate-in fade-in zoom-in-50 duration-500 delay-300 fill-mode-backwards" />
+                    <p className="text-sidebar-foreground/70 text-sm
+                                   animate-in fade-in duration-500 delay-300 fill-mode-backwards">
+                        Sistema de Gestión Integral
+                    </p>
                 </div>
 
                 {/* Card */}
-                <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-8
-                                 transition-all duration-300 hover:shadow-lg">
+                <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150 fill-mode-backwards">
+                    <div className="absolute -inset-2 rounded-2xl border border-dashed border-dorado-400/25 pointer-events-none" />
+                    <div className="relative rounded-xl border border-border/50 bg-card/60 backdrop-blur-md p-8
+                                     shadow-modal transition-all duration-300 hover:shadow-lg">
                     <div className="mb-6">
                         <h2 className="font-display text-xl font-medium text-foreground">Iniciar sesión</h2>
                         <p className="text-sm text-muted-foreground mt-1">Ingresa tus credenciales para continuar</p>
@@ -136,17 +157,20 @@ export default function LoginView() {
                             <button
                                 type="button"
                                 onClick={() => setForgotOpen(true)}
-                                className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                className="text-sm text-muted-foreground hover:text-secondary transition-colors">
                                 ¿Olvidaste tu contraseña?
                             </button>
                         </div>
                     </form>
+                    </div>
                 </div>
 
-                <p className="text-center text-sidebar-foreground/40 text-xs mt-6">
+                <p className="text-center text-sidebar-foreground/40 text-xs mt-6
+                               animate-in fade-in duration-500 delay-500 fill-mode-backwards">
                     Calzados Nueva Tendencia · Cochabamba, Bolivia
                 </p>
-                <p className="text-center text-sidebar-foreground/25 text-2xs mt-1">v1.0.0</p>
+                <p className="text-center text-sidebar-foreground/25 text-2xs mt-1
+                               animate-in fade-in duration-500 delay-500 fill-mode-backwards">v1.0.0</p>
             </div>
 
             {/* Modal: Olvidé mi contraseña */}
