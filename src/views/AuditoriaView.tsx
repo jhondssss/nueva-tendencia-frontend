@@ -6,7 +6,11 @@ import toast from 'react-hot-toast';
 import { auditoriaApi } from '@/api/services';
 import type { AuditoriaLog, ModuloAuditoria, AccionAuditoria } from '@/types';
 import { useRole } from '@/hooks/useRole';
+import { TableSkeleton } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { clsx } from 'clsx';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -24,20 +28,20 @@ function buildYears(): number[] {
 }
 const YEARS = buildYears();
 
-// ─── Badge configs ─────────────────────────────────────────────────────────────
+// ─── Badge configs (tokens semánticos) ─────────────────────────────────────────
 
 const MODULO_BADGE: Record<ModuloAuditoria, string> = {
-    auth:      'bg-purple-100 text-purple-700 border border-purple-200',
-    pedidos:   'bg-blue-100   text-blue-700   border border-blue-200',
-    clientes:  'bg-green-100  text-green-700  border border-green-200',
-    productos: 'bg-orange-100 text-orange-700 border border-orange-200',
+    auth:      'bg-chart-4/10      text-chart-4      border-chart-4/30',
+    pedidos:   'bg-primary/10      text-primary      border-primary/30',
+    clientes:  'bg-secondary/10    text-secondary    border-secondary/30',
+    productos: 'bg-chart-3/10      text-chart-3      border-chart-3/30',
 };
 
 const ACCION_BADGE: Record<AccionAuditoria, string> = {
-    CREATE: 'bg-green-100  text-green-700  border border-green-200',
-    UPDATE: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-    DELETE: 'bg-red-100    text-red-700    border border-red-200',
-    LOGIN:  'bg-purple-100 text-purple-700 border border-purple-200',
+    CREATE: 'bg-secondary/10    text-secondary    border-secondary/30',
+    UPDATE: 'bg-chart-3/10      text-chart-3      border-chart-3/30',
+    DELETE: 'bg-destructive/10  text-destructive  border-destructive/30',
+    LOGIN:  'bg-chart-1/10      text-chart-1      border-chart-1/30',
 };
 
 // ─── Filter types ──────────────────────────────────────────────────────────────
@@ -82,24 +86,6 @@ function generateCsv(logs: AuditoriaLog[]): string {
         `"${l.descripcion.replace(/"/g, '""')}"`,
     ].join(','));
     return [header, ...rows].join('\n');
-}
-
-// ─── Skeleton rows ──────────────────────────────────────────────────────────────
-
-function SkeletonRows() {
-    return (
-        <>
-            {Array.from({ length: 8 }).map((_, i) => (
-                <tr key={i} className="animate-pulse">
-                    <td><div className="h-3.5 bg-crema-dark rounded w-28" /></td>
-                    <td><div className="h-3.5 bg-crema-dark rounded w-32" /></td>
-                    <td><div className="h-5 bg-crema-dark rounded-full w-20" /></td>
-                    <td><div className="h-5 bg-crema-dark rounded-full w-16" /></td>
-                    <td><div className="h-3.5 bg-crema-dark rounded w-48" /></td>
-                </tr>
-            ))}
-        </>
-    );
 }
 
 // ─── View ──────────────────────────────────────────────────────────────────────
@@ -240,23 +226,20 @@ export default function AuditoriaView() {
             {/* Header */}
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Log de Auditoría</h1>
+                    <h1 className="page-title section-title">Log de Auditoría</h1>
                     <p className="page-subtitle">Registro de todas las acciones del sistema</p>
                 </div>
-                <button
-                    onClick={() => setArchiveOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg border border-cafe-300 bg-cafe-50 text-cafe-700 text-sm font-medium hover:bg-cafe-100 transition-colors"
-                >
+                <Button variant="outline" onClick={() => setArchiveOpen(true)}>
                     <Archive size={15} />
                     Archivar y limpiar
-                </button>
+                </Button>
             </div>
 
             {/* ── SECCIÓN 1 — Filtros ─────────────────────────────────────────── */}
             <section className="space-y-3">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-1 h-5 rounded-full bg-dorado-500" />
-                    <h2 className="text-xs font-semibold text-cafe-700 uppercase tracking-widest">
+                    <div className="w-1 h-5 rounded-full bg-primary" />
+                    <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                         Filtros
                     </h2>
                 </div>
@@ -268,10 +251,10 @@ export default function AuditoriaView() {
                             key={value}
                             onClick={() => handleModulo(value)}
                             className={clsx(
-                                'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
+                                'px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200',
                                 modulo === value
-                                    ? 'bg-cafe-800 text-white border-cafe-800'
-                                    : 'bg-white text-cafe-600 border-surface-border hover:border-cafe-400 hover:text-cafe-900',
+                                    ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                                    : 'bg-card/50 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground hover:scale-[1.02]',
                             )}
                         >
                             {label}
@@ -280,10 +263,10 @@ export default function AuditoriaView() {
                 </div>
 
                 {/* Date + action + search row */}
-                <div className="flex flex-wrap items-end gap-3 p-4 bg-crema-50 border border-surface-border rounded-xl">
+                <div className="flex flex-wrap items-end gap-3 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur">
                     {/* Año */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-cafe-700">Año</label>
+                        <label className="text-xs font-medium text-muted-foreground">Año</label>
                         <select
                             value={filterAnio}
                             onChange={e => { setFilterAnio(Number(e.target.value)); setPage(1); }}
@@ -296,7 +279,7 @@ export default function AuditoriaView() {
 
                     {/* Mes */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-cafe-700">Mes</label>
+                        <label className="text-xs font-medium text-muted-foreground">Mes</label>
                         <select
                             value={filterMes}
                             onChange={e => { setFilterMes(Number(e.target.value)); setPage(1); }}
@@ -309,7 +292,7 @@ export default function AuditoriaView() {
 
                     {/* Acción */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-cafe-700">Acción</label>
+                        <label className="text-xs font-medium text-muted-foreground">Acción</label>
                         <select
                             value={filterAccion}
                             onChange={e => { setFilterAccion(e.target.value as AccionFilter); setPage(1); }}
@@ -322,9 +305,9 @@ export default function AuditoriaView() {
 
                     {/* Search */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-cafe-700">Descripción</label>
+                        <label className="text-xs font-medium text-muted-foreground">Descripción</label>
                         <div className="relative">
-                            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-cafe-400 pointer-events-none" />
+                            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                             <input
                                 type="text"
                                 value={search}
@@ -337,13 +320,10 @@ export default function AuditoriaView() {
 
                     {/* Clear */}
                     {hasActiveFilters && (
-                        <button
-                            onClick={resetFilters}
-                            className="flex items-center gap-1.5 btn-secondary text-xs h-9 self-end"
-                        >
+                        <Button variant="outline" onClick={resetFilters} className="h-9 self-end text-xs">
                             <X size={12} />
                             Limpiar
-                        </button>
+                        </Button>
                     )}
                 </div>
             </section>
@@ -351,76 +331,71 @@ export default function AuditoriaView() {
             {/* ── SECCIÓN 2 — Tabla ───────────────────────────────────────────── */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-1 h-5 rounded-full bg-cafe-500" />
-                    <h2 className="text-xs font-semibold text-cafe-700 uppercase tracking-widest">
+                    <div className="w-1 h-5 rounded-full bg-secondary" />
+                    <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                         Registros
                     </h2>
                     {!loading && (
-                        <span className="ml-1 text-xs text-cafe-400">
+                        <span className="ml-1 text-xs text-muted-foreground/70">
                             ({filtered.length} {filtered.length === 1 ? 'entrada' : 'entradas'})
                         </span>
                     )}
                 </div>
 
-                <div className="card overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="table w-full">
-                            <thead>
-                                <tr>
-                                    <th>Fecha / Hora</th>
-                                    <th>Usuario</th>
-                                    <th>Módulo</th>
-                                    <th>Acción</th>
-                                    <th>Descripción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <SkeletonRows />
-                                ) : paginated.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5}>
-                                            <EmptyState
-                                                icon={ClipboardList}
-                                                title="Sin registros"
-                                                description="No se encontraron entradas para los filtros aplicados."
-                                            />
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    paginated.map(log => (
-                                        <tr key={log.id}>
-                                            <td className="whitespace-nowrap text-xs text-cafe-500 tabular-nums">
-                                                {formatFecha(log.fecha)}
-                                            </td>
-                                            <td className="text-sm font-medium text-cafe-800">
-                                                {log.usuario?.email ?? 'Sistema'}
-                                            </td>
-                                            <td>
-                                                <span className={clsx(
-                                                    'inline-block text-xs font-medium px-2 py-0.5 rounded-full capitalize',
-                                                    MODULO_BADGE[log.modulo] ?? 'bg-gray-100 text-gray-600 border border-gray-200',
-                                                )}>
-                                                    {log.modulo}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span className={clsx(
-                                                    'inline-block text-xs font-semibold px-2 py-0.5 rounded-full',
-                                                    ACCION_BADGE[log.accion] ?? 'bg-gray-100 text-gray-600 border border-gray-200',
-                                                )}>
-                                                    {log.accion}
-                                                </span>
-                                            </td>
-                                            <td className="text-sm text-cafe-700 max-w-xs truncate">
-                                                {log.descripcion}
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden
+                                transition-all duration-300 hover:shadow-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead>Fecha / Hora</TableHead>
+                                <TableHead>Usuario</TableHead>
+                                <TableHead>Módulo</TableHead>
+                                <TableHead>Acción</TableHead>
+                                <TableHead>Descripción</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={5}><TableSkeleton rows={8} /></TableCell>
+                                </TableRow>
+                            ) : paginated.length === 0 ? (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={5}>
+                                        <EmptyState
+                                            icon={ClipboardList}
+                                            title="Sin registros"
+                                            description="No se encontraron entradas para los filtros aplicados."
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                paginated.map(log => (
+                                    <TableRow key={log.id}>
+                                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground tabular-nums">
+                                            {formatFecha(log.fecha)}
+                                        </TableCell>
+                                        <TableCell className="text-sm font-medium text-foreground">
+                                            {log.usuario?.email ?? 'Sistema'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={clsx('font-medium capitalize', MODULO_BADGE[log.modulo] ?? 'bg-muted text-muted-foreground border-border')}>
+                                                {log.modulo}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={clsx('font-semibold', ACCION_BADGE[log.accion] ?? 'bg-muted text-muted-foreground border-border')}>
+                                                {log.accion}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
+                                            {log.descripcion}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
 
                     {/* Pagination */}
                     {!loading && (
@@ -439,15 +414,15 @@ export default function AuditoriaView() {
 
             {/* ── Modal: Archivar y limpiar ────────────────────────────────────── */}
             {archiveOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="card w-full max-w-md p-6 space-y-5">
+                <div className="modal-overlay">
+                    <div className="modal-panel w-full max-w-md p-6 space-y-5">
                         <div className="flex items-start gap-3">
-                            <div className="p-2 rounded-lg bg-amber-100 text-amber-600 shrink-0">
+                            <div className="p-2 rounded-lg bg-chart-3/10 text-chart-3 shrink-0">
                                 <AlertTriangle size={18} />
                             </div>
                             <div>
-                                <h3 className="text-base font-semibold text-cafe-900">Archivar y limpiar</h3>
-                                <p className="text-sm text-cafe-600 mt-1">
+                                <h3 className="text-base font-semibold text-foreground">Archivar y limpiar</h3>
+                                <p className="text-sm text-muted-foreground mt-1">
                                     Se exportará un CSV y se eliminarán todos los registros <strong>anteriores a</strong> la fecha seleccionada.
                                 </p>
                             </div>
@@ -455,7 +430,7 @@ export default function AuditoriaView() {
 
                         <div className="flex gap-3">
                             <div className="flex flex-col gap-1 flex-1">
-                                <label className="text-xs font-medium text-cafe-700">Mes</label>
+                                <label className="text-xs font-medium text-muted-foreground">Mes</label>
                                 <select
                                     value={archMes}
                                     onChange={e => setArchMes(Number(e.target.value))}
@@ -467,7 +442,7 @@ export default function AuditoriaView() {
                                 </select>
                             </div>
                             <div className="flex flex-col gap-1 flex-1">
-                                <label className="text-xs font-medium text-cafe-700">Año</label>
+                                <label className="text-xs font-medium text-muted-foreground">Año</label>
                                 <select
                                     value={archAnio}
                                     onChange={e => setArchAnio(Number(e.target.value))}
@@ -478,29 +453,21 @@ export default function AuditoriaView() {
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                            <span className="shrink-0 mt-0.5">⚠️</span>
+                        <div className="flex items-start gap-2 text-xs text-chart-3 bg-chart-3/10 border border-chart-3/30 rounded-lg p-3">
+                            <AlertTriangle size={13} className="shrink-0 mt-0.5" />
                             <span>
                                 Esta acción <strong>no se puede deshacer</strong>. El archivo CSV se descargará automáticamente antes de eliminar.
                             </span>
                         </div>
 
                         <div className="flex justify-end gap-2 pt-1">
-                            <button
-                                onClick={() => setArchiveOpen(false)}
-                                disabled={archiving}
-                                className="btn-secondary"
-                            >
+                            <Button variant="outline" onClick={() => setArchiveOpen(false)} disabled={archiving}>
                                 Cancelar
-                            </button>
-                            <button
-                                onClick={handleArchivar}
-                                disabled={archiving}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
-                            >
+                            </Button>
+                            <Button variant="destructive" onClick={handleArchivar} disabled={archiving}>
                                 <Archive size={14} />
                                 {archiving ? 'Archivando...' : 'Exportar y eliminar'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

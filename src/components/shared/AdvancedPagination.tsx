@@ -43,16 +43,16 @@ export default function AdvancedPagination({
     const to    = Math.min(page * pageSize, total);
     const pages = buildPages(page, totalPages);
 
-    const btnBase  = 'p-1 rounded hover:bg-crema-dark disabled:opacity-30 disabled:cursor-not-allowed transition-colors';
+    const btnBase  = 'p-1 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors';
     const pageBtn  = (active: boolean) => clsx(
-        'min-w-[28px] h-7 px-1 rounded text-xs font-medium transition-colors',
+        'min-w-[28px] h-7 px-1 rounded-md text-xs font-medium transition-colors',
         active
-            ? 'bg-cafe-700 text-white font-semibold'
-            : 'text-cafe-600 hover:bg-crema-dark hover:text-cafe-900',
+            ? 'bg-primary text-primary-foreground font-semibold'
+            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
     );
 
     return (
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 border-t border-surface-border text-xs text-cafe-500 select-none">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 border-t border-border text-xs text-muted-foreground select-none">
 
             {/* Resumen */}
             <span>
@@ -61,9 +61,9 @@ export default function AdvancedPagination({
                 ) : (
                     <>
                         Mostrando{' '}
-                        <span className="font-medium text-cafe-700">{from}–{to}</span>
+                        <span className="font-medium text-foreground">{from}–{to}</span>
                         {' '}de{' '}
-                        <span className="font-medium text-cafe-700">{total}</span>
+                        <span className="font-medium text-foreground">{total}</span>
                         {' '}{noun}
                     </>
                 )}
@@ -78,16 +78,16 @@ export default function AdvancedPagination({
                             key={s}
                             onClick={() => { onPageSizeChange(s); onPageChange(1); }}
                             className={clsx(
-                                'px-2 py-0.5 rounded border text-xs transition-colors',
+                                'px-2 py-0.5 rounded-md border text-xs transition-colors',
                                 s === pageSize
-                                    ? 'bg-cafe-700 text-white border-cafe-700'
-                                    : 'bg-white text-cafe-500 border-surface-border hover:border-cafe-400 hover:text-cafe-700',
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'bg-background text-muted-foreground border-border hover:border-primary/40 hover:text-foreground',
                             )}
                         >
                             {s}
                         </button>
                     ))}
-                    <span className="text-cafe-400 pl-1">por pág.</span>
+                    <span className="text-muted-foreground/70 pl-1">por pág.</span>
                 </div>
 
                 {/* Navegación */}
@@ -106,7 +106,7 @@ export default function AdvancedPagination({
 
                         {pages.map((p, i) =>
                             p === '…' ? (
-                                <span key={`el-${i}`} className="w-7 text-center text-cafe-400">…</span>
+                                <span key={`el-${i}`} className="w-7 text-center text-muted-foreground/60">…</span>
                             ) : (
                                 <button key={p} onClick={() => onPageChange(p as number)}
                                         className={pageBtn(p === page)}>

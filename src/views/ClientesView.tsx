@@ -8,7 +8,10 @@ import { useClienteStore } from '@/stores/index';
 import Modal from '@/components/shared/Modal';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import Pagination from '@/components/shared/Pagination';
-import PageLoader from '@/components/shared/PageLoader';
+import { TableSkeleton } from '@/components/shared/Skeleton';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { usePagination } from '@/hooks/usePagination';
 import { useRole } from '@/hooks/useRole';
 import EmptyState from '@/components/shared/EmptyState';
@@ -123,76 +126,81 @@ export default function ClientesView() {
 
             {/* Search */}
             <div className="relative w-72">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-200" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input value={search} onChange={e => setSearch(e.target.value)}
                        placeholder="Nombre, email o teléfono..." className="input pl-9" />
             </div>
 
             {/* Tabla */}
-            <div className="card overflow-hidden">
-                <div className="table-container">
-                    <table className="table table-highlight">
-                        <thead>
-                        <tr>
-                            <th>Tipo</th><th>Nombre</th><th>Correo</th>
-                            <th>Teléfono</th><th>Ciudad</th><th>Registro</th><th>Estado</th><th />
-                        </tr>
-                        </thead>
-                        <tbody>
+            <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden
+                             transition-all duration-300 hover:shadow-lg">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead>Tipo</TableHead><TableHead>Nombre</TableHead><TableHead>Correo</TableHead>
+                            <TableHead>Teléfono</TableHead><TableHead>Ciudad</TableHead><TableHead>Registro</TableHead>
+                            <TableHead>Estado</TableHead><TableHead />
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {isLoading ? (
-                            <tr><td colSpan={8}><PageLoader /></td></tr>
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={8}><TableSkeleton rows={5} /></TableCell>
+                            </TableRow>
                         ) : pagination.pageData.length === 0 ? (
-                            <tr><td colSpan={8}><EmptyState icon={Users} title="Sin clientes registrados" description="Registra el primer cliente con el botón 'Nuevo cliente'." /></td></tr>
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={8}>
+                                    <EmptyState icon={Users} title="Sin clientes registrados" description="Registra el primer cliente con el botón 'Nuevo cliente'." />
+                                </TableCell>
+                            </TableRow>
                         ) : (
                             pagination.pageData.map(c => (
-                                <tr key={c.id_cliente}>
-                                    <td>
-                                        <span className="flex items-center gap-1.5 text-xs text-ink-100">
+                                <TableRow key={c.id_cliente}>
+                                    <TableCell>
+                                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                             {c.tipo_cliente === 'empresa'
-                                                ? <Building2 size={13} className="text-amber-400" />
-                                                : <User size={13} className="text-blue-400" />}
+                                                ? <Building2 size={13} className="text-chart-3" />
+                                                : <User size={13} className="text-chart-1" />}
                                             {c.tipo_cliente}
                                         </span>
-                                    </td>
-                                    <td className="font-medium">{c.nombre_completo || `${c.nombre} ${c.apellido ?? ''}`}</td>
-                                    <td className="text-ink-100 text-xs">{c.correo_electronico}</td>
-                                    <td className="font-mono text-xs text-ink-50">{c.telefono_principal}</td>
-                                    <td className="text-ink-100">{c.ciudad}</td>
-                                    <td className="text-ink-200 text-xs">
+                                    </TableCell>
+                                    <TableCell className="font-medium text-foreground">{c.nombre_completo || `${c.nombre} ${c.apellido ?? ''}`}</TableCell>
+                                    <TableCell className="text-muted-foreground text-xs">{c.correo_electronico}</TableCell>
+                                    <TableCell className="font-mono text-xs text-muted-foreground">{c.telefono_principal}</TableCell>
+                                    <TableCell className="text-muted-foreground">{c.ciudad}</TableCell>
+                                    <TableCell className="text-muted-foreground text-xs">
                                         {c.fecha_registro ? new Date(c.fecha_registro).toLocaleDateString('es-BO') : '—'}
-                                    </td>
-                                    <td>
-                                        <span className={`text-xs px-2 py-0.5 rounded border ${
-                                            c.activo
-                                                ? 'bg-green-950/40 text-green-400 border-green-800/50'
-                                                : 'bg-ink-700 text-ink-200 border-ink-600'}`}>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={c.activo
+                                            ? 'font-medium bg-secondary/10 text-secondary border-secondary/30'
+                                            : 'font-medium bg-muted text-muted-foreground border-border'}>
                                             {c.activo ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </td>
-                                    <td>
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
                                         {(canEdit || canDelete) && (
                                             <div className="flex gap-1">
                                                 {canEdit && (
-                                                    <button onClick={() => openEdit(c)}
-                                                            className="p-1.5 rounded text-ink-300 hover:text-amber-400 hover:bg-amber-500/10 transition-colors">
+                                                    <Button variant="ghost" size="icon" onClick={() => openEdit(c)}
+                                                            className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
                                                         <Edit2 size={13} />
-                                                    </button>
+                                                    </Button>
                                                 )}
                                                 {canDelete && (
-                                                    <button onClick={() => setDeleteTarget(c)}
-                                                            className="p-1.5 rounded text-ink-300 hover:text-red-400 hover:bg-red-950/40 transition-colors">
+                                                    <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(c)}
+                                                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                                                         <Trash2 size={13} />
-                                                    </button>
+                                                    </Button>
                                                 )}
                                             </div>
                                         )}
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
-                        </tbody>
-                    </table>
-                </div>
+                    </TableBody>
+                </Table>
 
                 {/* Paginación */}
                 {!isLoading && (
@@ -235,7 +243,7 @@ export default function ClientesView() {
                             <label className="label">Nombre *</label>
                             <input {...register('nombre')} placeholder="Juan"
                                    className={`input ${errors.nombre ? 'input-error' : ''}`} />
-                            {errors.nombre && <p className="text-red-400 text-xs mt-1">{errors.nombre.message}</p>}
+                            {errors.nombre && <p className="text-destructive text-xs mt-1">{errors.nombre.message}</p>}
                         </div>
                         <div>
                             <label className="label">Apellido</label>
@@ -248,7 +256,7 @@ export default function ClientesView() {
                             <label className="label">Correo electrónico *</label>
                             <input {...register('correo_electronico')} type="email" placeholder="juan@ejemplo.com"
                                    className={`input ${errors.correo_electronico ? 'input-error' : ''}`} />
-                            {errors.correo_electronico && <p className="text-red-400 text-xs mt-1">{errors.correo_electronico.message}</p>}
+                            {errors.correo_electronico && <p className="text-destructive text-xs mt-1">{errors.correo_electronico.message}</p>}
                         </div>
                         <div>
                             <label className="label">Teléfono principal *</label>
@@ -263,8 +271,8 @@ export default function ClientesView() {
                     </div>
 
                     {/* Dirección */}
-                    <div className="border-t border-ink-600 pt-3">
-                        <p className="text-xs text-ink-100 uppercase tracking-wider mb-3">Dirección</p>
+                    <div className="border-t border-border pt-3">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Dirección</p>
                         <div className="grid grid-cols-2 gap-3">
                             {DIRECCION_FIELDS.map(({ name, label, placeholder }) => (
                                 <div key={name}>
@@ -276,19 +284,19 @@ export default function ClientesView() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border">
                         <input type="checkbox" id="activo_c" {...register('activo')}
-                               className="w-4 h-4 rounded border-ink-500 accent-amber-500" />
-                        <label htmlFor="activo_c" className="text-sm text-cream cursor-pointer">Cliente activo</label>
+                               className="w-4 h-4 rounded cursor-pointer accent-primary" />
+                        <label htmlFor="activo_c" className="text-sm text-foreground cursor-pointer select-none">Cliente activo</label>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-2 border-t border-ink-600">
-                        <button type="button" onClick={() => { setModalOpen(false); reset(); }} className="btn-secondary">Cancelar</button>
-                        <button type="submit" disabled={isSubmitting} className="btn-primary">
+                    <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                        <Button type="button" variant="outline" onClick={() => { setModalOpen(false); reset(); }}>Cancelar</Button>
+                        <Button type="submit" disabled={isSubmitting} className="hover:scale-[1.02] transition-transform">
                             {isSubmitting
                                 ? <><Loader2 size={14} className="animate-spin" /> Guardando...</>
                                 : editTarget ? 'Actualizar' : 'Registrar cliente'}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </Modal>

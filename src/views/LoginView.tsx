@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { authApi } from '@/api/services';
+import { Button } from '@/components/ui/button';
+import Modal from '@/components/shared/Modal';
 import toast from 'react-hot-toast';
 
 const schema = z.object({
@@ -54,12 +56,12 @@ export default function LoginView() {
     };
 
     return (
-        <div className="min-h-screen bg-cafe-900 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-sidebar flex items-center justify-center p-4 relative overflow-hidden">
 
             {/* Fondo decorativo */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-dorado-500/10 blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-dorado-500/10 blur-3xl" />
+                <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/10 blur-3xl" />
+                <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-primary/10 blur-3xl" />
                 <div className="absolute inset-0 opacity-[0.03]"
                      style={{
                          backgroundImage: 'linear-gradient(#C6A75E 1px, transparent 1px), linear-gradient(90deg, #C6A75E 1px, transparent 1px)',
@@ -76,17 +78,18 @@ export default function LoginView() {
                          bg-cafe-gradient shadow-glow-cafe mb-5 animate-fade-in">
                         <span className="font-display font-bold text-white text-xl">NT</span>
                     </div>
-                    <h1 className="font-display text-3xl font-semibold text-white mb-1">
+                    <h1 className="font-display text-3xl font-semibold text-sidebar-foreground mb-1">
                         Nueva Tendencia
                     </h1>
-                    <p className="text-cafe-100 text-sm">Sistema de Gestión Integral</p>
+                    <p className="text-sidebar-foreground/70 text-sm">Sistema de Gestión Integral</p>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white border border-surface-border rounded-lg p-8">
+                <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-8
+                                 transition-all duration-300 hover:shadow-lg">
                     <div className="mb-6">
-                        <h2 className="font-display text-xl font-medium text-cafe-950">Iniciar sesión</h2>
-                        <p className="text-sm text-cafe-500 mt-1">Ingresa tus credenciales para continuar</p>
+                        <h2 className="font-display text-xl font-medium text-foreground">Iniciar sesión</h2>
+                        <p className="text-sm text-muted-foreground mt-1">Ingresa tus credenciales para continuar</p>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -100,7 +103,7 @@ export default function LoginView() {
                                 className={`input ${errors.email ? 'input-error' : ''}`}
                                 autoComplete="email"
                             />
-                            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+                            {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
                         </div>
 
                         {/* Password */}
@@ -115,95 +118,80 @@ export default function LoginView() {
                                     autoComplete="current-password"
                                 />
                                 <button type="button" onClick={() => setShowPass(v => !v)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-cafe-400 hover:text-cafe-900 transition-colors">
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                                     {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                                 </button>
                             </div>
-                            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+                            {errors.password && <p className="text-destructive text-xs mt-1">{errors.password.message}</p>}
                         </div>
 
-                        <button type="submit" disabled={isLoading} className="btn-primary w-full justify-center mt-2">
+                        <Button type="submit" disabled={isLoading} className="w-full justify-center mt-2 hover:scale-[1.01] transition-transform">
                             {isLoading
                                 ? <><Loader2 size={15} className="animate-spin" /> Ingresando...</>
                                 : 'Ingresar al sistema'
                             }
-                        </button>
+                        </Button>
 
                         <div className="text-center pt-1">
                             <button
                                 type="button"
                                 onClick={() => setForgotOpen(true)}
-                                className="text-sm text-cafe-500 hover:text-cafe-700 transition-colors">
+                                className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                                 ¿Olvidaste tu contraseña?
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <p className="text-center text-cafe-300 text-xs mt-6">
+                <p className="text-center text-sidebar-foreground/40 text-xs mt-6">
                     Calzados Nueva Tendencia · Cochabamba, Bolivia
                 </p>
-                <p className="text-center text-cafe-600 text-2xs mt-1">v1.0.0</p>
+                <p className="text-center text-sidebar-foreground/25 text-2xs mt-1">v1.0.0</p>
             </div>
 
             {/* Modal: Olvidé mi contraseña */}
-            {forgotOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-                     onClick={closeForgot}>
-                    <div className="bg-white border border-surface-border rounded-lg p-8 w-full max-w-sm"
-                         onClick={e => e.stopPropagation()}>
-
-                        {forgotSent ? (
-                            <div className="flex flex-col items-center gap-3 py-2 text-center">
-                                <CheckCircle size={36} className="text-green-500" />
-                                <p className="font-display text-lg font-medium text-cafe-950">¡Correo enviado!</p>
-                                <p className="text-sm text-cafe-500">
-                                    Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.
-                                </p>
-                                <button onClick={closeForgot} className="btn-primary w-full justify-center mt-2">
-                                    Entendido
-                                </button>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="mb-5">
-                                    <h2 className="font-display text-xl font-medium text-cafe-950">
-                                        ¿Olvidaste tu contraseña?
-                                    </h2>
-                                    <p className="text-sm text-cafe-500 mt-1">
-                                        Ingresa tu email y te enviaremos un enlace para restablecerla.
-                                    </p>
-                                </div>
-                                <form onSubmit={handleForgot} className="space-y-4" noValidate>
-                                    <div>
-                                        <label className="label">Correo electrónico</label>
-                                        <input
-                                            type="email"
-                                            value={forgotEmail}
-                                            onChange={e => setForgotEmail(e.target.value)}
-                                            placeholder="tu@correo.com"
-                                            className="input"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="flex gap-2 pt-1">
-                                        <button type="button" onClick={closeForgot}
-                                                className="btn-secondary flex-1 justify-center">
-                                            Cancelar
-                                        </button>
-                                        <button type="submit" disabled={forgotLoading}
-                                                className="btn-primary flex-1 justify-center">
-                                            {forgotLoading
-                                                ? <><Loader2 size={14} className="animate-spin" /> Enviando...</>
-                                                : 'Enviar enlace'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </>
-                        )}
+            <Modal
+                isOpen={forgotOpen}
+                onClose={closeForgot}
+                title={forgotSent ? '¡Correo enviado!' : '¿Olvidaste tu contraseña?'}
+                subtitle={forgotSent ? undefined : 'Ingresa tu email y te enviaremos un enlace para restablecerla.'}
+                size="sm">
+                {forgotSent ? (
+                    <div className="flex flex-col items-center gap-3 py-2 text-center">
+                        <CheckCircle size={36} className="text-secondary" />
+                        <p className="text-sm text-muted-foreground">
+                            Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.
+                        </p>
+                        <Button onClick={closeForgot} className="w-full justify-center mt-2">
+                            Entendido
+                        </Button>
                     </div>
-                </div>
-            )}
+                ) : (
+                    <form onSubmit={handleForgot} className="space-y-4" noValidate>
+                        <div>
+                            <label className="label">Correo electrónico</label>
+                            <input
+                                type="email"
+                                value={forgotEmail}
+                                onChange={e => setForgotEmail(e.target.value)}
+                                placeholder="tu@correo.com"
+                                className="input"
+                                required
+                            />
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                            <Button type="button" variant="outline" onClick={closeForgot} className="flex-1 justify-center">
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={forgotLoading} className="flex-1 justify-center">
+                                {forgotLoading
+                                    ? <><Loader2 size={14} className="animate-spin" /> Enviando...</>
+                                    : 'Enviar enlace'}
+                            </Button>
+                        </div>
+                    </form>
+                )}
+            </Modal>
         </div>
     );
 }

@@ -10,8 +10,11 @@ import {
 import Modal from '@/components/shared/Modal';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import Pagination from '@/components/shared/Pagination';
-import PageLoader from '@/components/shared/PageLoader';
+import { TableSkeleton } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { usePagination } from '@/hooks/usePagination';
 import { usuariosApi } from '@/api/services';
 import type { UsuarioAdmin, CreateUsuarioDto, UpdateUsuarioDto } from '@/types';
@@ -157,94 +160,91 @@ export default function UsuariosView() {
 
             {/* Búsqueda */}
             <div className="relative w-72">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-200" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input value={search} onChange={e => setSearch(e.target.value)}
                        placeholder="Nombre o email..." className="input pl-9" />
             </div>
 
             {/* Tabla */}
-            <div className="card overflow-hidden">
-                <div className="table-container">
-                    <table className="table table-highlight">
-                        <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Email</th>
-                            <th>Rol</th>
-                            <th>Estado</th>
-                            <th />
-                        </tr>
-                        </thead>
-                        <tbody>
+            <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden
+                             transition-all duration-300 hover:shadow-lg">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead>Nombre</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Rol</TableHead>
+                            <TableHead>Estado</TableHead>
+                            <TableHead />
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {isLoading ? (
-                            <tr><td colSpan={5}><PageLoader /></td></tr>
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={5}><TableSkeleton rows={5} /></TableCell>
+                            </TableRow>
                         ) : pagination.pageData.length === 0 ? (
-                            <tr>
-                                <td colSpan={5}>
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={5}>
                                     <EmptyState icon={Users} title="Sin usuarios registrados"
                                                 description="Crea el primer usuario con el botón 'Nuevo usuario'." />
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         ) : (
                             pagination.pageData.map(u => (
-                                <tr key={u.id}>
-                                    <td className="font-medium">{u.nombre} {u.apellido}</td>
-                                    <td className="text-ink-100 text-xs">{u.email}</td>
-                                    <td>
-                                        <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${
-                                            u.role === 'admin'
-                                                ? 'bg-dorado-500/10 text-dorado-400 border-dorado-600/30'
-                                                : 'bg-ink-700 text-ink-100 border-ink-600'
-                                        }`}>
+                                <TableRow key={u.id}>
+                                    <TableCell className="font-medium text-foreground">{u.nombre} {u.apellido}</TableCell>
+                                    <TableCell className="text-muted-foreground text-xs">{u.email}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={u.role === 'admin'
+                                            ? 'font-medium gap-1 bg-chart-3/10 text-chart-3 border-chart-3/30'
+                                            : 'font-medium gap-1 bg-muted text-muted-foreground border-border'}>
                                             {u.role === 'admin'
                                                 ? <ShieldCheck size={11} />
                                                 : <UserIcon size={11} />}
                                             {u.role}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`text-xs px-2 py-0.5 rounded border ${
-                                            u.activo
-                                                ? 'bg-green-950/40 text-green-400 border-green-800/50'
-                                                : 'bg-ink-700 text-ink-200 border-ink-600'
-                                        }`}>
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={u.activo
+                                            ? 'font-medium bg-secondary/10 text-secondary border-secondary/30'
+                                            : 'font-medium bg-muted text-muted-foreground border-border'}>
                                             {u.activo ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </td>
-                                    <td>
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
                                         <div className="flex gap-1 items-center">
-                                            <button
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 onClick={() => handleToggle(u)}
                                                 disabled={toggling === u.id}
                                                 title={u.activo ? 'Desactivar usuario' : 'Activar usuario'}
-                                                className={`p-1.5 rounded transition-colors ${
-                                                    u.activo
-                                                        ? 'text-green-400 hover:text-green-300 hover:bg-green-950/30'
-                                                        : 'text-ink-300 hover:text-green-400 hover:bg-green-950/30'
-                                                }`}>
+                                                className={`h-7 w-7 ${u.activo
+                                                    ? 'text-secondary hover:text-secondary hover:bg-secondary/10'
+                                                    : 'text-muted-foreground hover:text-secondary hover:bg-secondary/10'}`}>
                                                 {toggling === u.id
                                                     ? <Loader2 size={13} className="animate-spin" />
                                                     : u.activo
                                                         ? <ToggleRight size={16} />
                                                         : <ToggleLeft size={16} />
                                                 }
-                                            </button>
-                                            <button onClick={() => openEdit(u)}
-                                                    className="p-1.5 rounded text-ink-300 hover:text-amber-400 hover:bg-amber-500/10 transition-colors">
+                                            </Button>
+                                            <Button variant="ghost" size="icon" onClick={() => openEdit(u)}
+                                                    className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
                                                 <Edit2 size={13} />
-                                            </button>
-                                            <button onClick={() => setDeleteTarget(u)}
-                                                    className="p-1.5 rounded text-ink-300 hover:text-red-400 hover:bg-red-950/40 transition-colors">
+                                            </Button>
+                                            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(u)}
+                                                    className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                                                 <Trash2 size={13} />
-                                            </button>
+                                            </Button>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
-                        </tbody>
-                    </table>
-                </div>
+                    </TableBody>
+                </Table>
 
                 {!isLoading && (
                     <div className="px-4 pb-4">
@@ -273,13 +273,13 @@ export default function UsuariosView() {
                             <label className="label">Nombre *</label>
                             <input {...register('nombre')} placeholder="Juan"
                                    className={`input ${errors.nombre ? 'input-error' : ''}`} />
-                            {errors.nombre && <p className="text-red-400 text-xs mt-1">{errors.nombre.message}</p>}
+                            {errors.nombre && <p className="text-destructive text-xs mt-1">{errors.nombre.message}</p>}
                         </div>
                         <div>
                             <label className="label">Apellido *</label>
                             <input {...register('apellido')} placeholder="Pérez"
                                    className={`input ${errors.apellido ? 'input-error' : ''}`} />
-                            {errors.apellido && <p className="text-red-400 text-xs mt-1">{errors.apellido.message}</p>}
+                            {errors.apellido && <p className="text-destructive text-xs mt-1">{errors.apellido.message}</p>}
                         </div>
                     </div>
 
@@ -287,7 +287,7 @@ export default function UsuariosView() {
                         <label className="label">Correo electrónico *</label>
                         <input {...register('email')} type="email" placeholder="usuario@nuevatendencia.com"
                                className={`input ${errors.email ? 'input-error' : ''}`} />
-                        {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+                        {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
                     </div>
 
                     <div>
@@ -302,7 +302,7 @@ export default function UsuariosView() {
                                 className="input pr-10"
                             />
                             <button type="button" onClick={() => setShowPass(v => !v)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-300 hover:text-cream transition-colors">
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                             </button>
                         </div>
@@ -316,16 +316,15 @@ export default function UsuariosView() {
                         </select>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-2 border-t border-ink-600">
-                        <button type="button" onClick={() => { setModalOpen(false); reset(); }}
-                                className="btn-secondary">
+                    <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                        <Button type="button" variant="outline" onClick={() => { setModalOpen(false); reset(); }}>
                             Cancelar
-                        </button>
-                        <button type="submit" disabled={isSubmitting} className="btn-primary">
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting} className="hover:scale-[1.02] transition-transform">
                             {isSubmitting
                                 ? <><Loader2 size={14} className="animate-spin" /> Guardando...</>
                                 : editTarget ? 'Actualizar' : 'Crear usuario'}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </Modal>

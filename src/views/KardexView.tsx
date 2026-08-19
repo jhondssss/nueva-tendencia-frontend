@@ -10,8 +10,11 @@ import toast from 'react-hot-toast';
 import { kardexApi, insumoApi } from '@/api/services';
 import type { KardexMovimiento, Insumo, TipoMovimiento } from '@/types';
 import { useRole } from '@/hooks/useRole';
-import PageLoader from '@/components/shared/PageLoader';
+import { TableSkeleton } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { clsx } from 'clsx';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -31,9 +34,9 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 const TIPO_BADGE: Record<TipoMovimiento, string> = {
-    entrada: 'bg-green-100 text-green-700 border border-green-200',
-    salida:  'bg-red-100   text-red-700   border border-red-200',
-    ajuste:  'bg-blue-100  text-blue-700  border border-blue-200',
+    entrada: 'bg-secondary/10 text-secondary border-secondary/30',
+    salida:  'bg-destructive/10 text-destructive border-destructive/30',
+    ajuste:  'bg-chart-3/10 text-chart-3 border-chart-3/30',
 };
 
 const TIPO_ICON: Record<TipoMovimiento, typeof ArrowDownCircle> = {
@@ -174,19 +177,20 @@ export default function KardexView() {
             {isAdmin && (
                 <section className="space-y-4">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-1 h-5 rounded-full bg-dorado-500" />
-                        <h2 className="text-xs font-semibold text-cafe-700 uppercase tracking-widest">
+                        <div className="w-1 h-5 rounded-full bg-primary" />
+                        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                             Registrar Movimiento
                         </h2>
                     </div>
 
-                    <div className="card p-5">
+                    <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5
+                                    transition-all duration-200 hover:shadow-lg">
                         <form onSubmit={handleSubmit(onSubmit)}
                               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
                             {/* Insumo */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-cafe-700">Insumo</label>
+                                <label className="text-xs font-medium text-muted-foreground">Insumo</label>
                                 <select {...register('insumoId')} className="select">
                                     <option value={0}>Selecciona un insumo</option>
                                     {insumos.map(i => (
@@ -196,45 +200,45 @@ export default function KardexView() {
                                     ))}
                                 </select>
                                 {errors.insumoId && (
-                                    <span className="text-red-500 text-xs">{errors.insumoId.message}</span>
+                                    <span className="text-destructive text-xs">{errors.insumoId.message}</span>
                                 )}
                             </div>
 
                             {/* Tipo */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-cafe-700">Tipo</label>
+                                <label className="text-xs font-medium text-muted-foreground">Tipo</label>
                                 <select {...register('tipo')} className="select">
                                     <option value="entrada">Entrada</option>
                                     <option value="salida">Salida</option>
                                     <option value="ajuste">Ajuste</option>
                                 </select>
                                 {errors.tipo && (
-                                    <span className="text-red-500 text-xs">{errors.tipo.message}</span>
+                                    <span className="text-destructive text-xs">{errors.tipo.message}</span>
                                 )}
                             </div>
 
                             {/* Cantidad */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-cafe-700">Cantidad</label>
+                                <label className="text-xs font-medium text-muted-foreground">Cantidad</label>
                                 <input {...register('cantidad')} type="number" min={1}
                                        className="input" placeholder="Ej: 10" />
                                 {errors.cantidad && (
-                                    <span className="text-red-500 text-xs">{errors.cantidad.message}</span>
+                                    <span className="text-destructive text-xs">{errors.cantidad.message}</span>
                                 )}
                             </div>
 
                             {/* Motivo */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-cafe-700">Motivo (opcional)</label>
+                                <label className="text-xs font-medium text-muted-foreground">Motivo (opcional)</label>
                                 <input {...register('motivo')} type="text"
                                        className="input" placeholder="Ej: Compra proveedor" />
                             </div>
 
                             {/* Submit */}
                             <div className="sm:col-span-2 lg:col-span-4 flex justify-end pt-1">
-                                <button type="submit" disabled={submitting} className="btn-primary">
+                                <Button type="submit" disabled={submitting} className="hover:scale-[1.02] transition-transform">
                                     {submitting ? 'Registrando...' : 'Registrar movimiento'}
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -244,22 +248,22 @@ export default function KardexView() {
             {/* ── Historial ───────────────────────────────────────────────────── */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-1 h-5 rounded-full bg-cafe-500" />
-                    <h2 className="text-xs font-semibold text-cafe-700 uppercase tracking-widest">
+                    <div className="w-1 h-5 rounded-full bg-secondary" />
+                    <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                         Historial de Movimientos
                     </h2>
                     {!loadingData && (
-                        <span className="text-xs text-cafe-400">
+                        <span className="text-xs text-muted-foreground/70">
                             ({filtered.length} {filtered.length === 1 ? 'registro' : 'registros'})
                         </span>
                     )}
                 </div>
 
                 {/* ── Barra de filtros ───────────────────────────────────────── */}
-                <div className="flex flex-wrap items-end gap-3 p-4 bg-crema-50 border border-surface-border rounded-xl">
+                <div className="flex flex-wrap items-end gap-3 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur">
                     {/* Año */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-cafe-700">Año</label>
+                        <label className="text-xs font-medium text-muted-foreground">Año</label>
                         <select
                             value={filterAnio}
                             onChange={e => { setFilterAnio(Number(e.target.value)); setPage(1); }}
@@ -272,7 +276,7 @@ export default function KardexView() {
 
                     {/* Mes */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-cafe-700">Mes</label>
+                        <label className="text-xs font-medium text-muted-foreground">Mes</label>
                         <select
                             value={filterMes}
                             onChange={e => { setFilterMes(Number(e.target.value)); setPage(1); }}
@@ -285,7 +289,7 @@ export default function KardexView() {
 
                     {/* Tipo */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-cafe-700">Tipo</label>
+                        <label className="text-xs font-medium text-muted-foreground">Tipo</label>
                         <select
                             value={filterTipo}
                             onChange={e => { setFilterTipo(e.target.value as typeof filterTipo); setPage(1); }}
@@ -300,7 +304,7 @@ export default function KardexView() {
 
                     {/* Nombre */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-cafe-700">Nombre</label>
+                        <label className="text-xs font-medium text-muted-foreground">Nombre</label>
                         <input
                             type="text"
                             value={filterProd}
@@ -312,91 +316,84 @@ export default function KardexView() {
 
                     {/* Limpiar */}
                     {hasActiveFilters && (
-                        <button
-                            onClick={resetFilters}
-                            className="flex items-center gap-1.5 btn-secondary text-xs h-9 self-end"
-                        >
+                        <Button variant="outline" onClick={resetFilters} className="h-9 self-end text-xs">
                             <X size={12} />
                             Limpiar filtros
-                        </button>
+                        </Button>
                     )}
                 </div>
 
-                <div className="card overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="table table-highlight w-full">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Producto</th>
-                                    <th>Tipo</th>
-                                    <th className="text-right">Cantidad</th>
-                                    <th className="text-right">Stock ant.</th>
-                                    <th className="text-right">Stock nuevo</th>
-                                    <th>Motivo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loadingData ? (
-                                    <tr>
-                                        <td colSpan={7}><PageLoader /></td>
-                                    </tr>
-                                ) : paginated.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7}>
-                                            <EmptyState
-                                                icon={ArrowLeftRight}
-                                                title="Sin movimientos"
-                                                description={hasActiveFilters ? 'Ningún movimiento coincide con los filtros aplicados.' : 'Los movimientos de inventario aparecerán aquí.'}
-                                            />
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    paginated.map(m => {
-                                        const TipoIcon = TIPO_ICON[m.tipo];
-                                        return (
-                                            <tr key={m.id_movimiento}>
-                                                <td className="whitespace-nowrap text-xs text-cafe-500">
-                                                    {new Date(m.fecha).toLocaleDateString('es-HN', {
-                                                        day: '2-digit', month: 'short', year: 'numeric',
-                                                    })}
-                                                </td>
-                                                <td>
-                                                    <p className="text-sm font-medium text-cafe-900 leading-tight">
-                                                        {m.producto?.nombre_modelo ?? m.insumo?.nombre ?? 'Sin referencia'}
-                                                    </p>
-                                                    <p className="text-2xs text-cafe-400">
-                                                        {m.producto?.marca ?? (m.insumo ? 'Insumo' : '')}
-                                                    </p>
-                                                </td>
-                                                <td>
-                                                    <span className={clsx(
-                                                        'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full',
-                                                        TIPO_BADGE[m.tipo],
-                                                    )}>
-                                                        <TipoIcon size={11} />
-                                                        {m.tipo}
-                                                    </span>
-                                                </td>
-                                                <td className="text-right font-semibold text-cafe-900">
-                                                    {m.cantidad}
-                                                </td>
-                                                <td className="text-right text-cafe-500 text-sm">
-                                                    {m.stock_anterior}
-                                                </td>
-                                                <td className="text-right text-cafe-900 font-medium text-sm">
-                                                    {m.stock_nuevo}
-                                                </td>
-                                                <td className="text-xs text-cafe-500 max-w-[160px] truncate">
-                                                    {m.motivo ?? '—'}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden
+                                transition-all duration-300 hover:shadow-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead>Fecha</TableHead>
+                                <TableHead>Producto</TableHead>
+                                <TableHead>Tipo</TableHead>
+                                <TableHead className="text-right">Cantidad</TableHead>
+                                <TableHead className="text-right">Stock ant.</TableHead>
+                                <TableHead className="text-right">Stock nuevo</TableHead>
+                                <TableHead>Motivo</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {loadingData ? (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={7}><TableSkeleton rows={6} /></TableCell>
+                                </TableRow>
+                            ) : paginated.length === 0 ? (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={7}>
+                                        <EmptyState
+                                            icon={ArrowLeftRight}
+                                            title="Sin movimientos"
+                                            description={hasActiveFilters ? 'Ningún movimiento coincide con los filtros aplicados.' : 'Los movimientos de inventario aparecerán aquí.'}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                paginated.map(m => {
+                                    const TipoIcon = TIPO_ICON[m.tipo];
+                                    return (
+                                        <TableRow key={m.id_movimiento}>
+                                            <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                                                {new Date(m.fecha).toLocaleDateString('es-HN', {
+                                                    day: '2-digit', month: 'short', year: 'numeric',
+                                                })}
+                                            </TableCell>
+                                            <TableCell>
+                                                <p className="text-sm font-medium text-foreground leading-tight">
+                                                    {m.producto?.nombre_modelo ?? m.insumo?.nombre ?? 'Sin referencia'}
+                                                </p>
+                                                <p className="text-2xs text-muted-foreground">
+                                                    {m.producto?.marca ?? (m.insumo ? 'Insumo' : '')}
+                                                </p>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className={clsx('font-medium gap-1', TIPO_BADGE[m.tipo])}>
+                                                    <TipoIcon size={11} />
+                                                    {m.tipo}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right font-semibold text-foreground">
+                                                {m.cantidad}
+                                            </TableCell>
+                                            <TableCell className="text-right text-muted-foreground text-sm">
+                                                {m.stock_anterior}
+                                            </TableCell>
+                                            <TableCell className="text-right text-foreground font-medium text-sm">
+                                                {m.stock_nuevo}
+                                            </TableCell>
+                                            <TableCell className="text-xs text-muted-foreground max-w-[160px] truncate">
+                                                {m.motivo ?? '—'}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
 
                     {/* Pagination */}
                     {!loadingData && (
