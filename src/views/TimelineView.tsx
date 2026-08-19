@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Check, CalendarX } from 'lucide-react';
+import { Check, CalendarX, Workflow } from 'lucide-react';
 import { usePedidoStore } from '@/stores/index';
-import PageLoader from '@/components/shared/PageLoader';
+import EmptyState from '@/components/shared/EmptyState';
+import { TimelineCardSkeleton } from '@/components/shared/Skeleton';
 import type { EstadoPedido, UnidadPedido, Pedido } from '@/types';
 import { clsx } from 'clsx';
 import { parseLocalDate } from '@/utils/dates';
@@ -49,21 +50,25 @@ function PedidoCard({ p }: { p: Pedido }) {
     const vencido = fechaEntrega < hoy && p.estado !== 'Terminado';
 
     return (
-        <div className={clsx('card p-4', vencido && 'border-red-300')}>
+        <div className={clsx(
+            'rounded-xl border bg-card/50 backdrop-blur p-4',
+            'transition-all duration-200 hover:shadow-lg hover:scale-[1.01]',
+            vencido ? 'border-destructive/40' : 'border-border/50',
+        )}>
 
             {/* Cabecera */}
             <div className="flex items-start justify-between gap-3 mb-5">
                 <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="font-mono text-xs text-cafe-400 flex-shrink-0">
+                    <span className="font-mono text-xs text-muted-foreground flex-shrink-0">
                         #{p.id_pedido}
                     </span>
                     <div className="min-w-0">
-                        <p className="text-sm font-semibold text-cafe-950 truncate">
+                        <p className="text-sm font-semibold text-foreground truncate">
                             {p.cliente.nombre} {p.cliente.apellido ?? ''}
                         </p>
-                        <p className="text-xs text-cafe-500 truncate">{p.producto?.nombre_modelo ?? '—'}</p>
+                        <p className="text-xs text-muted-foreground truncate">{p.producto?.nombre_modelo ?? '—'}</p>
                         {p.cantidad != null && p.unidad && (
-                            <p className="text-xs text-cafe-400 font-mono mt-0.5">
+                            <p className="text-xs text-muted-foreground font-mono mt-0.5">
                                 {formatCantidad(p.cantidad, p.unidad, p.cantidad_pares)}
                             </p>
                         )}
@@ -73,12 +78,12 @@ function PedidoCard({ p }: { p: Pedido }) {
                 <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                     <span className={clsx(
                         'text-xs font-mono flex items-center gap-1',
-                        vencido ? 'text-red-500 font-semibold' : 'text-cafe-400',
+                        vencido ? 'text-destructive font-semibold' : 'text-muted-foreground',
                     )}>
                         {vencido && <CalendarX size={11} />}
                         {fechaEntrega.toLocaleDateString('es-BO')}
                     </span>
-                    <span className="text-xs font-mono text-dorado-600">
+                    <span className="text-xs font-mono text-primary">
                         Bs. {Number(p.total).toFixed(2)}
                     </span>
                 </div>
@@ -93,12 +98,12 @@ function PedidoCard({ p }: { p: Pedido }) {
              */}
             <div className="relative">
                 {/* Línea de fondo */}
-                <div className="absolute top-[10px] left-[10%] right-[10%] h-px bg-cafe-200" />
+                <div className="absolute top-[10px] left-[10%] right-[10%] h-px bg-border" />
 
                 {/* Línea de progreso */}
                 {currentIdx > 0 && (
                     <div
-                        className="absolute top-[10px] left-[10%] h-px bg-cafe-700 transition-all duration-500"
+                        className="absolute top-[10px] left-[10%] h-px bg-primary transition-all duration-500"
                         style={{ width: `${(currentIdx / (ESTADOS.length - 1)) * 80}%` }}
                     />
                 )}
@@ -111,19 +116,19 @@ function PedidoCard({ p }: { p: Pedido }) {
                         return (
                             <div key={estado} className="flex flex-col items-center gap-1.5">
                                 <div className={clsx(
-                                    'w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0',
-                                    done   && 'bg-cafe-700 text-white',
-                                    active && 'bg-dorado-500 text-white shadow-[0_0_0_4px_rgba(198,167,94,0.18)]',
-                                    !done && !active && 'bg-crema border-2 border-cafe-200',
+                                    'w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-200',
+                                    done   && 'bg-primary text-primary-foreground',
+                                    active && 'bg-chart-3 text-white shadow-[0_0_0_4px_hsl(var(--chart-3)/0.18)]',
+                                    !done && !active && 'bg-muted border-2 border-border',
                                 )}>
                                     {done   && <Check size={10} strokeWidth={3} />}
                                     {active && <span className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
                                 <span className={clsx(
                                     'text-2xs text-center leading-tight',
-                                    done            && 'text-cafe-500',
-                                    active          && 'text-dorado-600 font-semibold',
-                                    !done && !active && 'text-cafe-300',
+                                    done            && 'text-muted-foreground',
+                                    active          && 'text-chart-3 font-semibold',
+                                    !done && !active && 'text-muted-foreground/50',
                                 )}>
                                     {estado}
                                 </span>
@@ -165,7 +170,7 @@ export default function TimelineView() {
             {/* Header */}
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Timeline de Producción</h1>
+                    <h1 className="page-title section-title">Timeline de Producción</h1>
                     <p className="page-subtitle">{pedidos.length} pedidos en seguimiento</p>
                 </div>
             </div>
@@ -175,7 +180,7 @@ export default function TimelineView() {
 
             {/* Selectores de Año y Mes */}
             <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-cafe-700">Año</label>
+                <label className="text-xs font-medium text-muted-foreground">Año</label>
                 <select
                     value={filterAnioTimeline}
                     onChange={e => setFilterAnioTimeline(Number(e.target.value))}
@@ -187,7 +192,7 @@ export default function TimelineView() {
             </div>
 
             <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-cafe-700">Mes</label>
+                <label className="text-xs font-medium text-muted-foreground">Mes</label>
                 <select
                     value={filterMesTimeline}
                     onChange={e => setFilterMesTimeline(Number(e.target.value))}
@@ -205,10 +210,10 @@ export default function TimelineView() {
                 <button
                     onClick={() => setFilterEstado('')}
                     className={clsx(
-                        'px-3 py-1.5 rounded-full border text-xs font-medium transition-all',
+                        'px-3 py-1.5 rounded-full border text-xs font-medium transition-all duration-200',
                         filterEstado === ''
-                            ? 'bg-cafe-800 border-cafe-700 text-white'
-                            : 'bg-white border-surface-border text-cafe-500 hover:border-cafe-400',
+                            ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                            : 'bg-card/50 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground hover:scale-[1.02]',
                     )}>
                     Todos · {pedidos.length}
                 </button>
@@ -219,10 +224,10 @@ export default function TimelineView() {
                         <button key={estado}
                                 onClick={() => setFilterEstado(f => f === estado ? '' : estado)}
                                 className={clsx(
-                                    'px-3 py-1.5 rounded-full border text-xs font-medium transition-all',
+                                    'px-3 py-1.5 rounded-full border text-xs font-medium transition-all duration-200',
                                     filterEstado === estado
-                                        ? 'bg-cafe-700 border-cafe-700 text-white'
-                                        : 'bg-white border-surface-border text-cafe-500 hover:border-cafe-400',
+                                        ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                                        : 'bg-card/50 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground hover:scale-[1.02]',
                                 )}>
                             {estado} · {count}
                         </button>
@@ -232,12 +237,16 @@ export default function TimelineView() {
 
             {/* Grid de tarjetas */}
             {isLoading ? (
-                <div className="card">
-                    <PageLoader />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {Array.from({ length: 6 }).map((_, i) => <TimelineCardSkeleton key={i} />)}
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="card p-12 text-center">
-                    <p className="text-cafe-400 text-sm">No hay pedidos en este estado</p>
+                <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur">
+                    <EmptyState
+                        icon={Workflow}
+                        title="No hay pedidos en este estado"
+                        description="Ajusta los filtros o crea un nuevo pedido desde el módulo de Pedidos."
+                    />
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
