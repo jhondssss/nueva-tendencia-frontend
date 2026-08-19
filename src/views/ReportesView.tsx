@@ -2,9 +2,31 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, FileText, FileSpreadsheet, Download, Loader2, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { reportesApi } from '@/api/services';
+import { Button } from '@/components/ui/button';
 import ReportesPDF from '@/components/reportes/ReportesPDF';
 import ReportesExcel from '@/components/reportes/ReportesExcel';
 import SelectorMesAnio, { MESES } from '@/components/reportes/SelectorMesAnio';
+
+const ENTREGAS_CARDS = [
+    {
+        key: 'pdf-pedidos-entregados', icon: FileText, title: 'Pedidos Entregados PDF',
+        desc: 'Listado completo de pedidos en estado Terminado',
+        fetcher: () => reportesApi.getPdfPedidosEntregados(),
+        filename: 'pedidos-entregados.pdf',
+        label: 'Descargar PDF', icon2: Download,
+        iconBg: 'bg-destructive/10 border-destructive/20', iconCls: 'text-destructive',
+        isPdf: true,
+    },
+    {
+        key: 'excel-pedidos-entregados', icon: FileSpreadsheet, title: 'Pedidos Entregados Excel',
+        desc: 'Exportación de pedidos terminados con detalle',
+        fetcher: () => reportesApi.getExcelPedidosEntregados(),
+        filename: 'pedidos-entregados.xlsx',
+        label: 'Exportar Excel', icon2: FileSpreadsheet,
+        iconBg: 'bg-secondary/10 border-secondary/20', iconCls: 'text-secondary',
+        isPdf: false,
+    },
+];
 
 export default function ReportesView() {
     const currentYear  = new Date().getFullYear();
@@ -91,7 +113,7 @@ export default function ReportesView() {
         <div className="space-y-8 animate-fade-in">
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Reportes</h1>
+                    <h1 className="page-title section-title">Reportes</h1>
                     <p className="page-subtitle">Descarga estadísticas y exporta datos</p>
                 </div>
             </div>
@@ -102,96 +124,75 @@ export default function ReportesView() {
 
             <section className="space-y-4">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-1 h-5 rounded-full bg-dorado-500" />
-                    <h2 className="text-xs font-semibold text-cafe-700 uppercase tracking-widest">
+                    <div className="w-1 h-5 rounded-full bg-chart-3" />
+                    <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                         Reportes de Entregas y Ganancias
                     </h2>
                 </div>
 
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {[
-                            {
-                                key: 'pdf-pedidos-entregados', icon: FileText, title: 'Pedidos Entregados PDF',
-                                desc: 'Listado completo de pedidos en estado Terminado',
-                                btnClass: 'bg-red-600 hover:bg-red-500',
-                                fetcher: () => reportesApi.getPdfPedidosEntregados(),
-                                filename: 'pedidos-entregados.pdf',
-                                label: 'Descargar PDF', icon2: Download,
-                                iconBg: 'bg-red-50 border-red-100', iconCls: 'text-red-600',
-                                isPdf: true,
-                            },
-                            {
-                                key: 'excel-pedidos-entregados', icon: FileSpreadsheet, title: 'Pedidos Entregados Excel',
-                                desc: 'Exportación de pedidos terminados con detalle',
-                                btnClass: 'bg-green-700 hover:bg-green-600',
-                                fetcher: () => reportesApi.getExcelPedidosEntregados(),
-                                filename: 'pedidos-entregados.xlsx',
-                                label: 'Exportar Excel', icon2: FileSpreadsheet,
-                                iconBg: 'bg-green-50 border-green-100', iconCls: 'text-green-700',
-                                isPdf: false,
-                            },
-                        ].map(({ key, icon: Icon, title, desc, btnClass, fetcher, filename, label, icon2: Icon2, iconBg, iconCls, isPdf }) => (
-                            <div key={key} className="card p-5 flex flex-col gap-4">
+                        {ENTREGAS_CARDS.map(({ key, icon: Icon, title, desc, fetcher, filename, label, icon2: Icon2, iconBg, iconCls, isPdf }) => (
+                            <div key={key}
+                                 className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5 flex flex-col gap-4
+                                            transition-all duration-200 hover:shadow-lg hover:scale-[1.01]">
                                 <div className="flex items-start gap-3">
                                     <div className={`p-2.5 rounded-lg border flex-shrink-0 ${iconBg}`}>
                                         <Icon size={18} className={iconCls} />
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-cafe-900 text-sm leading-tight">{title}</p>
-                                        <p className="text-xs text-cafe-500 mt-0.5 leading-relaxed">{desc}</p>
+                                        <p className="font-semibold text-foreground text-sm leading-tight">{title}</p>
+                                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
                                     </div>
                                 </div>
                                 {isPdf ? (
                                     <div className="mt-auto grid grid-cols-2 gap-2">
-                                        <button
+                                        <Button
+                                            variant="outline"
                                             onClick={() => void vistaPreviaConApi(`preview-${key}`, fetcher)}
                                             disabled={!!loading[`preview-${key}`]}
-                                            className="flex items-center justify-center gap-1.5 w-full px-3 py-2
-                                                       rounded-lg border border-red-200 text-red-600 hover:bg-red-50
-                                                       text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+                                            className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive">
                                             {loading[`preview-${key}`]
                                                 ? <><Loader2 size={13} className="animate-spin" /> Cargando...</>
                                                 : <><Eye size={13} /> Vista previa</>
                                             }
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
                                             onClick={() => void descargarConApi(key, fetcher, filename)}
                                             disabled={!!loading[key]}
-                                            className={`flex items-center justify-center gap-1.5 w-full px-3 py-2
-                                                        rounded-lg text-white text-sm font-medium
-                                                        disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${btnClass}`}>
+                                            className="hover:scale-[1.02] transition-transform">
                                             {loading[key]
                                                 ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
                                                 : <><Icon2 size={13} /> {label}</>
                                             }
-                                        </button>
+                                        </Button>
                                     </div>
                                 ) : (
-                                    <button
+                                    <Button
+                                        variant="secondary"
                                         onClick={() => void descargarConApi(key, fetcher, filename)}
                                         disabled={!!loading[key]}
-                                        className={`mt-auto flex items-center justify-center gap-2 w-full px-4 py-2
-                                                    rounded-lg text-white text-sm font-medium
-                                                    disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${btnClass}`}>
+                                        className="mt-auto hover:scale-[1.02] transition-transform">
                                         {loading[key]
                                             ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
                                             : <><Icon2 size={13} /> {label}</>
                                         }
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                         ))}
                     </div>
 
-                    <div className="card p-5 space-y-4">
+                    <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5 space-y-4
+                                    transition-all duration-200 hover:shadow-lg">
                         <div className="flex items-start gap-3">
-                            <div className="p-2.5 rounded-lg bg-dorado-50 border border-dorado-100 flex-shrink-0">
-                                <TrendingUp size={18} className="text-dorado-600" />
+                            <div className="p-2.5 rounded-lg bg-chart-3/10 border border-chart-3/20 flex-shrink-0">
+                                <TrendingUp size={18} className="text-chart-3" />
                             </div>
                             <div>
-                                <p className="font-semibold text-cafe-900 text-sm leading-tight">Ganancias del Mes</p>
-                                <p className="text-xs text-cafe-500 mt-0.5 leading-relaxed">
+                                <p className="font-semibold text-foreground text-sm leading-tight">Ganancias del Mes</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                                     Reporte de ingresos y ganancias para el período seleccionado
                                 </p>
                             </div>
@@ -201,44 +202,41 @@ export default function ReportesView() {
                                          onMesChange={setGananciasMes} onAnioChange={setGananciasYear} />
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <button
+                            <Button
+                                variant="outline"
                                 onClick={() => void vistaPreviaConApi('preview-pdf-ganancias',
                                     () => reportesApi.getPdfGanancias(gananciasMes, gananciasYear))}
                                 disabled={!!loading['preview-pdf-ganancias']}
-                                className="flex items-center justify-center gap-2 w-full px-4 py-2
-                                           rounded-lg border border-red-200 text-red-600 hover:bg-red-50
-                                           text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+                                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive">
                                 {loading['preview-pdf-ganancias']
                                     ? <><Loader2 size={13} className="animate-spin" /> Cargando...</>
                                     : <><Eye size={13} /> Vista previa</>
                                 }
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="destructive"
                                 onClick={() => void descargarConApi('pdf-ganancias',
                                     () => reportesApi.getPdfGanancias(gananciasMes, gananciasYear),
                                     `ganancias-${mesLabel}-${gananciasYear}.pdf`)}
                                 disabled={!!loading['pdf-ganancias']}
-                                className="flex items-center justify-center gap-2 w-full px-4 py-2
-                                           rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium
-                                           disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+                                className="hover:scale-[1.02] transition-transform">
                                 {loading['pdf-ganancias']
                                     ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
                                     : <><Download size={13} /> Descargar PDF</>
                                 }
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="secondary"
                                 onClick={() => void descargarConApi('excel-ganancias',
                                     () => reportesApi.getExcelGanancias(gananciasMes, gananciasYear),
                                     `ganancias-${mesLabel}-${gananciasYear}.xlsx`)}
                                 disabled={!!loading['excel-ganancias']}
-                                className="flex items-center justify-center gap-2 w-full px-4 py-2
-                                           rounded-lg bg-green-700 hover:bg-green-600 text-white text-sm font-medium
-                                           disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+                                className="hover:scale-[1.02] transition-transform">
                                 {loading['excel-ganancias']
                                     ? <><Loader2 size={13} className="animate-spin" /> Exportando...</>
                                     : <><FileSpreadsheet size={13} /> Exportar Excel</>
                                 }
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

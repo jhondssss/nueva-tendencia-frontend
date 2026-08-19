@@ -24,13 +24,13 @@ export default function SelectorMesAnio({ mes, anio, onMesChange, onAnioChange, 
     return (
         <div className="flex flex-wrap gap-3">
             <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-cafe-600">Mes</label>
+                <label className="text-xs font-medium text-muted-foreground">Mes</label>
                 <select value={mes} onChange={e => onMesChange(Number(e.target.value))} className="select text-sm">
                     {MESES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                 </select>
             </div>
             <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-cafe-600">Año</label>
+                <label className="text-xs font-medium text-muted-foreground">Año</label>
                 <input type="number" value={anio} min={2020} max={max}
                        onChange={e => onAnioChange(Number(e.target.value))}
                        className="input text-sm w-24" />
