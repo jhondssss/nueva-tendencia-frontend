@@ -1,10 +1,16 @@
 import { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { LogOut, Package, ShoppingBag } from 'lucide-react';
+import { clsx } from 'clsx';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMisPedidosStore } from '@/stores/index';
 import { Button } from '@/components/ui/button';
 import LeatherSeal from '@/components/shared/LeatherSeal';
+
+const NAV_LINKS = [
+    { to: '/mis-pedidos', label: 'Mis pedidos', icon: Package },
+    { to: '/catalogo',    label: 'Catálogo',    icon: ShoppingBag },
+];
 
 export default function ClienteLayout() {
     const { user, logout } = useAuthStore();
@@ -45,6 +51,24 @@ export default function ClienteLayout() {
                         <LogOut size={17} />
                     </Button>
                 </div>
+
+                <nav className="relative max-w-2xl mx-auto px-4 flex items-center gap-1 border-t border-sidebar-foreground/10">
+                    {NAV_LINKS.map(({ to, label, icon: Icon }) => (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            className={({ isActive }) => clsx(
+                                'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium border-b-2 transition-colors',
+                                isActive
+                                    ? 'text-dorado-300 border-dorado-400'
+                                    : 'text-sidebar-foreground/60 border-transparent hover:text-sidebar-foreground',
+                            )}
+                        >
+                            <Icon size={14} />
+                            {label}
+                        </NavLink>
+                    ))}
+                </nav>
             </header>
 
             <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">

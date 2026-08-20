@@ -25,6 +25,7 @@ const ResetPasswordView    = lazy(() => import('@/views/ResetPasswordView'));
 const CambiarPasswordView  = lazy(() => import('@/views/CambiarPasswordView'));
 const MisPedidosView       = lazy(() => import('@/views/MisPedidosView'));
 const MisPedidoDetalleView = lazy(() => import('@/views/MisPedidoDetalleView'));
+const CatalogoView         = lazy(() => import('@/views/CatalogoView'));
 
 function PageLoader() {
     return (
@@ -119,6 +120,7 @@ export const router = createBrowserRouter([
                                 children: [
                                     { path: '/mis-pedidos',     element: <Lazy><MisPedidosView /></Lazy> },
                                     { path: '/mis-pedidos/:id', element: <Lazy><MisPedidoDetalleView /></Lazy> },
+                                    { path: '/catalogo',        element: <Lazy><CatalogoView /></Lazy> },
                                 ],
                             },
                         ],

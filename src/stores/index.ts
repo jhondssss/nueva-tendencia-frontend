@@ -4,7 +4,7 @@ import { type AxiosError } from 'axios';
 import { clienteApi, productoApi, pedidoApi, insumoApi, dashboardApi } from '@/api/services';
 import type {
     Cliente, CreateClienteDto, UpdateClienteDto,
-    Producto, CreateProductoDto, UpdateProductoDto,
+    Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
     Insumo, CreateInsumoDto, UpdateInsumoDto,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity,
@@ -218,6 +218,23 @@ export const useMisPedidosStore = create<MisPedidosState>((set, get) => ({
                 : [...get().pedidos, data],
         });
         return data;
+    },
+}));
+
+// ─── Catálogo (portal cliente) ─────────────────────────────────────────────────
+interface CatalogoState {
+    productos: ProductoCatalogo[];
+    isLoading: boolean;
+    fetchAll:  () => Promise<void>;
+}
+
+export const useCatalogoStore = create<CatalogoState>((set) => ({
+    productos: [], isLoading: false,
+
+    fetchAll: async () => {
+        set({ isLoading: true });
+        try { const { data } = await productoApi.catalogo(); set({ productos: data }); }
+        finally { set({ isLoading: false }); }
     },
 }));
 

@@ -73,6 +73,16 @@ export interface Producto {
 export type CreateProductoDto = Omit<Producto, 'id_producto'>;
 export type UpdateProductoDto = Partial<CreateProductoDto>;
 
+// ─── Catálogo público (portal de cliente) ──────────────────────────────────────
+export interface ProductoCatalogo {
+    nombre: string;
+    descripcion: string;
+    precio: string;
+    imagen: string;
+    categoria: string | null;
+    disponible: boolean;
+}
+
 // ─── Tallas ───────────────────────────────────────────────────────────────────
 export type CategoriaCalzado = 'nino' | 'juvenil' | 'adulto';
 

@@ -3,7 +3,7 @@ import type { AxiosRequestConfig } from 'axios';
 import type {
     LoginDto, AuthResponse,
     Cliente, CreateClienteDto, UpdateClienteDto,
-    Producto, CreateProductoDto, UpdateProductoDto,
+    Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
     Insumo, CreateInsumoDto, UpdateInsumoDto,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity, ProximoPedido,
@@ -46,6 +46,7 @@ export const productoApi = {
     getAll:     ()           => api.get<Producto[]>('/productos'),
     getOne:     (id: number) => api.get<Producto>(`/productos/${id}`),
     getAlertas: ()           => api.get<Producto[]>('/productos/alertas-stock'),
+    catalogo:   ()           => api.get<ProductoCatalogo[]>('/productos/catalogo'),
 
     create: (dto: CreateProductoDto, imagen?: File) => {
         const form = new FormData();
