@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Package, Calendar, Ruler } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Package, Calendar, Ruler, Loader2, Star } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useMisPedidosStore } from '@/stores/index';
 import { formatFechaLarga } from '@/utils/dates';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import LeatherSeal from '@/components/shared/LeatherSeal';
 import StatusBadge from '@/components/shared/StatusBadge';
 import PedidoStepper from '@/components/shared/PedidoStepper';
+import StarRating from '@/components/shared/StarRating';
 import type { Pedido, UnidadPedido } from '@/types';
 
 const UNIDAD_LABELS: Record<UnidadPedido, string> = {
@@ -16,12 +18,49 @@ const UNIDAD_LABELS: Record<UnidadPedido, string> = {
     par:          'Par',
 };
 
+function formatFechaCalificacion(fechaIso: string): string {
+    return new Date(fechaIso).toLocaleDateString('es-HN', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function CalificarForm({ onSubmit }: { onSubmit: (puntuacion: number, comentario: string) => Promise<void> }) {
+    const [puntuacion, setPuntuacion] = useState(0);
+    const [comentario, setComentario] = useState('');
+    const [enviando, setEnviando]     = useState(false);
+
+    const handleSubmit = async () => {
+        if (puntuacion === 0) { toast.error('Selecciona una calificación de 1 a 5 estrellas.'); return; }
+        setEnviando(true);
+        try {
+            await onSubmit(puntuacion, comentario.trim());
+        } finally {
+            setEnviando(false);
+        }
+    };
+
+    return (
+        <div className="space-y-3">
+            <StarRating value={puntuacion} onChange={setPuntuacion} />
+            <textarea
+                value={comentario}
+                onChange={e => setComentario(e.target.value)}
+                placeholder="Cuéntanos tu experiencia (opcional)"
+                rows={3}
+                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+            />
+            <Button onClick={handleSubmit} disabled={enviando} size="sm">
+                {enviando ? <><Loader2 size={14} className="animate-spin" /> Enviando...</> : 'Enviar calificación'}
+            </Button>
+        </div>
+    );
+}
+
 export default function MisPedidoDetalleView() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
     const pedidosCargados = useMisPedidosStore(s => s.pedidos);
     const fetchOne         = useMisPedidosStore(s => s.fetchOne);
+    const calificar         = useMisPedidosStore(s => s.calificar);
 
     const [pedido, setPedido]   = useState<Pedido | null>(
         () => pedidosCargados.find(p => p.id_pedido === Number(id)) ?? null,
@@ -42,6 +81,20 @@ export default function MisPedidoDetalleView() {
             })
             .finally(() => setLoading(false));
     }, [id, fetchOne]);
+
+    const handleCalificar = async (puntuacion: number, comentario: string) => {
+        if (!pedido) return;
+        try {
+            const calificacion = await calificar(pedido.id_pedido, {
+                puntuacion,
+                comentario: comentario || undefined,
+            });
+            setPedido(p => p ? { ...p, calificacion } : p);
+            toast.success('¡Gracias por tu calificación!');
+        } catch {
+            toast.error('No pudimos registrar tu calificación. Intenta nuevamente.');
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -151,6 +204,34 @@ export default function MisPedidoDetalleView() {
                                         </div>
                                     ))}
                                 </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Calificación */}
+                    {pedido.estado === 'Terminado' && (
+                        <Card className="border-border/50 bg-card/50 backdrop-blur">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Star className="w-4 h-4 text-muted-foreground" />
+                                    <p className="label mb-0">Tu calificación</p>
+                                </div>
+
+                                {pedido.calificacion ? (
+                                    <div className="space-y-2">
+                                        <StarRating value={pedido.calificacion.puntuacion} readOnly />
+                                        {pedido.calificacion.comentario && (
+                                            <p className="text-sm text-muted-foreground whitespace-pre-line">
+                                                &ldquo;{pedido.calificacion.comentario}&rdquo;
+                                            </p>
+                                        )}
+                                        <p className="text-2xs text-muted-foreground">
+                                            Calificado el {formatFechaCalificacion(pedido.calificacion.fecha_creacion)}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <CalificarForm onSubmit={handleCalificar} />
+                                )}
                             </CardContent>
                         </Card>
                     )}

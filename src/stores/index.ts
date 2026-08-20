@@ -9,6 +9,7 @@ import type {
     Insumo, CreateInsumoDto, UpdateInsumoDto,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity,
     TopProducto, VentaMes, PrediccionStock, ProximoPedido,
+    CalificarPedidoDto, CalificacionPedido, MisPedidosFiltros,
 } from '@/types';
 
 // ─── Clientes ─────────────────────────────────────────────────────────────────
@@ -195,17 +196,18 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
 interface MisPedidosState {
     pedidos:   Pedido[];
     isLoading: boolean;
-    fetchAll:  () => Promise<void>;
+    fetchAll:  (filtros?: MisPedidosFiltros) => Promise<void>;
     fetchOne:  (id: number) => Promise<Pedido>;
+    calificar: (id: number, dto: CalificarPedidoDto) => Promise<CalificacionPedido>;
 }
 
 export const useMisPedidosStore = create<MisPedidosState>((set, get) => ({
     pedidos: [], isLoading: false,
 
-    fetchAll: async () => {
+    fetchAll: async (filtros) => {
         set({ isLoading: true });
         try {
-            const { data } = await pedidoApi.misPedidos();
+            const { data } = await pedidoApi.misPedidos(filtros);
             set({ pedidos: [...data].sort((a, b) => b.id_pedido - a.id_pedido) });
         } finally { set({ isLoading: false }); }
     },
@@ -216,6 +218,13 @@ export const useMisPedidosStore = create<MisPedidosState>((set, get) => ({
             pedidos: exists
                 ? get().pedidos.map(p => p.id_pedido === id ? data : p)
                 : [...get().pedidos, data],
+        });
+        return data;
+    },
+    calificar: async (id, dto) => {
+        const { data } = await pedidoApi.calificar(id, dto);
+        set({
+            pedidos: get().pedidos.map(p => p.id_pedido === id ? { ...p, calificacion: data } : p),
         });
         return data;
     },

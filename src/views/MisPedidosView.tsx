@@ -1,12 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, ChevronRight, Calendar } from 'lucide-react';
+import { Package, ChevronRight, Calendar, X } from 'lucide-react';
 import { useMisPedidosStore } from '@/stores/index';
 import { formatFechaLarga } from '@/utils/dates';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import StatusBadge from '@/components/shared/StatusBadge';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
+import type { EstadoPedido } from '@/types';
+
+const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
 
 export default function MisPedidosView() {
     const navigate = useNavigate();
@@ -15,13 +23,53 @@ export default function MisPedidosView() {
     const isLoading = useMisPedidosStore(s => s.isLoading);
     const fetchAll  = useMisPedidosStore(s => s.fetchAll);
 
-    useEffect(() => { fetchAll(); }, [fetchAll]);
+    const [desde, setDesde]   = useState('');
+    const [hasta, setHasta]   = useState('');
+    const [estado, setEstado] = useState<EstadoPedido | 'todos'>('todos');
+
+    const hayFiltros = !!desde || !!hasta || estado !== 'todos';
+
+    useEffect(() => {
+        fetchAll({
+            desde:  desde || undefined,
+            hasta:  hasta || undefined,
+            estado: estado === 'todos' ? undefined : estado,
+        });
+    }, [fetchAll, desde, hasta, estado]);
+
+    const limpiarFiltros = () => { setDesde(''); setHasta(''); setEstado('todos'); };
 
     return (
         <div className="space-y-6">
             <div>
                 <h1 className="font-display text-2xl font-semibold text-foreground">Mis pedidos</h1>
                 <p className="text-sm text-muted-foreground mt-1">Consulta el estado de tus pedidos con Nueva Tendencia.</p>
+            </div>
+
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex flex-col gap-1">
+                    <label className="text-2xs text-muted-foreground uppercase tracking-widest">Desde</label>
+                    <Input type="date" value={desde} onChange={e => setDesde(e.target.value)} className="w-40" />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-2xs text-muted-foreground uppercase tracking-widest">Hasta</label>
+                    <Input type="date" value={hasta} onChange={e => setHasta(e.target.value)} className="w-40" />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-2xs text-muted-foreground uppercase tracking-widest">Estado</label>
+                    <Select value={estado} onValueChange={v => setEstado(v as EstadoPedido | 'todos')}>
+                        <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="todos">Todos los estados</SelectItem>
+                            {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+                {hayFiltros && (
+                    <Button variant="ghost" size="sm" onClick={limpiarFiltros} className="text-muted-foreground">
+                        <X size={14} /> Limpiar filtros
+                    </Button>
+                )}
             </div>
 
             {isLoading && pedidos.length === 0 && (
@@ -40,7 +88,15 @@ export default function MisPedidosView() {
                 </div>
             )}
 
-            {!isLoading && pedidos.length === 0 && (
+            {!isLoading && pedidos.length === 0 && hayFiltros && (
+                <EmptyState
+                    icon={Package}
+                    title="Sin resultados"
+                    description="No encontramos pedidos que coincidan con los filtros seleccionados."
+                />
+            )}
+
+            {!isLoading && pedidos.length === 0 && !hayFiltros && (
                 <EmptyState
                     icon={Package}
                     title="Aún no tienes pedidos"

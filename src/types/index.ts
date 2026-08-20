@@ -110,6 +110,22 @@ export interface Pedido {
     categoria?:         CategoriaCalzado;
     talles?:            TallaDetalle[];
     token_seguimiento?: string | null;
+    calificacion?:      CalificacionPedido | null;
+}
+export interface CalificacionPedido {
+    id_calificacion: number;
+    puntuacion:      number;
+    comentario:      string | null;
+    fecha_creacion:  string;
+}
+export interface CalificarPedidoDto {
+    puntuacion:  number;
+    comentario?: string;
+}
+export interface MisPedidosFiltros {
+    desde?:  string;
+    hasta?:  string;
+    estado?: EstadoPedido;
 }
 export interface CreatePedidoDto {
     cliente_id:             number;

@@ -5,6 +5,7 @@ import type {
     Cliente, CreateClienteDto, UpdateClienteDto,
     Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
+    CalificacionPedido, CalificarPedidoDto, MisPedidosFiltros,
     Insumo, CreateInsumoDto, UpdateInsumoDto,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity, ProximoPedido,
     KardexMovimiento, CreateKardexDto,
@@ -89,8 +90,11 @@ export const pedidoApi = {
         api.patch<Pedido>(`/pedidos/${id}/mover`, { nuevoEstado }),
     remove:       (id: number)             => api.delete(`/pedidos/${id}`),
 
-    misPedidos:       ()           => api.get<Pedido[]>('/pedidos/mis-pedidos'),
+    misPedidos:       (filtros?: MisPedidosFiltros) =>
+        api.get<Pedido[]>('/pedidos/mis-pedidos', { params: filtros }),
     misPedidoDetalle: (id: number) => api.get<Pedido>(`/pedidos/mis-pedidos/${id}`),
+    calificar:        (id: number, dto: CalificarPedidoDto) =>
+        api.post<CalificacionPedido>(`/pedidos/mis-pedidos/${id}/calificar`, dto),
 };
 
 // ─── Insumos ──────────────────────────────────────────────────────────────────
