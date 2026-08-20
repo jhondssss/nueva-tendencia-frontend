@@ -38,6 +38,7 @@ export const clienteApi = {
     create:  (dto: CreateClienteDto)        => api.post<Cliente>('/clientes', dto),
     update:  (id: number, dto: UpdateClienteDto) => api.patch<Cliente>(`/clientes/${id}`, dto),
     remove:  (id: number, config?: AxiosRequestConfig) => api.delete(`/clientes/${id}`, config),
+    darAcceso: (id: number) => api.post<{ message: string }>(`/clientes/${id}/dar-acceso`),
 };
 
 // ─── Productos ────────────────────────────────────────────────────────────────

@@ -45,6 +45,7 @@ export interface Cliente {
     fecha_registro: string;
     activo: boolean;
     pedidos?: Pedido[];
+    tieneUsuario?: boolean;
 }
 export type CreateClienteDto = Omit<Cliente, 'id_cliente' | 'fecha_registro' | 'pedidos'>;
 export type UpdateClienteDto = Partial<CreateClienteDto>;

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ConfirmDialogProps {
@@ -9,6 +9,9 @@ interface ConfirmDialogProps {
     title?:          string;
     message:         string;
     warningMessage?: string;
+    confirmLabel?:   string;
+    confirmVariant?: 'destructive' | 'default';
+    icon?:           LucideIcon;
 }
 
 export default function ConfirmDialog({
@@ -18,6 +21,9 @@ export default function ConfirmDialog({
     title   = '¿Eliminar registro?',
     message,
     warningMessage,
+    confirmLabel   = 'Eliminar',
+    confirmVariant = 'destructive',
+    icon: Icon      = AlertTriangle,
 }: ConfirmDialogProps) {
     useEffect(() => {
         const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -34,6 +40,8 @@ export default function ConfirmDialog({
 
     const handleConfirm = () => { onConfirm(); onClose(); };
 
+    const isDestructive = confirmVariant === 'destructive';
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-panel w-full max-w-sm" onClick={e => e.stopPropagation()}>
@@ -41,9 +49,12 @@ export default function ConfirmDialog({
 
                     {/* Icono + texto */}
                     <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-destructive/10 border border-destructive/30
-                                        flex items-center justify-center flex-shrink-0">
-                            <AlertTriangle size={18} className="text-destructive" />
+                        <div className={`w-10 h-10 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                            isDestructive
+                                ? 'bg-destructive/10 border-destructive/30'
+                                : 'bg-primary/10 border-primary/30'
+                        }`}>
+                            <Icon size={18} className={isDestructive ? 'text-destructive' : 'text-primary'} />
                         </div>
                         <div>
                             <h2 className="font-display text-base font-semibold text-foreground">{title}</h2>
@@ -64,8 +75,8 @@ export default function ConfirmDialog({
                         <Button type="button" variant="outline" onClick={onClose}>
                             Cancelar
                         </Button>
-                        <Button type="button" variant="destructive" onClick={handleConfirm}>
-                            Eliminar
+                        <Button type="button" variant={confirmVariant} onClick={handleConfirm}>
+                            {confirmLabel}
                         </Button>
                     </div>
                 </div>

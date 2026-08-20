@@ -3,8 +3,11 @@ import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Search, Loader2, Trash2, Edit2, User, Building2, Users } from 'lucide-react';
+import { isAxiosError } from 'axios';
+import toast from 'react-hot-toast';
+import { Plus, Search, Loader2, Trash2, Edit2, User, Building2, Users, KeyRound, CheckCircle2 } from 'lucide-react';
 import { useClienteStore } from '@/stores/index';
+import { clienteApi } from '@/api/services';
 import Modal from '@/components/shared/Modal';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import Pagination from '@/components/shared/Pagination';
@@ -50,6 +53,8 @@ export default function ClientesView() {
     const [modalOpen, setModalOpen]       = useState(false);
     const [editTarget, setEditTarget]     = useState<Cliente | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Cliente | null>(null);
+    const [accessTarget, setAccessTarget] = useState<Cliente | null>(null);
+    const [accesoOtorgado, setAccesoOtorgado] = useState<Set<number>>(new Set());
     const [search, setSearch]             = useState('');
 
     const { clientes, isLoading, fetchAll, create, update, remove } = useClienteStore();
@@ -97,6 +102,22 @@ export default function ClientesView() {
         else await create(dto);
         setModalOpen(false);
         reset();
+    };
+
+    const tieneAcceso = (c: Cliente) => c.tieneUsuario === true || accesoOtorgado.has(c.id_cliente);
+
+    const handleDarAcceso = async () => {
+        if (!accessTarget) return;
+        const cliente = accessTarget;
+        try {
+            await clienteApi.darAcceso(cliente.id_cliente);
+            toast.success(`Acceso enviado a ${cliente.correo_electronico}`);
+            setAccesoOtorgado(prev => new Set(prev).add(cliente.id_cliente));
+        } catch (err) {
+            if (isAxiosError(err) && err.response?.status === 409) {
+                setAccesoOtorgado(prev => new Set(prev).add(cliente.id_cliente));
+            }
+        }
     };
 
     const filtered = clientes.filter(c =>
@@ -181,6 +202,20 @@ export default function ClientesView() {
                                     <TableCell>
                                         {(canEdit || canDelete) && (
                                             <div className="flex gap-1">
+                                                {canEdit && (
+                                                    tieneAcceso(c) ? (
+                                                        <Button variant="ghost" size="icon" disabled title="Acceso ya otorgado"
+                                                                className="h-7 w-7 text-secondary opacity-60 cursor-not-allowed">
+                                                            <CheckCircle2 size={13} />
+                                                        </Button>
+                                                    ) : (
+                                                        <Button variant="ghost" size="icon" onClick={() => setAccessTarget(c)}
+                                                                title="Dar acceso al portal"
+                                                                className="h-7 w-7 text-muted-foreground hover:text-secondary hover:bg-secondary/10">
+                                                            <KeyRound size={13} />
+                                                        </Button>
+                                                    )
+                                                )}
                                                 {canEdit && (
                                                     <Button variant="ghost" size="icon" onClick={() => openEdit(c)}
                                                             className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
@@ -311,6 +346,18 @@ export default function ClientesView() {
                     ? `¿Seguro que deseas eliminar a "${deleteTarget.nombre_completo || deleteTarget.nombre}"? Esta acción no se puede deshacer.`
                     : ''}
                 warningMessage="Este cliente puede tener pedidos asociados. Elimina sus pedidos primero."
+            />
+
+            {/* Confirm dar acceso al portal */}
+            <ConfirmDialog
+                isOpen={!!accessTarget}
+                onClose={() => setAccessTarget(null)}
+                onConfirm={handleDarAcceso}
+                title="Dar acceso al portal"
+                message={accessTarget ? `¿Enviar acceso a ${accessTarget.correo_electronico}?` : ''}
+                confirmLabel="Enviar"
+                confirmVariant="default"
+                icon={KeyRound}
             />
         </div>
     );
