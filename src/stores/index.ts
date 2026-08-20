@@ -191,6 +191,36 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
     },
 }));
 
+// ─── Mis pedidos (portal cliente) ──────────────────────────────────────────────
+interface MisPedidosState {
+    pedidos:   Pedido[];
+    isLoading: boolean;
+    fetchAll:  () => Promise<void>;
+    fetchOne:  (id: number) => Promise<Pedido>;
+}
+
+export const useMisPedidosStore = create<MisPedidosState>((set, get) => ({
+    pedidos: [], isLoading: false,
+
+    fetchAll: async () => {
+        set({ isLoading: true });
+        try {
+            const { data } = await pedidoApi.misPedidos();
+            set({ pedidos: [...data].sort((a, b) => b.id_pedido - a.id_pedido) });
+        } finally { set({ isLoading: false }); }
+    },
+    fetchOne: async (id) => {
+        const { data } = await pedidoApi.misPedidoDetalle(id);
+        const exists = get().pedidos.some(p => p.id_pedido === id);
+        set({
+            pedidos: exists
+                ? get().pedidos.map(p => p.id_pedido === id ? data : p)
+                : [...get().pedidos, data],
+        });
+        return data;
+    },
+}));
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 /** Garantiza que el valor devuelto por el backend sea siempre un array. */

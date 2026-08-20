@@ -15,10 +15,11 @@ import type {
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const authApi = {
-    login:          (dto: LoginDto)                            => api.post<AuthResponse>('/auth/login', dto),
-    register:       (dto: LoginDto)                            => api.post<AuthResponse>('/auth/register', dto),
-    forgotPassword: (email: string)                            => api.post('/auth/forgot-password', { email }),
-    resetPassword:  (token: string, password: string)          => api.post('/auth/reset-password', { token, password }),
+    login:                  (dto: LoginDto)                    => api.post<AuthResponse>('/auth/login', dto),
+    register:               (dto: LoginDto)                    => api.post<AuthResponse>('/auth/register', dto),
+    forgotPassword:         (email: string)                    => api.post('/auth/forgot-password', { email }),
+    resetPassword:          (token: string, password: string)  => api.post('/auth/reset-password', { token, password }),
+    cambiarPasswordInicial: (password: string)                 => api.post<{ message: string }>('/auth/cambiar-password-inicial', { password }),
 };
 
 // ─── Usuarios (gestión admin) ─────────────────────────────────────────────────
@@ -85,6 +86,9 @@ export const pedidoApi = {
     mover:        (id: number, nuevoEstado: EstadoPedido) =>
         api.patch<Pedido>(`/pedidos/${id}/mover`, { nuevoEstado }),
     remove:       (id: number)             => api.delete(`/pedidos/${id}`),
+
+    misPedidos:       ()           => api.get<Pedido[]>('/pedidos/mis-pedidos'),
+    misPedidoDetalle: (id: number) => api.get<Pedido>(`/pedidos/mis-pedidos/${id}`),
 };
 
 // ─── Insumos ──────────────────────────────────────────────────────────────────

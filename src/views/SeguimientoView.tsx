@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/api/axios';
-import { CheckCircle2, Clock, AlertCircle, Package, User, Calendar, Ruler } from 'lucide-react';
+import { AlertCircle, Package, User, Calendar, Ruler } from 'lucide-react';
 import type { EstadoPedido } from '@/types';
+import { formatFechaLarga } from '@/utils/dates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import LeatherSeal from '@/components/shared/LeatherSeal';
 import StatusBadge from '@/components/shared/StatusBadge';
+import PedidoStepper from '@/components/shared/PedidoStepper';
 
 interface PedidoPublico {
     id_pedido:      number;
@@ -22,27 +24,11 @@ interface PedidoPublico {
 }
 
 
-const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
-
-const ESTADO_LABELS: Record<EstadoPedido, string> = {
-    Pendiente: 'Pendiente',
-    Cortado:   'Cortado',
-    Aparado:   'Aparado',
-    Solado:    'Solado',
-    Empaque:   'Empaque',
-    Terminado: 'Terminado',
-};
-
 const UNIDAD_LABELS: Record<string, string> = {
     docena:       'Docena',
     media_docena: 'Media Docena',
     par:          'Par',
 };
-
-function formatFecha(iso: string) {
-    const d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString('es-HN', { day: '2-digit', month: 'long', year: 'numeric' });
-}
 
 export default function SeguimientoView() {
     const { id, token } = useParams<{ id?: string; token?: string }>();
@@ -71,8 +57,6 @@ export default function SeguimientoView() {
             })
             .finally(() => setLoading(false));
     }, [id, token]);
-
-    const currentIndex = pedido ? ESTADOS.indexOf(pedido.estado) : -1;
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
@@ -133,57 +117,7 @@ export default function SeguimientoView() {
                         </Card>
 
                         {/* Barra de progreso */}
-                        <Card className="border-border/50 bg-card/50 backdrop-blur">
-                            <CardContent className="p-5">
-                                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Progreso del pedido</p>
-                                <div className="relative">
-                                    {/* Línea de fondo */}
-                                    <div className="absolute top-4 left-4 right-4 h-0.5 bg-border" />
-                                    {/* Línea de progreso */}
-                                    {currentIndex > 0 && (
-                                        <div
-                                            className="absolute top-4 left-4 h-0.5 bg-secondary transition-all duration-500"
-                                            style={{ width: `calc(${(currentIndex / (ESTADOS.length - 1)) * 100}% - 8px)` }}
-                                        />
-                                    )}
-                                    {/* Pasos */}
-                                    <div className="relative flex justify-between">
-                                        {ESTADOS.map((estado, i) => {
-                                            const done    = i < currentIndex;
-                                            const current = i === currentIndex;
-                                            const future  = i > currentIndex;
-                                            return (
-                                                <div key={estado} className="flex flex-col items-center gap-1.5 w-14">
-                                                    <div
-                                                        className={[
-                                                            'w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300',
-                                                            done    ? 'bg-secondary border-secondary text-secondary-foreground'    : '',
-                                                            current ? 'bg-primary  border-primary  text-primary-foreground ring-4 ring-primary/20' : '',
-                                                            future  ? 'bg-card border-border text-muted-foreground' : '',
-                                                        ].join(' ')}
-                                                    >
-                                                        {done
-                                                            ? <CheckCircle2 className="w-4 h-4" />
-                                                            : current
-                                                                ? <Clock className="w-4 h-4" />
-                                                                : <span className="text-xs font-semibold">{i + 1}</span>
-                                                        }
-                                                    </div>
-                                                    <span className={[
-                                                        'text-center leading-tight',
-                                                        done    ? 'text-secondary font-medium text-2xs' : '',
-                                                        current ? 'text-primary  font-semibold text-2xs' : '',
-                                                        future  ? 'text-muted-foreground text-2xs' : '',
-                                                    ].join(' ')}>
-                                                        {ESTADO_LABELS[estado]}
-                                                    </span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <PedidoStepper estado={pedido.estado} />
 
                         {/* Detalles */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -208,7 +142,7 @@ export default function SeguimientoView() {
                                     <div>
                                         <p className="label">Fecha estimada de entrega</p>
                                         <p className="text-foreground font-medium text-sm">
-                                            {formatFecha(pedido.fecha_entrega)}
+                                            {formatFechaLarga(pedido.fecha_entrega)}
                                         </p>
                                     </div>
                                 </CardContent>
