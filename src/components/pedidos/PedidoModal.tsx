@@ -2,14 +2,19 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Resolver } from 'react-hook-form';
 import Modal from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
+import StarRating from '@/components/shared/StarRating';
 import TallaInfoBox, { defaultTallas } from './TallaInfoBox';
 import type { TallaItem } from './TallaInfoBox';
 import type { Pedido, Cliente, Producto, CategoriaCalzado, UnidadPedido, CreatePedidoDto } from '@/types';
+
+function formatFechaCalificacion(fechaIso: string): string {
+    return new Date(fechaIso).toLocaleDateString('es-BO', { day: '2-digit', month: 'long', year: 'numeric' });
+}
 
 const schema = z.object({
     cliente_id:    z.number({ error: 'Selecciona un cliente' }).min(1, 'Selecciona un cliente'),
@@ -124,6 +129,26 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                title={isEditing ? 'Editar Pedido' : 'Nuevo Pedido'}
                subtitle={isEditing ? `Pedido #${pedido!.id_pedido}` : 'Registra una nueva orden de producción'}
                size="md">
+            <div className="space-y-4">
+
+                {pedido?.calificacion && (
+                    <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                            <Star size={14} className="text-muted-foreground" />
+                            <p className="label mb-0">Calificación del cliente</p>
+                        </div>
+                        <StarRating value={pedido.calificacion.puntuacion} readOnly size={16} />
+                        {pedido.calificacion.comentario && (
+                            <p className="text-sm text-muted-foreground whitespace-pre-line">
+                                &ldquo;{pedido.calificacion.comentario}&rdquo;
+                            </p>
+                        )}
+                        <p className="text-2xs text-muted-foreground">
+                            Calificado el {formatFechaCalificacion(pedido.calificacion.fecha_creacion)}
+                        </p>
+                    </div>
+                )}
+
             <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
 
                 <div>
@@ -228,6 +253,7 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                     </Button>
                 </div>
             </form>
+            </div>
         </Modal>
     );
 }

@@ -127,6 +127,18 @@ export interface MisPedidosFiltros {
     hasta?:  string;
     estado?: EstadoPedido;
 }
+export interface CalificacionAdmin extends CalificacionPedido {
+    pedido: {
+        id_pedido: number;
+        cliente:   Pick<Cliente, 'id_cliente' | 'nombre' | 'apellido'>;
+        producto:  Pick<Producto, 'id_producto' | 'nombre_modelo'> | null;
+    };
+}
+export interface CalificacionesFiltros {
+    puntuacion?: number;
+    desde?:      string;
+    hasta?:      string;
+}
 export interface CreatePedidoDto {
     cliente_id:             number;
     producto_id:            number;

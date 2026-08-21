@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, FlaskConical, CalendarCheck, LogOut, Menu, X, Bell } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, FlaskConical, CalendarCheck, LogOut, Menu, X, Bell, Star } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
@@ -55,6 +55,7 @@ const NAV_GROUPS = [
         items: [
             { to: '/reportes',       icon: BarChart2,     label: 'Reportes',       desc: 'PDF y exportaciones', roles: ['admin'] },
             { to: '/reporte-diario', icon: CalendarCheck, label: 'Reporte Diario', desc: 'Actividad del día',   roles: ['admin'] },
+            { to: '/calificaciones', icon: Star,          label: 'Calificaciones', desc: 'Opiniones de clientes', roles: ['admin'] },
         ],
     },
     {

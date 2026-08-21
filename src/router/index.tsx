@@ -26,6 +26,7 @@ const CambiarPasswordView  = lazy(() => import('@/views/CambiarPasswordView'));
 const MisPedidosView       = lazy(() => import('@/views/MisPedidosView'));
 const MisPedidoDetalleView = lazy(() => import('@/views/MisPedidoDetalleView'));
 const CatalogoView         = lazy(() => import('@/views/CatalogoView'));
+const CalificacionesView   = lazy(() => import('@/views/CalificacionesView'));
 
 function PageLoader() {
     return (
@@ -138,6 +139,7 @@ export const router = createBrowserRouter([
                                     { path: '/clientes',         element: <Lazy><ClientesView /></Lazy> },
                                     { path: '/timeline',         element: <Lazy><TimelineView /></Lazy> },
                                     { path: '/reportes',         element: <Lazy><ReportesView /></Lazy> },
+                                    { path: '/calificaciones',   element: <Lazy><CalificacionesView /></Lazy> },
                                     { path: '/kardex',           element: <Lazy><KardexView /></Lazy> },
                                     { path: '/auditoria',        element: <Lazy><AuditoriaView /></Lazy> },
                                     { path: '/insumos',          element: <Lazy><InsumosView /></Lazy> },

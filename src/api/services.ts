@@ -6,6 +6,7 @@ import type {
     Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
     CalificacionPedido, CalificarPedidoDto, MisPedidosFiltros,
+    CalificacionAdmin, CalificacionesFiltros,
     Insumo, CreateInsumoDto, UpdateInsumoDto,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity, ProximoPedido,
     KardexMovimiento, CreateKardexDto,
@@ -95,6 +96,12 @@ export const pedidoApi = {
     misPedidoDetalle: (id: number) => api.get<Pedido>(`/pedidos/mis-pedidos/${id}`),
     calificar:        (id: number, dto: CalificarPedidoDto) =>
         api.post<CalificacionPedido>(`/pedidos/mis-pedidos/${id}/calificar`, dto),
+};
+
+// ─── Calificaciones (panel admin) ──────────────────────────────────────────────
+export const calificacionApi = {
+    getAll: (filtros?: CalificacionesFiltros) =>
+        api.get<CalificacionAdmin[]>('/calificaciones', { params: filtros }),
 };
 
 // ─── Insumos ──────────────────────────────────────────────────────────────────

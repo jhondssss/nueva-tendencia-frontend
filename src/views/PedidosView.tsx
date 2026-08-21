@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { usePedidoStore, useClienteStore, useProductoStore } from '@/stores/index';
+import { pedidoApi } from '@/api/services';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { usePagination } from '@/hooks/usePagination';
@@ -92,7 +93,16 @@ export default function PedidosView() {
     const pagination = usePagination(filtered, 10);
 
     const openCreate = () => { setEditTarget(null); setModalKey(k => k + 1); setModalOpen(true); };
-    const openEdit   = (p: Pedido) => { setEditTarget(p); setModalOpen(true); };
+    const openEdit   = (p: Pedido) => {
+        setEditTarget(p);
+        setModalOpen(true);
+        // GET /pedidos (listado) no trae la relación de calificación — se completa al abrir el detalle.
+        if (p.estado === 'Terminado') {
+            pedidoApi.getOne(p.id_pedido)
+                .then(res => setEditTarget(current => current?.id_pedido === p.id_pedido ? res.data : current))
+                .catch(() => {});
+        }
+    };
     const closeModal = () => setModalOpen(false);
 
     const handleSubmit = async (data: CreatePedidoDto) => {
