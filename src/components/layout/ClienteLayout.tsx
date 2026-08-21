@@ -32,7 +32,7 @@ export default function ClienteLayout() {
         <div className="min-h-screen bg-background flex flex-col">
             <header className="relative bg-cafe-gradient shadow-md overflow-hidden">
                 <div className="absolute inset-0 bg-texture-stitch text-dorado-100 opacity-[0.04] pointer-events-none" />
-                <div className="relative max-w-2xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+                <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                         <LeatherSeal size="sm" />
                         <div className="min-w-0">
@@ -52,7 +52,7 @@ export default function ClienteLayout() {
                     </Button>
                 </div>
 
-                <nav className="relative max-w-2xl mx-auto px-4 flex items-center gap-1 border-t border-sidebar-foreground/10">
+                <nav className="relative max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-1 border-t border-sidebar-foreground/10">
                     {NAV_LINKS.map(({ to, label, icon: Icon }) => (
                         <NavLink
                             key={to}
@@ -71,7 +71,7 @@ export default function ClienteLayout() {
                 </nav>
             </header>
 
-            <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
+            <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
                 <Outlet />
             </main>
         </div>

@@ -68,8 +68,8 @@ export default function CatalogoView() {
             </div>
 
             {isLoading && productos.length === 0 && (
-                <div className="grid grid-cols-2 gap-3">
-                    {Array.from({ length: 4 }).map((_, i) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
                         <Card key={i} className="border-border/50 bg-card/50 backdrop-blur overflow-hidden">
                             <Skeleton className="h-32 w-full rounded-none" />
                             <CardContent className="p-3 space-y-2">
@@ -91,7 +91,7 @@ export default function CatalogoView() {
             )}
 
             {productos.length > 0 && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     {productos.map((producto, i) => (
                         <Card
                             key={`${producto.nombre}-${i}`}
