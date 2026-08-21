@@ -1,18 +1,62 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
 import { useCatalogoStore } from '@/stores/index';
 import { Card, CardContent } from '@/components/ui/card';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
+import Modal from '@/components/shared/Modal';
+import type { ProductoCatalogo } from '@/types';
 
 function formatPrecio(precio: string) {
     return `Bs. ${Number(precio).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function disponibilidadBadgeClass(disponible: boolean) {
+    return `inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-medium uppercase tracking-wider ${
+        disponible
+            ? 'bg-secondary text-secondary-foreground border border-secondary'
+            : 'bg-destructive/10 text-destructive border border-destructive/30'
+    }`;
+}
+
+/** Imagen con efecto de zoom que sigue al cursor, contenida dentro de un cuadro con overflow oculto. */
+function ZoomImage({ src, alt }: { src: string; alt: string }) {
+    const [origin, setOrigin] = useState('50% 50%');
+    const [zoomed, setZoomed] = useState(false);
+
+    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setOrigin(`${x}% ${y}%`);
+    }
+
+    return (
+        <div
+            className="relative h-72 w-full overflow-hidden rounded-lg bg-muted flex items-center justify-center"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setZoomed(true)}
+            onMouseLeave={() => setZoomed(false)}
+        >
+            {src ? (
+                <img
+                    src={src}
+                    alt={alt}
+                    className="h-full w-full object-cover transition-transform duration-200 ease-out"
+                    style={{ transformOrigin: origin, transform: zoomed ? 'scale(1.8)' : 'scale(1)' }}
+                />
+            ) : (
+                <ShoppingBag className="w-12 h-12 text-muted-foreground" />
+            )}
+        </div>
+    );
 }
 
 export default function CatalogoView() {
     const productos  = useCatalogoStore(s => s.productos);
     const isLoading  = useCatalogoStore(s => s.isLoading);
     const fetchAll   = useCatalogoStore(s => s.fetchAll);
+    const [selected, setSelected] = useState<ProductoCatalogo | null>(null);
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -51,7 +95,8 @@ export default function CatalogoView() {
                     {productos.map((producto, i) => (
                         <Card
                             key={`${producto.nombre}-${i}`}
-                            className="border-border/50 bg-card/50 backdrop-blur overflow-hidden"
+                            onClick={() => setSelected(producto)}
+                            className="border-border/50 bg-card/50 backdrop-blur overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
                         >
                             <div className="relative h-32 w-full bg-muted flex items-center justify-center">
                                 {producto.imagen ? (
@@ -63,13 +108,7 @@ export default function CatalogoView() {
                                 ) : (
                                     <ShoppingBag className="w-8 h-8 text-muted-foreground" />
                                 )}
-                                <span className={
-                                    `absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-medium uppercase tracking-wider ${
-                                        producto.disponible
-                                            ? 'bg-secondary text-secondary-foreground border border-secondary'
-                                            : 'bg-destructive/10 text-destructive border border-destructive/30'
-                                    }`
-                                }>
+                                <span className={`absolute top-2 right-2 ${disponibilidadBadgeClass(producto.disponible)}`}>
                                     {producto.disponible ? 'Disponible' : 'Sin stock'}
                                 </span>
                             </div>
@@ -88,6 +127,21 @@ export default function CatalogoView() {
                     ))}
                 </div>
             )}
+
+            <Modal isOpen={!!selected} onClose={() => setSelected(null)} title={selected?.nombre ?? ''} size="lg">
+                {selected && (
+                    <div className="space-y-4">
+                        <ZoomImage src={selected.imagen} alt={selected.nombre} />
+                        <div className="flex items-center justify-between">
+                            <span className={disponibilidadBadgeClass(selected.disponible)}>
+                                {selected.disponible ? 'Disponible' : 'Sin stock'}
+                            </span>
+                            <p className="text-foreground font-bold text-lg">{formatPrecio(selected.precio)}</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground whitespace-pre-line">{selected.descripcion}</p>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }
