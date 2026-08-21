@@ -6,7 +6,13 @@ import { z } from 'zod';
 import { Upload, Loader2 } from 'lucide-react';
 import Modal from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
-import type { Producto, CreateProductoDto } from '@/types';
+import type { Producto, CreateProductoDto, CategoriaCalzado } from '@/types';
+
+const CATEGORIA_OPTIONS: { value: CategoriaCalzado; label: string }[] = [
+    { value: 'nino',    label: 'Niño (tallas 27–32)' },
+    { value: 'juvenil', label: 'Juvenil (tallas 33–36)' },
+    { value: 'adulto',  label: 'Adulto (tallas 37–42)' },
+];
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -25,6 +31,7 @@ const schema = z.object({
     genero:             z.string().min(1, 'Requerido'),
     material_principal: z.string().min(1, 'Requerido'),
     color:              z.string().min(1, 'Requerido'),
+    categoria:          z.enum(['nino', 'juvenil', 'adulto'], { error: 'Selecciona una categoría' }),
     precio_venta:       z.coerce.number().positive('Debe ser mayor a 0'),
     costo_unidad:       z.coerce.number().positive('Debe ser mayor a 0'),
     descripcion_corta:  z.string().min(10, 'Mínimo 10 caracteres'),
@@ -72,6 +79,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 genero:             producto.genero,
                 material_principal: producto.material_principal,
                 color:              producto.color,
+                categoria:          producto.categoria ?? undefined,
                 precio_venta:       Number(producto.precio_venta),
                 costo_unidad:       Number(producto.costo_unidad),
                 descripcion_corta:  producto.descripcion_corta,
@@ -134,6 +142,22 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                             {errors[name] && <p className="text-destructive text-xs mt-1">{errors[name]?.message}</p>}
                         </div>
                     ))}
+                </div>
+
+                <div>
+                    <label className="label">Categoría (tallas) *</label>
+                    <select {...register('categoria')}
+                            defaultValue=""
+                            className={`select ${errors.categoria ? 'input-error' : ''}`}>
+                        <option value="" disabled>Selecciona una categoría</option>
+                        {CATEGORIA_OPTIONS.map(({ value, label }) => (
+                            <option key={value} value={value}>{label}</option>
+                        ))}
+                    </select>
+                    {errors.categoria && <p className="text-destructive text-xs mt-1">{errors.categoria.message}</p>}
+                    <p className="text-2xs text-muted-foreground mt-1">
+                        Determina las tallas disponibles y si el producto aparece en el catálogo del portal de cliente.
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
