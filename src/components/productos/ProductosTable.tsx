@@ -17,6 +17,23 @@ function resolveImageUrl(url?: string | null): string | null {
     return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
 }
 
+type EstadoProducto = 'Inactivo' | 'Agotado' | 'Stock bajo' | 'Activo';
+
+const ESTADO_BADGE: Record<EstadoProducto, string> = {
+    Inactivo:      'bg-muted text-muted-foreground border-border',
+    Agotado:       'bg-destructive/10 text-destructive border-destructive/30',
+    'Stock bajo':  'bg-warning/10 text-warning border-warning/30',
+    Activo:        'bg-secondary/10 text-secondary border-secondary/30',
+};
+
+function getEstadoProducto(p: Producto): EstadoProducto {
+    const stock = Number(p.stock);
+    if (!p.activo) return 'Inactivo';
+    if (stock === 0) return 'Agotado';
+    if (stock <= Number(p.nivel_minimo)) return 'Stock bajo';
+    return 'Activo';
+}
+
 interface Props {
     onEdit:     (p: Producto) => void;
     onDelete:   (p: Producto) => void;
@@ -59,6 +76,7 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                         ) : (
                             pagination.pageData.map(p => {
                                 const lowStock = Number(p.stock) <= Number(p.nivel_minimo);
+                                const estado = getEstadoProducto(p);
                                 return (
                                     <TableRow key={p.id_producto} className={clsx(lowStock && 'bg-destructive/5 hover:bg-destructive/10')}>
                                         <TableCell>
@@ -105,10 +123,8 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                         <TableCell>
                                             <Badge
                                                 variant="outline"
-                                                className={clsx('font-medium', p.activo
-                                                    ? 'bg-secondary/10 text-secondary border-secondary/30'
-                                                    : 'bg-muted text-muted-foreground border-border')}>
-                                                {p.activo ? 'Activo' : 'Inactivo'}
+                                                className={clsx('font-medium', ESTADO_BADGE[estado])}>
+                                                {estado}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>

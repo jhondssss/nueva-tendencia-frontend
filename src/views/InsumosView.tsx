@@ -64,6 +64,23 @@ const CATEGORIA_BADGE: Record<CategoriaInsumo, string> = {
     otro:        'bg-chart-4/10 text-chart-4 border-chart-4/30',
 };
 
+type EstadoInsumo = 'Inactivo' | 'Agotado' | 'Stock bajo' | 'Activo';
+
+const ESTADO_INSUMO_BADGE: Record<EstadoInsumo, string> = {
+    Inactivo:      'bg-muted text-muted-foreground border-border',
+    Agotado:       'bg-destructive/10 text-destructive border-destructive/30',
+    'Stock bajo':  'bg-warning/10 text-warning border-warning/30',
+    Activo:        'bg-secondary/10 text-secondary border-secondary/30',
+};
+
+function getEstadoInsumo(insumo: Insumo): EstadoInsumo {
+    const stock = Number(insumo.stock);
+    if (!insumo.activo) return 'Inactivo';
+    if (stock === 0) return 'Agotado';
+    if (stock <= Number(insumo.nivel_minimo)) return 'Stock bajo';
+    return 'Activo';
+}
+
 // ─── Validación de imagen ─────────────────────────────────────────────────────
 
 const MAX_IMG_SIZE  = 5 * 1024 * 1024;
@@ -337,6 +354,7 @@ export default function InsumosView() {
                         ) : (
                             pagination.pageData.map(insumo => {
                                 const stockBajo = insumo.activo && Number(insumo.stock) <= Number(insumo.nivel_minimo);
+                                const estado = getEstadoInsumo(insumo);
                                 return (
                                     <TableRow key={insumo.id_insumo}
                                         className={clsx(stockBajo && 'bg-destructive/5 hover:bg-destructive/10')}>
@@ -389,19 +407,9 @@ export default function InsumosView() {
                                             Bs. {Number(insumo.precio_unitario).toFixed(2)}
                                         </TableCell>
                                         <TableCell>
-                                            {!insumo.activo ? (
-                                                <Badge variant="outline" className="font-medium bg-muted text-muted-foreground border-border">
-                                                    Inactivo
-                                                </Badge>
-                                            ) : stockBajo ? (
-                                                <Badge variant="outline" className="font-medium bg-destructive/10 text-destructive border-destructive/30">
-                                                    Stock bajo
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline" className="font-medium bg-secondary/10 text-secondary border-secondary/30">
-                                                    Activo
-                                                </Badge>
-                                            )}
+                                            <Badge variant="outline" className={clsx('font-medium', ESTADO_INSUMO_BADGE[estado])}>
+                                                {estado}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex gap-1">

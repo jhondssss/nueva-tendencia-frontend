@@ -37,6 +37,8 @@
     --chart-5: 6 58% 47%;
     --success: 142 60% 32%;
     --success-foreground: 39 33% 96%;
+    --warning: 38 92% 45%;
+    --warning-foreground: 24 22% 13%;
     --radius: 0.75rem;
     --sidebar: 24 22% 13%;
     --sidebar-foreground: 39 33% 96%;
@@ -74,6 +76,8 @@
     --chart-5: 6 58% 47%;
     --success: 142 55% 42%;
     --success-foreground: 39 33% 96%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 24 22% 8%;
     --sidebar: 24 22% 6%;
     --sidebar-foreground: 39 33% 96%;
     --sidebar-primary: 21 68% 51%;
