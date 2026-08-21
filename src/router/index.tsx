@@ -27,6 +27,9 @@ const MisPedidosView       = lazy(() => import('@/views/MisPedidosView'));
 const MisPedidoDetalleView = lazy(() => import('@/views/MisPedidoDetalleView'));
 const CatalogoView         = lazy(() => import('@/views/CatalogoView'));
 const CalificacionesView   = lazy(() => import('@/views/CalificacionesView'));
+const SolicitarPedidoView  = lazy(() => import('@/views/SolicitarPedidoView'));
+const MisSolicitudesView   = lazy(() => import('@/views/MisSolicitudesView'));
+const SolicitudesView      = lazy(() => import('@/views/SolicitudesView'));
 
 function PageLoader() {
     return (
@@ -119,9 +122,11 @@ export const router = createBrowserRouter([
                             {
                                 element: <ClienteLayout />,
                                 children: [
-                                    { path: '/mis-pedidos',     element: <Lazy><MisPedidosView /></Lazy> },
-                                    { path: '/mis-pedidos/:id', element: <Lazy><MisPedidoDetalleView /></Lazy> },
-                                    { path: '/catalogo',        element: <Lazy><CatalogoView /></Lazy> },
+                                    { path: '/mis-pedidos',      element: <Lazy><MisPedidosView /></Lazy> },
+                                    { path: '/mis-pedidos/:id',  element: <Lazy><MisPedidoDetalleView /></Lazy> },
+                                    { path: '/catalogo',         element: <Lazy><CatalogoView /></Lazy> },
+                                    { path: '/solicitar-pedido', element: <Lazy><SolicitarPedidoView /></Lazy> },
+                                    { path: '/mis-solicitudes',  element: <Lazy><MisSolicitudesView /></Lazy> },
                                 ],
                             },
                         ],
@@ -140,6 +145,7 @@ export const router = createBrowserRouter([
                                     { path: '/timeline',         element: <Lazy><TimelineView /></Lazy> },
                                     { path: '/reportes',         element: <Lazy><ReportesView /></Lazy> },
                                     { path: '/calificaciones',   element: <Lazy><CalificacionesView /></Lazy> },
+                                    { path: '/solicitudes',      element: <Lazy><SolicitudesView /></Lazy> },
                                     { path: '/kardex',           element: <Lazy><KardexView /></Lazy> },
                                     { path: '/auditoria',        element: <Lazy><AuditoriaView /></Lazy> },
                                     { path: '/insumos',          element: <Lazy><InsumosView /></Lazy> },

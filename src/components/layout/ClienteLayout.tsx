@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LogOut, Package, ShoppingBag } from 'lucide-react';
+import { LogOut, Package, ShoppingBag, PlusCircle, ClipboardList } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMisPedidosStore } from '@/stores/index';
@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import LeatherSeal from '@/components/shared/LeatherSeal';
 
 const NAV_LINKS = [
-    { to: '/mis-pedidos', label: 'Mis pedidos', icon: Package },
-    { to: '/catalogo',    label: 'Catálogo',    icon: ShoppingBag },
+    { to: '/mis-pedidos',      label: 'Mis pedidos',     icon: Package },
+    { to: '/catalogo',         label: 'Catálogo',        icon: ShoppingBag },
+    { to: '/solicitar-pedido', label: 'Solicitar pedido', icon: PlusCircle },
+    { to: '/mis-solicitudes',  label: 'Mis solicitudes', icon: ClipboardList },
 ];
 
 export default function ClienteLayout() {

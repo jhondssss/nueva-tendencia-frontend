@@ -75,11 +75,12 @@ export type UpdateProductoDto = Partial<CreateProductoDto>;
 
 // ─── Catálogo público (portal de cliente) ──────────────────────────────────────
 export interface ProductoCatalogo {
+    id_producto: number;
     nombre: string;
     descripcion: string;
     precio: string;
     imagen: string;
-    categoria: string | null;
+    categoria: CategoriaCalzado;
     disponible: boolean;
 }
 
@@ -151,6 +152,42 @@ export interface CreatePedidoDto {
     tallas_personalizadas?: { talla: number; cantidad_pares: number }[];
 }
 export type UpdatePedidoDto = Partial<CreatePedidoDto>;
+
+// ─── Solicitudes de pedido (portal cliente → aprobación admin) ─────────────────
+export type EstadoSolicitud = 'Pendiente' | 'Aprobada' | 'Rechazada';
+
+export interface TallaSolicitada { talla: number; cantidad_pares: number; }
+
+export interface SolicitudPedido {
+    id_solicitud:           number;
+    cliente:                Cliente;
+    producto:                Producto;
+    categoria:              CategoriaCalzado;
+    cantidad_pares:         number;
+    tallas:                 TallaSolicitada[];
+    comentario_cliente:     string | null;
+    fecha_entrega_deseada:  string | null;
+    estado:                 EstadoSolicitud;
+    motivo_rechazo:         string | null;
+    pedido_creado:          Pedido | null;
+    fecha_creacion:         string;
+    fecha_actualizacion:    string;
+}
+export interface CreateSolicitudPedidoDto {
+    producto_id:            number;
+    categoria:              CategoriaCalzado;
+    tallas:                 TallaSolicitada[];
+    comentario_cliente?:    string;
+    fecha_entrega_deseada?: string;
+}
+export interface AprobarSolicitudDto {
+    total:         number;
+    fecha_entrega: string;
+    unidad?:       UnidadPedido;
+}
+export interface RechazarSolicitudDto {
+    motivo_rechazo: string;
+}
 
 // ─── Insumos ──────────────────────────────────────────────────────────────────
 export type CategoriaInsumo = 'adhesivo' | 'material' | 'herramienta' | 'quimico' | 'otro';

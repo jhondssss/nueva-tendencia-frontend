@@ -7,6 +7,7 @@ import type {
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
     CalificacionPedido, CalificarPedidoDto, MisPedidosFiltros,
     CalificacionAdmin, CalificacionesFiltros,
+    SolicitudPedido, CreateSolicitudPedidoDto, AprobarSolicitudDto, RechazarSolicitudDto,
     Insumo, CreateInsumoDto, UpdateInsumoDto,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity, ProximoPedido,
     KardexMovimiento, CreateKardexDto,
@@ -96,6 +97,15 @@ export const pedidoApi = {
     misPedidoDetalle: (id: number) => api.get<Pedido>(`/pedidos/mis-pedidos/${id}`),
     calificar:        (id: number, dto: CalificarPedidoDto) =>
         api.post<CalificacionPedido>(`/pedidos/mis-pedidos/${id}/calificar`, dto),
+};
+
+// ─── Solicitudes de pedido ──────────────────────────────────────────────────────
+export const solicitudPedidoApi = {
+    create:         (dto: CreateSolicitudPedidoDto)              => api.post<SolicitudPedido>('/solicitudes-pedido', dto),
+    misSolicitudes: ()                                            => api.get<SolicitudPedido[]>('/solicitudes-pedido/mis-solicitudes'),
+    getAll:         (estado?: string)                             => api.get<SolicitudPedido[]>('/solicitudes-pedido', { params: { estado } }),
+    aprobar:        (id: number, dto: AprobarSolicitudDto)        => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/aprobar`, dto),
+    rechazar:       (id: number, dto: RechazarSolicitudDto)       => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/rechazar`, dto),
 };
 
 // ─── Calificaciones (panel admin) ──────────────────────────────────────────────

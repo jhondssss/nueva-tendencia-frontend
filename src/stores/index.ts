@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { type AxiosError } from 'axios';
-import { clienteApi, productoApi, pedidoApi, insumoApi, dashboardApi } from '@/api/services';
+import { clienteApi, productoApi, pedidoApi, insumoApi, dashboardApi, solicitudPedidoApi } from '@/api/services';
 import type {
     Cliente, CreateClienteDto, UpdateClienteDto,
     Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
@@ -10,6 +10,7 @@ import type {
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity,
     TopProducto, VentaMes, PrediccionStock, ProximoPedido,
     CalificarPedidoDto, CalificacionPedido, MisPedidosFiltros,
+    SolicitudPedido, CreateSolicitudPedidoDto, AprobarSolicitudDto, RechazarSolicitudDto,
 } from '@/types';
 
 // ─── Clientes ─────────────────────────────────────────────────────────────────
@@ -244,6 +245,64 @@ export const useCatalogoStore = create<CatalogoState>((set) => ({
         set({ isLoading: true });
         try { const { data } = await productoApi.catalogo(); set({ productos: data }); }
         finally { set({ isLoading: false }); }
+    },
+}));
+
+// ─── Mis solicitudes (portal cliente) ──────────────────────────────────────────
+interface MisSolicitudesState {
+    solicitudes: SolicitudPedido[];
+    isLoading:   boolean;
+    fetchAll:    () => Promise<void>;
+    create:      (dto: CreateSolicitudPedidoDto) => Promise<SolicitudPedido>;
+}
+
+export const useMisSolicitudesStore = create<MisSolicitudesState>((set, get) => ({
+    solicitudes: [], isLoading: false,
+
+    fetchAll: async () => {
+        set({ isLoading: true });
+        try {
+            const { data } = await solicitudPedidoApi.misSolicitudes();
+            set({ solicitudes: [...data].sort((a, b) => b.id_solicitud - a.id_solicitud) });
+        } finally { set({ isLoading: false }); }
+    },
+    create: async (dto) => {
+        const { data } = await solicitudPedidoApi.create(dto);
+        set({ solicitudes: [data, ...get().solicitudes] });
+        toast.success('Solicitud enviada — te avisaremos cuando sea revisada');
+        return data;
+    },
+}));
+
+// ─── Solicitudes de pedido (panel admin) ───────────────────────────────────────
+interface SolicitudesAdminState {
+    solicitudes: SolicitudPedido[];
+    isLoading:   boolean;
+    fetchAll:    (estado?: string) => Promise<void>;
+    aprobar:     (id: number, dto: AprobarSolicitudDto) => Promise<SolicitudPedido>;
+    rechazar:    (id: number, dto: RechazarSolicitudDto) => Promise<SolicitudPedido>;
+}
+
+export const useSolicitudesAdminStore = create<SolicitudesAdminState>((set, get) => ({
+    solicitudes: [], isLoading: false,
+
+    fetchAll: async (estado) => {
+        set({ isLoading: true });
+        try {
+            const { data } = await solicitudPedidoApi.getAll(estado);
+            set({ solicitudes: [...data].sort((a, b) => b.id_solicitud - a.id_solicitud) });
+        } finally { set({ isLoading: false }); }
+    },
+    aprobar: async (id, dto) => {
+        const { data } = await solicitudPedidoApi.aprobar(id, dto);
+        set({ solicitudes: get().solicitudes.map(s => s.id_solicitud === id ? data : s) });
+        return data;
+    },
+    rechazar: async (id, dto) => {
+        const { data } = await solicitudPedidoApi.rechazar(id, dto);
+        set({ solicitudes: get().solicitudes.map(s => s.id_solicitud === id ? data : s) });
+        toast.success('Solicitud rechazada');
+        return data;
     },
 }));
 

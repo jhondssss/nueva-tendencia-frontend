@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, FlaskConical, CalendarCheck, LogOut, Menu, X, Bell, Star } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Bell, Star } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
@@ -32,8 +32,9 @@ const NAV_GROUPS = [
     {
         label: 'PRODUCCIÓN',
         items: [
-            { to: '/pedidos',  icon: ShoppingBag,  label: 'Pedidos',  desc: 'Gestión de pedidos',  roles: ['admin', 'operario'] },
-            { to: '/timeline', icon: GitBranch,    label: 'Timeline', desc: 'Flujo de producción', roles: ['admin', 'operario'] },
+            { to: '/solicitudes', icon: ClipboardCheck, label: 'Solicitudes', desc: 'Pedidos por aprobar', roles: ['admin', 'operario'] },
+            { to: '/pedidos',      icon: ShoppingBag,  label: 'Pedidos',  desc: 'Gestión de pedidos',  roles: ['admin', 'operario'] },
+            { to: '/timeline',     icon: GitBranch,    label: 'Timeline', desc: 'Flujo de producción', roles: ['admin', 'operario'] },
         ],
     },
     {
