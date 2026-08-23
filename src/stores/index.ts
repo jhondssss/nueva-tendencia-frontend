@@ -27,7 +27,7 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
 
     fetchAll: async () => {
         set({ isLoading: true });
-        try { const { data } = await clienteApi.getAll(); set({ clientes: data }); }
+        try { const { data } = await clienteApi.getAll(); set({ clientes: data.data }); }
         finally { set({ isLoading: false }); }
     },
     create: async (dto) => {
@@ -112,7 +112,7 @@ export const usePedidoStore = create<PedidoState>((set, get) => ({
         set({ isLoading: true });
         try {
             const { data } = await pedidoApi.getAll(cliente, producto);
-            set({ pedidos: [...data].sort((a, b) => a.id_pedido - b.id_pedido) });
+            set({ pedidos: [...data.data].sort((a, b) => a.id_pedido - b.id_pedido) });
         }
         finally { set({ isLoading: false }); }
     },
@@ -290,7 +290,7 @@ export const useSolicitudesAdminStore = create<SolicitudesAdminState>((set, get)
         set({ isLoading: true });
         try {
             const { data } = await solicitudPedidoApi.getAll(estado);
-            set({ solicitudes: [...data].sort((a, b) => b.id_solicitud - a.id_solicitud) });
+            set({ solicitudes: [...data.data].sort((a, b) => b.id_solicitud - a.id_solicitud) });
         } finally { set({ isLoading: false }); }
     },
     aprobar: async (id, dto) => {

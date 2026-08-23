@@ -14,6 +14,7 @@ import type {
     AuditoriaLog,
     ReporteDiario,
     UsuarioAdmin, CreateUsuarioDto, UpdateUsuarioDto,
+    PaginatedResponse,
 } from '@/types';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -36,7 +37,7 @@ export const usuariosApi = {
 
 // ─── Clientes ─────────────────────────────────────────────────────────────────
 export const clienteApi = {
-    getAll:  ()                              => api.get<Cliente[]>('/clientes'),
+    getAll:  ()                              => api.get<PaginatedResponse<Cliente>>('/clientes'),
     getOne:  (id: number)                   => api.get<Cliente>(`/clientes/${id}`),
     create:  (dto: CreateClienteDto)        => api.post<Cliente>('/clientes', dto),
     update:  (id: number, dto: UpdateClienteDto) => api.patch<Cliente>(`/clientes/${id}`, dto),
@@ -81,7 +82,7 @@ export const productoApi = {
 // ─── Pedidos ──────────────────────────────────────────────────────────────────
 export const pedidoApi = {
     getAll:   (cliente?: string, producto?: string) =>
-        api.get<Pedido[]>('/pedidos', { params: { cliente, producto } }),
+        api.get<PaginatedResponse<Pedido>>('/pedidos', { params: { cliente, producto } }),
     getOne:   (id: number)             => api.get<Pedido>(`/pedidos/${id}`),
     getKanban:()                       => api.get<Record<EstadoPedido, Pedido[]>>('/pedidos/kanban'),
     create:       (dto: CreatePedidoDto)   => api.post<Pedido>('/pedidos', dto),
@@ -103,7 +104,7 @@ export const pedidoApi = {
 export const solicitudPedidoApi = {
     create:         (dto: CreateSolicitudPedidoDto)              => api.post<SolicitudPedido>('/solicitudes-pedido', dto),
     misSolicitudes: ()                                            => api.get<SolicitudPedido[]>('/solicitudes-pedido/mis-solicitudes'),
-    getAll:         (estado?: string)                             => api.get<SolicitudPedido[]>('/solicitudes-pedido', { params: { estado } }),
+    getAll:         (estado?: string)                             => api.get<PaginatedResponse<SolicitudPedido>>('/solicitudes-pedido', { params: { estado } }),
     aprobar:        (id: number, dto: AprobarSolicitudDto)        => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/aprobar`, dto),
     rechazar:       (id: number, dto: RechazarSolicitudDto)       => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/rechazar`, dto),
 };
@@ -129,7 +130,7 @@ export const insumoApi = {
 
 // ─── Kardex ───────────────────────────────────────────────────────────────────
 export const kardexApi = {
-    getAll:        ()                     => api.get<KardexMovimiento[]>('/kardex'),
+    getAll:        ()                     => api.get<PaginatedResponse<KardexMovimiento>>('/kardex'),
     getByProducto: (id: number)           => api.get<KardexMovimiento[]>(`/kardex/producto/${id}`),
     registrar:     (dto: CreateKardexDto) => api.post<KardexMovimiento>('/kardex', dto),
 };

@@ -1,3 +1,12 @@
+// ─── Paginación ───────────────────────────────────────────────────────────────
+export interface PaginatedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export interface LoginDto   { email: string; password: string; }
 export interface RegisterDto { email: string; password: string; role?: string; }
