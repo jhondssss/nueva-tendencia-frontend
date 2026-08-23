@@ -41,22 +41,22 @@ const NAV_GROUPS = [
         label: 'INVENTARIO',
         items: [
             { to: '/productos', icon: Package,        label: 'Productos', desc: 'Control de stock',     roles: ['admin', 'operario'] },
-            { to: '/insumos',   icon: FlaskConical,   label: 'Insumos',   desc: 'Materiales',           roles: ['admin'] },
-            { to: '/kardex',    icon: ArrowLeftRight, label: 'Kardex',    desc: 'Movimientos de stock', roles: ['admin'] },
+            { to: '/insumos',   icon: FlaskConical,   label: 'Insumos',   desc: 'Materiales',           roles: ['admin', 'operario'] },
+            { to: '/kardex',    icon: ArrowLeftRight, label: 'Kardex',    desc: 'Movimientos de stock', roles: ['admin', 'operario'] },
         ],
     },
     {
         label: 'CLIENTES',
         items: [
-            { to: '/clientes', icon: Users, label: 'Clientes', desc: 'Base de clientes', roles: ['admin'] },
+            { to: '/clientes', icon: Users, label: 'Clientes', desc: 'Base de clientes', roles: ['admin', 'operario'] },
         ],
     },
     {
         label: 'REPORTES',
         items: [
-            { to: '/reportes',       icon: BarChart2,     label: 'Reportes',       desc: 'PDF y exportaciones', roles: ['admin'] },
+            { to: '/reportes',       icon: BarChart2,     label: 'Reportes',       desc: 'PDF y exportaciones', roles: ['admin', 'operario'] },
             { to: '/reporte-diario', icon: CalendarCheck, label: 'Reporte Diario', desc: 'Actividad del día',   roles: ['admin'] },
-            { to: '/calificaciones', icon: Star,          label: 'Calificaciones', desc: 'Opiniones de clientes', roles: ['admin'] },
+            { to: '/calificaciones', icon: Star,          label: 'Calificaciones', desc: 'Opiniones de clientes', roles: ['admin', 'operario'] },
         ],
     },
     {
