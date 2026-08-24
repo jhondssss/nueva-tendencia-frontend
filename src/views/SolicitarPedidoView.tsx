@@ -83,13 +83,18 @@ export default function SolicitarPedidoView() {
             toast.error('Indica al menos un par en alguna talla');
             return;
         }
-        await crearSolicitud({
-            producto_id: seleccionado.id_producto,
-            categoria: seleccionado.categoria,
-            tallas: tallasValidas,
-            comentario_cliente: data.comentario_cliente || undefined,
-            fecha_entrega_deseada: data.fecha_entrega_deseada || undefined,
-        });
+        try {
+            await crearSolicitud({
+                producto_id: seleccionado.id_producto,
+                categoria: seleccionado.categoria,
+                tallas: tallasValidas,
+                comentario_cliente: data.comentario_cliente || undefined,
+                fecha_entrega_deseada: data.fecha_entrega_deseada || undefined,
+            });
+        } catch {
+            toast.error('No se pudo enviar la solicitud. Intenta nuevamente.');
+            return;
+        }
         reset();
         setSeleccionado(null);
         setTallas(null);
