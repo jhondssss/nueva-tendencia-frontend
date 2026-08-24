@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { usePagination } from '@/hooks/usePagination';
+import { useRole } from '@/hooks/useRole';
 import { usuariosApi } from '@/api/services';
 import type { UsuarioAdmin, CreateUsuarioDto, UpdateUsuarioDto } from '@/types';
 import toast from 'react-hot-toast';
@@ -30,6 +31,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function UsuariosView() {
+    const { isAdmin, canCreate } = useRole();
+
     const [usuarios, setUsuarios]         = useState<UsuarioAdmin[]>([]);
     const [isLoading, setIsLoading]       = useState(true);
     const [modalOpen, setModalOpen]       = useState(false);
@@ -55,7 +58,7 @@ export default function UsuariosView() {
         }
     };
 
-    useEffect(() => { load(); }, []);
+    useEffect(() => { if (isAdmin) load(); }, [isAdmin]);
     useEffect(() => { document.title = 'Usuarios | NT'; }, []);
 
     const openCreate = () => {
@@ -144,6 +147,19 @@ export default function UsuariosView() {
 
     const pagination = usePagination(filtered, 10);
 
+    // ── Access guard ────────────────────────────────────────────────────────────
+    if (!isAdmin) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <EmptyState
+                    icon={Users}
+                    title="Acceso restringido"
+                    description="Solo los administradores pueden gestionar usuarios."
+                />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-5 animate-fade-in">
 
@@ -153,9 +169,11 @@ export default function UsuariosView() {
                     <h1 className="page-title section-title">Gestión de Usuarios</h1>
                     <p className="page-subtitle">{usuarios.length} usuarios registrados</p>
                 </div>
-                <button onClick={openCreate} className="btn-ripple">
-                    <Plus size={15} /> Nuevo usuario
-                </button>
+                {canCreate && (
+                    <button onClick={openCreate} className="btn-ripple">
+                        <Plus size={15} /> Nuevo usuario
+                    </button>
+                )}
             </div>
 
             {/* Búsqueda */}

@@ -127,7 +127,7 @@ export default function PedidosView() {
             {/* Search + estado selector + creation date filters */}
             <div className="flex flex-wrap gap-3 items-end">
                 <div className="relative">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-200" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input value={search} onChange={e => setSearch(e.target.value)}
                            placeholder="Buscar cliente o producto..." className="input pl-9 w-64" />
                 </div>
@@ -189,8 +189,8 @@ export default function PedidosView() {
                                 className={clsx(
                                     'flex items-center gap-2 px-3 py-1.5 rounded border text-xs transition-all',
                                     filterEstado === estado
-                                        ? 'bg-ink-600 border-ink-400 text-cream'
-                                        : 'bg-ink-800 border-ink-600 text-ink-100 hover:border-ink-400',
+                                        ? 'bg-primary border-primary text-primary-foreground'
+                                        : 'bg-card/50 border-border text-muted-foreground hover:border-primary/40',
                                 )}>
                             <StatusBadge estado={estado} size="sm" />
                             <span className="font-mono">{count}</span>
