@@ -2,15 +2,14 @@ import type { LucideIcon } from 'lucide-react';
 import { FileSpreadsheet, Users, Package, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRole } from '@/hooks/useRole';
-
-const BACKEND_URL = import.meta.env.VITE_API_URL;
+import { reportesApi } from '@/api/services';
 
 interface ExcelCard {
     key:      string;
     icon:     LucideIcon;
     title:    string;
     desc:     string;
-    url:      string;
+    fetcher:  () => Promise<{ data: Blob }>;
     filename: string;
 }
 
@@ -20,7 +19,7 @@ const CARDS: ExcelCard[] = [
         icon:     FileSpreadsheet,
         title:    'Pedidos',
         desc:     'Exportación completa de pedidos con detalle',
-        url:      `${BACKEND_URL}/reportes/excel/pedidos`,
+        fetcher:  () => reportesApi.getExcelPedidos(),
         filename: 'pedidos.xlsx',
     },
     {
@@ -28,7 +27,7 @@ const CARDS: ExcelCard[] = [
         icon:     Users,
         title:    'Clientes',
         desc:     'Base de datos completa de clientes',
-        url:      `${BACKEND_URL}/reportes/excel/clientes`,
+        fetcher:  () => reportesApi.getExcelClientes(),
         filename: 'clientes.xlsx',
     },
     {
@@ -36,13 +35,13 @@ const CARDS: ExcelCard[] = [
         icon:     Package,
         title:    'Stock',
         desc:     'Inventario completo con niveles y alertas',
-        url:      `${BACKEND_URL}/reportes/excel/stock`,
+        fetcher:  () => reportesApi.getExcelStock(),
         filename: 'stock.xlsx',
     },
 ];
 
 interface Props {
-    onDescargar: (key: string, url: string, filename: string) => Promise<void>;
+    onDescargar: (key: string, fetcher: () => Promise<{ data: Blob }>, filename: string) => Promise<void>;
     loading:     Record<string, boolean>;
 }
 
@@ -57,7 +56,7 @@ export default function ReportesExcel({ onDescargar, loading }: Props) {
                 <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Exportar Excel</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {cards.map(({ key, icon: Icon, title, desc, url, filename }) => (
+                {cards.map(({ key, icon: Icon, title, desc, fetcher, filename }) => (
                     <div key={key}
                          className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5 flex flex-col gap-4
                                     transition-all duration-200 hover:shadow-lg hover:scale-[1.01]">
@@ -72,7 +71,7 @@ export default function ReportesExcel({ onDescargar, loading }: Props) {
                         </div>
                         <Button
                             variant="secondary"
-                            onClick={() => void onDescargar(key, url, filename)}
+                            onClick={() => void onDescargar(key, fetcher, filename)}
                             disabled={!!loading[key]}
                             className="mt-auto hover:scale-[1.02] transition-transform">
                             {loading[key]

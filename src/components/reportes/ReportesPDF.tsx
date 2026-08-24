@@ -3,22 +3,21 @@ import type { LucideIcon } from 'lucide-react';
 import { TrendingUp, ClipboardList, AlertTriangle, Loader2, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRole } from '@/hooks/useRole';
-
-const BACKEND_URL = import.meta.env.VITE_API_URL;
+import { reportesApi } from '@/api/services';
 
 interface PdfCard {
     key:      string;
     icon:     LucideIcon;
     title:    string;
     desc:     string;
-    url:      () => string;
+    fetcher:  () => Promise<{ data: Blob }>;
     filename: () => string;
     extra?:   React.ReactNode;
 }
 
 interface Props {
-    onDescargar:   (key: string, url: string, filename: string) => Promise<void>;
-    onVistaPrevia: (key: string, url: string) => Promise<void>;
+    onDescargar:   (key: string, fetcher: () => Promise<{ data: Blob }>, filename: string) => Promise<void>;
+    onVistaPrevia: (key: string, fetcher: () => Promise<{ data: Blob }>) => Promise<void>;
     loading:       Record<string, boolean>;
 }
 
@@ -34,7 +33,7 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
             icon:     TrendingUp,
             title:    'Ventas por Mes',
             desc:     'Tendencia mensual de ingresos por año',
-            url:      () => `${BACKEND_URL}/reportes/pdf/ventas?year=${yearVentas}`,
+            fetcher:  () => reportesApi.getPdfVentas(yearVentas),
             filename: () => `ventas-${yearVentas}.pdf`,
             extra: (
                 <select value={yearVentas} onChange={e => setYearVentas(Number(e.target.value))} className="select text-sm">
@@ -47,7 +46,7 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
             icon:     ClipboardList,
             title:    'Pedidos',
             desc:     'Estado y detalle de todos los pedidos registrados',
-            url:      () => `${BACKEND_URL}/reportes/pdf/pedidos`,
+            fetcher:  () => reportesApi.getPdfPedidos(),
             filename: () => 'pedidos.pdf',
         },
         {
@@ -55,7 +54,7 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
             icon:     AlertTriangle,
             title:    'Stock Crítico',
             desc:     'Productos con stock por debajo del nivel mínimo',
-            url:      () => `${BACKEND_URL}/reportes/pdf/stock-critico`,
+            fetcher:  () => reportesApi.getPdfStockCritico(),
             filename: () => 'stock-critico.pdf',
         },
     ];
@@ -67,7 +66,7 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
                 <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Reportes PDF</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {cards.map(({ key, icon: Icon, title, desc, url, filename, extra }) => (
+                {cards.map(({ key, icon: Icon, title, desc, fetcher, filename, extra }) => (
                     <div key={key}
                          className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5 flex flex-col gap-4
                                     transition-all duration-200 hover:shadow-lg hover:scale-[1.01]">
@@ -84,7 +83,7 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
                         <div className="mt-auto grid grid-cols-2 gap-2">
                             <Button
                                 variant="outline"
-                                onClick={() => void onVistaPrevia(key, url())}
+                                onClick={() => void onVistaPrevia(`preview-${key}`, fetcher)}
                                 disabled={!!loading[`preview-${key}`]}
                                 className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive">
                                 {loading[`preview-${key}`]
@@ -94,7 +93,7 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
                             </Button>
                             <Button
                                 variant="destructive"
-                                onClick={() => void onDescargar(key, url(), filename())}
+                                onClick={() => void onDescargar(key, fetcher, filename())}
                                 disabled={!!loading[key]}
                                 className="hover:scale-[1.02] transition-transform">
                                 {loading[key]

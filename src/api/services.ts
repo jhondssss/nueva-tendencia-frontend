@@ -137,6 +137,18 @@ export const kardexApi = {
 
 // ─── Reportes ─────────────────────────────────────────────────────────────────
 export const reportesApi = {
+    getPdfVentas:              (year: number) =>
+        api.get<Blob>(`/reportes/pdf/ventas?year=${year}`, { responseType: 'blob' }),
+    getPdfPedidos:             () =>
+        api.get<Blob>('/reportes/pdf/pedidos', { responseType: 'blob' }),
+    getPdfStockCritico:        () =>
+        api.get<Blob>('/reportes/pdf/stock-critico', { responseType: 'blob' }),
+    getExcelPedidos:           () =>
+        api.get<Blob>('/reportes/excel/pedidos', { responseType: 'blob' }),
+    getExcelClientes:          () =>
+        api.get<Blob>('/reportes/excel/clientes', { responseType: 'blob' }),
+    getExcelStock:             () =>
+        api.get<Blob>('/reportes/excel/stock', { responseType: 'blob' }),
     getPdfPedidosEntregados:   () =>
         api.get<Blob>('/reportes/pdf/pedidos-entregados', { responseType: 'blob' }),
     getPdfGanancias:           (month: number, year: number) =>
