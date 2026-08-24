@@ -12,7 +12,7 @@ import type {
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity, ProximoPedido,
     KardexMovimiento, CreateKardexDto,
     AuditoriaLog,
-    ReporteDiario,
+    ReporteDiarioResponse,
     UsuarioAdmin, CreateUsuarioDto, UpdateUsuarioDto,
     PaginatedResponse,
 } from '@/types';
@@ -145,7 +145,7 @@ export const reportesApi = {
         api.get<Blob>('/reportes/excel/pedidos-entregados', { responseType: 'blob' }),
     getExcelGanancias:         (month: number, year: number) =>
         api.get<Blob>(`/reportes/excel/ganancias?month=${month}&year=${year}`, { responseType: 'blob' }),
-    getDiario:     () => api.get<ReporteDiario>('/reportes/diario'),
+    getDiario:     () => api.get<ReporteDiarioResponse>('/reportes/diario'),
     getPdfDiario:  () => api.get<Blob>('/reportes/pdf/diario',   { responseType: 'blob' }),
     getExcelDiario:() => api.get<Blob>('/reportes/excel/diario', { responseType: 'blob' }),
 };

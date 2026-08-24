@@ -118,8 +118,18 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 <div>
                     <label className="label">Imagen del producto</label>
                     <div onClick={() => fileRef.current?.click()}
+                         tabIndex={0}
+                         role="button"
+                         aria-label="Subir imagen del producto"
+                         onKeyDown={e => {
+                             if (e.key === 'Enter' || e.key === ' ') {
+                                 e.preventDefault();
+                                 fileRef.current?.click();
+                             }
+                         }}
                          className="border-2 border-dashed border-border rounded-lg p-4 text-center
-                                    cursor-pointer hover:border-primary/50 transition-colors group">
+                                    cursor-pointer hover:border-primary/50 transition-colors group
+                                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                         {preview ? (
                             <img src={preview} alt="preview" className="mx-auto h-28 object-contain rounded" />
                         ) : (

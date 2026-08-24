@@ -254,6 +254,9 @@ export interface AuditoriaLog {
 }
 
 // ─── Reporte Diario ───────────────────────────────────────────────────────────
+// GET /reportes/diario devuelve entidades TypeORM serializadas tal cual (no DTOs
+// dedicados) — estas interfaces modelan solo los campos que el frontend consume.
+
 export interface ReporteDiarioResumen {
     pedidos_creados:    number;
     pedidos_movidos:    number;
@@ -262,52 +265,89 @@ export interface ReporteDiarioResumen {
     alertas_criticas:   number;
 }
 
-export interface ReporteDiarioPedido {
-    id_pedido: number;
-    cliente:   string;
-    producto:  string;
-    categoria?: CategoriaCalzado;
-    estado:    EstadoPedido;
-    hora:      string;
+export interface ReporteDiarioClienteRef {
+    id_cliente: number;
+    nombre:     string;
+    apellido?:  string;
 }
 
-export interface ReporteDiarioVenta {
-    id_pedido: number;
-    cliente:   string;
-    producto:  string;
-    cantidad:  number;
-    unidad:    UnidadPedido;
-    total:     number;
+export interface ReporteDiarioProductoRef {
+    id_producto:   number;
+    nombre_modelo: string;
+    stock:         number;
+    nivel_minimo:  number;
 }
 
-export interface ReporteDiarioKardex {
-    id_kardex: number;
-    nombre:    string;
-    tipo:      TipoMovimiento;
-    cantidad:  number;
-    motivo?:   string;
-    hora:      string;
-}
-
-export interface ReporteDiarioAlertaItem {
-    id:          number;
-    nombre:      string;
-    stock:       number;
+export interface ReporteDiarioInsumoRef {
+    id_insumo:    number;
+    nombre:       string;
+    stock:        number;
     nivel_minimo: number;
-    critico:     boolean;
 }
 
+export interface ReporteDiarioUsuarioRef {
+    id:      number;
+    nombre?: string;
+    email:   string;
+}
+
+export interface ReporteDiarioPedidoRaw {
+    id_pedido:           number;
+    cliente:             ReporteDiarioClienteRef;
+    producto:            ReporteDiarioProductoRef;
+    total:               number;
+    cantidad:            number;
+    unidad:              UnidadPedido;
+    categoria:           CategoriaCalzado | null;
+    estado:              EstadoPedido;
+    fecha_creacion:      string;
+    fecha_actualizacion: string;
+}
+
+export interface ReporteDiarioKardexRaw {
+    id_movimiento: number;
+    tipo:          TipoMovimiento;
+    cantidad:      number;
+    motivo:        string | null;
+    fecha:         string;
+    producto:      ReporteDiarioProductoRef | null;
+    insumo:        ReporteDiarioInsumoRef   | null;
+}
+
+export interface ReporteDiarioAuditoriaRaw {
+    id_auditoria: number;
+    accion:       string;
+    modulo:       string;
+    descripcion:  string;
+    fecha:        string;
+    usuario:      ReporteDiarioUsuarioRef | null;
+}
+
+/** Forma cruda devuelta por GET /reportes/diario (ResumenDiario en el backend). */
+export interface ReporteDiarioResponse {
+    fecha:              string;
+    pedidosCreados:     ReporteDiarioPedidoRaw[];
+    pedidosMovidos:     ReporteDiarioPedidoRaw[];
+    pedidosTerminados:  ReporteDiarioPedidoRaw[];
+    ventasDia:          number;
+    movimientosKardex:  ReporteDiarioKardexRaw[];
+    accionesAuditoria:  ReporteDiarioAuditoriaRaw[];
+    alertasStock:       ReporteDiarioProductoRef[];
+    alertasInsumos:     ReporteDiarioInsumoRef[];
+}
+
+/** Forma normalizada que consume la vista, derivada de ReporteDiarioResponse. */
 export interface ReporteDiario {
-    resumen:           ReporteDiarioResumen;
-    pedidos_creados:   ReporteDiarioPedido[];
-    pedidos_movidos:   ReporteDiarioPedido[];
-    ventas:            ReporteDiarioVenta[];
-    movimientos_kardex: ReporteDiarioKardex[];
+    resumen:            ReporteDiarioResumen;
+    pedidos_creados:    ReporteDiarioPedidoRaw[];
+    pedidos_movidos:    ReporteDiarioPedidoRaw[];
+    ventas:             ReporteDiarioPedidoRaw[];
+    movimientos_kardex: ReporteDiarioKardexRaw[];
     alertas: {
-        productos: ReporteDiarioAlertaItem[];
-        insumos:   ReporteDiarioAlertaItem[];
+        productos: ReporteDiarioProductoRef[];
+        insumos:   ReporteDiarioInsumoRef[];
     };
-    actividad: AuditoriaLog[];
+    actividad: ReporteDiarioAuditoriaRaw[];
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────

@@ -116,7 +116,17 @@ export default function SolicitarPedidoView() {
                                 <Card
                                     key={`${producto.id_producto}-${i}`}
                                     onClick={() => handleSelect(producto)}
-                                    className={`relative border-border/50 bg-card/50 backdrop-blur overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md ${
+                                    tabIndex={0}
+                                    role="button"
+                                    aria-pressed={isSelected}
+                                    aria-label={`Seleccionar ${producto.nombre}`}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            handleSelect(producto);
+                                        }
+                                    }}
+                                    className={`relative border-border/50 bg-card/50 backdrop-blur overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                         isSelected ? 'ring-2 ring-primary border-primary/50' : ''
                                     }`}
                                 >

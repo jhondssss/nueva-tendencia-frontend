@@ -64,7 +64,16 @@ export default function CatalogoView() {
                         <Card
                             key={`${producto.nombre}-${i}`}
                             onClick={() => setSelected(producto)}
-                            className="border-border/50 bg-card/50 backdrop-blur overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
+                            tabIndex={0}
+                            role="button"
+                            aria-label={`Ver detalle de ${producto.nombre}`}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setSelected(producto);
+                                }
+                            }}
+                            className="border-border/50 bg-card/50 backdrop-blur overflow-hidden cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             <div className="relative h-32 w-full bg-muted flex items-center justify-center">
                                 {producto.imagen ? (
