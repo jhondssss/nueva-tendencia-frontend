@@ -236,30 +236,30 @@ export default function UsuariosView() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex gap-1 items-center">
+                                        <div className="flex gap-2 items-center">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleToggle(u)}
                                                 disabled={toggling === u.id}
                                                 title={u.activo ? 'Desactivar usuario' : 'Activar usuario'}
-                                                className={`h-7 w-7 ${u.activo
+                                                className={`h-8 w-8 ${u.activo
                                                     ? 'text-secondary hover:text-secondary hover:bg-secondary/10'
                                                     : 'text-muted-foreground hover:text-secondary hover:bg-secondary/10'}`}>
                                                 {toggling === u.id
-                                                    ? <Loader2 size={13} className="animate-spin" />
+                                                    ? <Loader2 size={14} className="animate-spin" />
                                                     : u.activo
                                                         ? <ToggleRight size={16} />
                                                         : <ToggleLeft size={16} />
                                                 }
                                             </Button>
                                             <Button variant="ghost" size="icon" onClick={() => openEdit(u)}
-                                                    className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
-                                                <Edit2 size={13} />
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                                <Edit2 size={14} />
                                             </Button>
                                             <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(u)}
-                                                    className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
-                                                <Trash2 size={13} />
+                                                    className="h-8 w-8 text-destructive/60 hover:text-destructive hover:bg-destructive/10">
+                                                <Trash2 size={14} />
                                             </Button>
                                         </div>
                                     </TableCell>
