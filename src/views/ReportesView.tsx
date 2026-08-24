@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import ReportesPDF from '@/components/reportes/ReportesPDF';
 import ReportesExcel from '@/components/reportes/ReportesExcel';
 import SelectorMesAnio, { MESES } from '@/components/reportes/SelectorMesAnio';
+import { useRole } from '@/hooks/useRole';
 
 const ENTREGAS_CARDS = [
     {
@@ -29,6 +30,7 @@ const ENTREGAS_CARDS = [
 ];
 
 export default function ReportesView() {
+    const { isAdmin }  = useRole();
     const currentYear  = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
     const [gananciasMes,  setGananciasMes]  = useState(currentMonth);
@@ -184,61 +186,63 @@ export default function ReportesView() {
                         ))}
                     </div>
 
-                    <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5 space-y-4
-                                    transition-all duration-200 hover:shadow-lg">
-                        <div className="flex items-start gap-3">
-                            <div className="p-2.5 rounded-lg bg-chart-3/10 border border-chart-3/20 flex-shrink-0">
-                                <TrendingUp size={18} className="text-chart-3" />
+                    {isAdmin && (
+                        <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5 space-y-4
+                                        transition-all duration-200 hover:shadow-lg">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2.5 rounded-lg bg-chart-3/10 border border-chart-3/20 flex-shrink-0">
+                                    <TrendingUp size={18} className="text-chart-3" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-foreground text-sm leading-tight">Ganancias del Mes</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                                        Reporte de ingresos y ganancias para el período seleccionado
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-semibold text-foreground text-sm leading-tight">Ganancias del Mes</p>
-                                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                                    Reporte de ingresos y ganancias para el período seleccionado
-                                </p>
+
+                            <SelectorMesAnio mes={gananciasMes} anio={gananciasYear}
+                                             onMesChange={setGananciasMes} onAnioChange={setGananciasYear} />
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => void vistaPreviaConApi('preview-pdf-ganancias',
+                                        () => reportesApi.getPdfGanancias(gananciasMes, gananciasYear))}
+                                    disabled={!!loading['preview-pdf-ganancias']}
+                                    className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                                    {loading['preview-pdf-ganancias']
+                                        ? <><Loader2 size={13} className="animate-spin" /> Cargando...</>
+                                        : <><Eye size={13} /> Vista previa</>
+                                    }
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={() => void descargarConApi('pdf-ganancias',
+                                        () => reportesApi.getPdfGanancias(gananciasMes, gananciasYear),
+                                        `ganancias-${mesLabel}-${gananciasYear}.pdf`)}
+                                    disabled={!!loading['pdf-ganancias']}
+                                    className="hover:scale-[1.02] transition-transform">
+                                    {loading['pdf-ganancias']
+                                        ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
+                                        : <><Download size={13} /> Descargar PDF</>
+                                    }
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => void descargarConApi('excel-ganancias',
+                                        () => reportesApi.getExcelGanancias(gananciasMes, gananciasYear),
+                                        `ganancias-${mesLabel}-${gananciasYear}.xlsx`)}
+                                    disabled={!!loading['excel-ganancias']}
+                                    className="hover:scale-[1.02] transition-transform">
+                                    {loading['excel-ganancias']
+                                        ? <><Loader2 size={13} className="animate-spin" /> Exportando...</>
+                                        : <><FileSpreadsheet size={13} /> Exportar Excel</>
+                                    }
+                                </Button>
                             </div>
                         </div>
-
-                        <SelectorMesAnio mes={gananciasMes} anio={gananciasYear}
-                                         onMesChange={setGananciasMes} onAnioChange={setGananciasYear} />
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <Button
-                                variant="outline"
-                                onClick={() => void vistaPreviaConApi('preview-pdf-ganancias',
-                                    () => reportesApi.getPdfGanancias(gananciasMes, gananciasYear))}
-                                disabled={!!loading['preview-pdf-ganancias']}
-                                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive">
-                                {loading['preview-pdf-ganancias']
-                                    ? <><Loader2 size={13} className="animate-spin" /> Cargando...</>
-                                    : <><Eye size={13} /> Vista previa</>
-                                }
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                onClick={() => void descargarConApi('pdf-ganancias',
-                                    () => reportesApi.getPdfGanancias(gananciasMes, gananciasYear),
-                                    `ganancias-${mesLabel}-${gananciasYear}.pdf`)}
-                                disabled={!!loading['pdf-ganancias']}
-                                className="hover:scale-[1.02] transition-transform">
-                                {loading['pdf-ganancias']
-                                    ? <><Loader2 size={13} className="animate-spin" /> Generando...</>
-                                    : <><Download size={13} /> Descargar PDF</>
-                                }
-                            </Button>
-                            <Button
-                                variant="secondary"
-                                onClick={() => void descargarConApi('excel-ganancias',
-                                    () => reportesApi.getExcelGanancias(gananciasMes, gananciasYear),
-                                    `ganancias-${mesLabel}-${gananciasYear}.xlsx`)}
-                                disabled={!!loading['excel-ganancias']}
-                                className="hover:scale-[1.02] transition-transform">
-                                {loading['excel-ganancias']
-                                    ? <><Loader2 size={13} className="animate-spin" /> Exportando...</>
-                                    : <><FileSpreadsheet size={13} /> Exportar Excel</>
-                                }
-                            </Button>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </section>
         </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { TrendingUp, ClipboardList, AlertTriangle, Loader2, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useRole } from '@/hooks/useRole';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -22,12 +23,13 @@ interface Props {
 }
 
 export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Props) {
+    const { isAdmin } = useRole();
     const currentYear = new Date().getFullYear();
     const [yearVentas, setYearVentas] = useState(currentYear);
     const years = [currentYear - 2, currentYear - 1, currentYear];
 
     const cards: PdfCard[] = [
-        {
+        ...(isAdmin ? [{
             key:      'pdf-ventas',
             icon:     TrendingUp,
             title:    'Ventas por Mes',
@@ -39,7 +41,7 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
                     {years.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
             ),
-        },
+        }] : []),
         {
             key:      'pdf-pedidos',
             icon:     ClipboardList,

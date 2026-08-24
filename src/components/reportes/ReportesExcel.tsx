@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { FileSpreadsheet, Users, Package, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useRole } from '@/hooks/useRole';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -46,6 +47,9 @@ interface Props {
 }
 
 export default function ReportesExcel({ onDescargar, loading }: Props) {
+    const { isAdmin } = useRole();
+    const cards = isAdmin ? CARDS : CARDS.filter(c => c.key !== 'excel-clientes');
+
     return (
         <section className="space-y-4">
             <div className="flex items-center gap-2.5">
@@ -53,7 +57,7 @@ export default function ReportesExcel({ onDescargar, loading }: Props) {
                 <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Exportar Excel</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {CARDS.map(({ key, icon: Icon, title, desc, url, filename }) => (
+                {cards.map(({ key, icon: Icon, title, desc, url, filename }) => (
                     <div key={key}
                          className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5 flex flex-col gap-4
                                     transition-all duration-200 hover:shadow-lg hover:scale-[1.01]">
