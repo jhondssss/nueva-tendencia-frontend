@@ -9,6 +9,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { clsx } from 'clsx';
 import type { Producto } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -83,7 +84,7 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                             <div
                                                 className="w-10"
                                                 onMouseEnter={e => {
-                                                    const url = resolveImageUrl(p.imagen_url);
+                                                    const url = getImagenEstandarizada(resolveImageUrl(p.imagen_url), 400);
                                                     if (!url) return;
                                                     const rect = e.currentTarget.getBoundingClientRect();
                                                     setHoverImg({
@@ -97,10 +98,10 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                                 {p.imagen_url ? (
                                                     <button
                                                         type="button"
-                                                        onClick={() => { const url = resolveImageUrl(p.imagen_url); if (url) setLightboxUrl(url); }}
+                                                        onClick={() => { const url = getImagenEstandarizada(resolveImageUrl(p.imagen_url), 800); if (url) setLightboxUrl(url); }}
                                                         className="block w-10 h-10 rounded-lg border border-border overflow-hidden
                                                                    hover:border-primary/50 hover:scale-105 transition-all cursor-zoom-in">
-                                                        <img src={resolveImageUrl(p.imagen_url)!} alt={p.nombre_modelo}
+                                                        <img src={getImagenEstandarizada(resolveImageUrl(p.imagen_url), 200)!} alt={p.nombre_modelo}
                                                              className="w-full h-full object-cover" />
                                                     </button>
                                                 ) : (

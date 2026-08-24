@@ -13,6 +13,7 @@ import { usePagination } from '@/hooks/usePagination';
 import { useRole } from '@/hooks/useRole';
 import type { CategoriaInsumo, CreateInsumoDto, Insumo } from '@/types';
 import { CATEGORIAS, CATEGORIA_LABEL, resolveImageUrl, validateImageFile } from '@/components/insumos/insumoHelpers';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 import { insumoSchema, INSUMO_DEFAULT_VALUES, type InsumoFormData } from '@/components/insumos/insumoSchema';
 import { InsumoFormFields } from '@/components/insumos/InsumoForm';
 import { ImageDropzone } from '@/components/insumos/ImageDropzone';
@@ -111,7 +112,7 @@ export default function InsumosView() {
             activo:          insumo.activo,
         });
         setEditImagen(null);
-        setEditPreview(resolveImageUrl(insumo.imagen_url));
+        setEditPreview(getImagenEstandarizada(resolveImageUrl(insumo.imagen_url), 400));
     };
 
     const onEditSubmit = async (data: InsumoFormData) => {

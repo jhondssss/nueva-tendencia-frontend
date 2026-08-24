@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 /** Imagen con efecto de zoom que sigue al cursor, contenida dentro de un cuadro con overflow oculto. */
 export default function ZoomImage({ src, alt }: { src: string; alt: string }) {
     const [origin, setOrigin] = useState('50% 50%');
     const [zoomed, setZoomed] = useState(false);
+    const imgSrc = getImagenEstandarizada(src, 800);
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -20,9 +22,9 @@ export default function ZoomImage({ src, alt }: { src: string; alt: string }) {
             onMouseEnter={() => setZoomed(true)}
             onMouseLeave={() => setZoomed(false)}
         >
-            {src ? (
+            {imgSrc ? (
                 <img
-                    src={src}
+                    src={imgSrc}
                     alt={alt}
                     className="h-full w-full object-cover transition-transform duration-200 ease-out"
                     style={{ transformOrigin: origin, transform: zoomed ? 'scale(1.8)' : 'scale(1)' }}

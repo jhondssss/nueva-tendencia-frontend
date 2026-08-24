@@ -4,6 +4,7 @@ import api from '@/api/axios';
 import { AlertCircle, Package, User, Calendar, Ruler } from 'lucide-react';
 import type { EstadoPedido } from '@/types';
 import { formatFechaLarga } from '@/utils/dates';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import LeatherSeal from '@/components/shared/LeatherSeal';
@@ -153,7 +154,7 @@ export default function SeguimientoView() {
                         <Card className="border-border/50 bg-card/50 backdrop-blur overflow-hidden">
                             {pedido.imagen ? (
                                 <img
-                                    src={pedido.imagen}
+                                    src={getImagenEstandarizada(pedido.imagen, 600)!}
                                     alt={pedido.producto}
                                     className="w-full h-48 object-contain bg-muted"
                                 />

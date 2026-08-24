@@ -17,6 +17,7 @@ import type { TallaItem } from '@/components/pedidos/TallaInfoBox';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
 import type { ProductoCatalogo } from '@/types';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 function formatPrecio(precio: string) {
     return `Bs. ${Number(precio).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -158,7 +159,7 @@ export default function SolicitarPedidoView() {
                                     )}
                                     <div className="relative h-28 w-full bg-muted flex items-center justify-center">
                                         {producto.imagen ? (
-                                            <img src={producto.imagen} alt={producto.nombre} className="h-full w-full object-cover" />
+                                            <img src={getImagenEstandarizada(producto.imagen, 400)!} alt={producto.nombre} className="h-full w-full object-cover" />
                                         ) : (
                                             <ShoppingBag className="w-8 h-8 text-muted-foreground" />
                                         )}

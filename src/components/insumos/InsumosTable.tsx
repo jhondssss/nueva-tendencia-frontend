@@ -9,6 +9,7 @@ import type { Insumo } from '@/types';
 import {
     resolveImageUrl, CATEGORIA_LABEL, UNIDAD_LABEL, CATEGORIA_BADGE, ESTADO_INSUMO_BADGE, getEstadoInsumo,
 } from './insumoHelpers';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 export function InsumosTable({
     insumos, isLoading, canEdit, canDelete, onImageClick, onEdit, onDelete,
@@ -64,11 +65,11 @@ export function InsumosTable({
                                     {insumo.imagen_url ? (
                                         <button
                                             type="button"
-                                            onClick={() => onImageClick(resolveImageUrl(insumo.imagen_url))}
+                                            onClick={() => onImageClick(getImagenEstandarizada(resolveImageUrl(insumo.imagen_url), 800))}
                                             className="block w-10 h-10 rounded-lg overflow-hidden border border-border
                                                        hover:border-primary/50 hover:scale-105 transition-all cursor-zoom-in">
                                             <img
-                                                src={resolveImageUrl(insumo.imagen_url)!}
+                                                src={getImagenEstandarizada(resolveImageUrl(insumo.imagen_url), 200)!}
                                                 alt={insumo.nombre}
                                                 className="w-full h-full object-cover"
                                             />

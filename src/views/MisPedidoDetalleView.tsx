@@ -4,6 +4,7 @@ import { ArrowLeft, AlertCircle, Package, Calendar, Ruler, Loader2, Star } from 
 import toast from 'react-hot-toast';
 import { useMisPedidosStore } from '@/stores/index';
 import { formatFechaLarga } from '@/utils/dates';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import LeatherSeal from '@/components/shared/LeatherSeal';
@@ -155,7 +156,7 @@ export default function MisPedidoDetalleView() {
                     <Card className="border-border/50 bg-card/50 backdrop-blur overflow-hidden">
                         {pedido.producto?.imagen_url ? (
                             <img
-                                src={pedido.producto.imagen_url}
+                                src={getImagenEstandarizada(pedido.producto.imagen_url, 600)!}
                                 alt={pedido.producto.nombre_modelo}
                                 className="w-full h-48 object-contain bg-muted"
                             />

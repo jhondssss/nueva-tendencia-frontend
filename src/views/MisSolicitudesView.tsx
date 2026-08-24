@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/shared/Skeleton';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
 import type { EstadoSolicitud, SolicitudPedido } from '@/types';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 const LS_KEY = 'mis-solicitudes-page-size';
 
@@ -48,7 +49,7 @@ function SolicitudCard({ solicitud }: { solicitud: SolicitudPedido }) {
                 <div className="flex items-center gap-4">
                     <div className="h-14 w-14 rounded-lg overflow-hidden bg-muted flex items-center justify-center shrink-0">
                         {solicitud.producto?.imagen_url ? (
-                            <img src={solicitud.producto.imagen_url} alt={solicitud.producto.nombre_modelo} className="h-full w-full object-cover" />
+                            <img src={getImagenEstandarizada(solicitud.producto.imagen_url, 200)!} alt={solicitud.producto.nombre_modelo} className="h-full w-full object-cover" />
                         ) : (
                             <Package className="w-6 h-6 text-muted-foreground" />
                         )}

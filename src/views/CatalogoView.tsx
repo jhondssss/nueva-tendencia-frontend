@@ -9,6 +9,7 @@ import ZoomImage from '@/components/shared/ZoomImage';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
 import type { ProductoCatalogo } from '@/types';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 const LS_KEY = 'catalogo-page-size';
 
@@ -99,7 +100,7 @@ export default function CatalogoView() {
                             <div className="relative h-32 w-full bg-muted flex items-center justify-center">
                                 {producto.imagen ? (
                                     <img
-                                        src={producto.imagen}
+                                        src={getImagenEstandarizada(producto.imagen, 400)!}
                                         alt={producto.nombre}
                                         className="h-full w-full object-cover"
                                     />

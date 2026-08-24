@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Package, ChevronRight, Calendar, X } from 'lucide-react';
 import { useMisPedidosStore } from '@/stores/index';
 import { formatFechaLarga } from '@/utils/dates';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -139,7 +140,7 @@ export default function MisPedidosView() {
                                     <div className="h-14 w-14 rounded-lg overflow-hidden bg-muted flex items-center justify-center shrink-0">
                                         {pedido.producto?.imagen_url ? (
                                             <img
-                                                src={pedido.producto.imagen_url}
+                                                src={getImagenEstandarizada(pedido.producto.imagen_url, 200)!}
                                                 alt={pedido.producto.nombre_modelo}
                                                 className="h-full w-full object-cover"
                                             />

@@ -7,6 +7,7 @@ import { Upload, Loader2 } from 'lucide-react';
 import Modal from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
 import type { Producto, CreateProductoDto, CategoriaCalzado } from '@/types';
+import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 const CATEGORIA_OPTIONS: { value: CategoriaCalzado; label: string }[] = [
     { value: 'nino',    label: 'Niño (tallas 27–32)' },
@@ -88,7 +89,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 unidad_medida:      producto.unidad_medida ?? 'unidades',
                 activo:             Boolean(producto.activo),
             });
-            setPreview(resolveImageUrl(producto.imagen_url));
+            setPreview(getImagenEstandarizada(resolveImageUrl(producto.imagen_url), 400));
             setImagen(null);
         } else if (!isOpen) {
             reset();
