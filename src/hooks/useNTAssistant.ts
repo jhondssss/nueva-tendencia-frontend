@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
+import { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
-
-const ASSISTANT_URL = `${import.meta.env.VITE_API_URL}/assistant/chat`;
+import { assistantApi } from '@/api/services';
 
 export interface ChatMessage {
     role: 'user' | 'assistant';
@@ -20,33 +20,26 @@ export function useNTAssistant() {
         setIsLoading(true);
 
         try {
-            const res = await fetch(ASSISTANT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: text,
-                    history: currentMessages.map(m => ({ role: m.role, text: m.content })),
-                }),
-            });
-
-            if (!res.ok) {
-                console.error('[NT Assistant] HTTP error:', res.status, res.statusText);
-                if (res.status === 404) {
-                    toast.error('Endpoint no encontrado en el backend');
-                } else if (res.status >= 500) {
-                    toast.error('Error interno del servidor');
-                } else {
-                    toast.error(`Error del servidor (${res.status})`);
-                }
-                return;
-            }
-
-            const data: { response: string } = await res.json();
-            setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+            const res = await assistantApi.chat(
+                text,
+                currentMessages.map(m => ({ role: m.role, text: m.content })),
+            );
+            setMessages(prev => [...prev, { role: 'assistant', content: res.data.response }]);
         } catch (err) {
             console.error('[NT Assistant] Error completo:', err);
-            if (err instanceof TypeError) {
-                toast.error('No se puede conectar al backend');
+            if (err instanceof AxiosError) {
+                const status = err.response?.status;
+                if (status === 401) {
+                    // El interceptor de axios ya redirige a /login y muestra el toast de sesión expirada
+                } else if (status === 404) {
+                    toast.error('Endpoint no encontrado en el backend');
+                } else if (status && status >= 500) {
+                    toast.error('Error interno del servidor');
+                } else if (status) {
+                    toast.error(`Error del servidor (${status})`);
+                } else {
+                    toast.error('No se puede conectar al backend');
+                }
             } else {
                 toast.error('Error al comunicarse con NT Assistant.');
             }

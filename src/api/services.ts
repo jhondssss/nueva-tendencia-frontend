@@ -184,3 +184,9 @@ export const dashboardApi = {
     }[]>('/dashboard/prediccion-stock'),
     proximosAEntregar:   () => api.get<ProximoPedido[]>('/dashboard/proximos-a-entregar'),
 };
+
+// ─── Asistente IA ─────────────────────────────────────────────────────────────
+export const assistantApi = {
+    chat: (message: string, history: { role: 'user' | 'assistant'; text: string }[]) =>
+        api.post<{ response: string }>('/assistant/chat', { message, history }),
+};
