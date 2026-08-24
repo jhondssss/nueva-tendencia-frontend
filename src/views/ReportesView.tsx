@@ -39,22 +39,6 @@ export default function ReportesView() {
 
     useEffect(() => { document.title = 'Reportes | NT'; }, []);
 
-    const descargar = async (key: string, url: string, filename: string) => {
-        setLoading(prev => ({ ...prev, [key]: true }));
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const blob = await res.blob();
-            triggerDownload(blob, filename);
-            toast.success('Reporte descargado');
-        } catch (err) {
-            console.error('[Reportes]', err);
-            toast.error('Error al descargar el reporte');
-        } finally {
-            setLoading(prev => ({ ...prev, [key]: false }));
-        }
-    };
-
     const descargarConApi = async (key: string, fetcher: () => Promise<{ data: Blob }>, filename: string) => {
         setLoading(prev => ({ ...prev, [key]: true }));
         try {
@@ -66,23 +50,6 @@ export default function ReportesView() {
             toast.error('Error al descargar el reporte');
         } finally {
             setLoading(prev => ({ ...prev, [key]: false }));
-        }
-    };
-
-    const vistaPreviaUrl = async (key: string, url: string) => {
-        setLoading(prev => ({ ...prev, [`preview-${key}`]: true }));
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const blob = await res.blob();
-            const objectUrl = URL.createObjectURL(blob);
-            window.open(objectUrl, '_blank');
-            setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
-        } catch (err) {
-            console.error('[Reportes]', err);
-            toast.error('Error al previsualizar el reporte');
-        } finally {
-            setLoading(prev => ({ ...prev, [`preview-${key}`]: false }));
         }
     };
 
@@ -120,9 +87,9 @@ export default function ReportesView() {
                 </div>
             </div>
 
-            <ReportesPDF onDescargar={descargar} onVistaPrevia={vistaPreviaUrl} loading={loading} />
+            <ReportesPDF onDescargar={descargarConApi} onVistaPrevia={vistaPreviaConApi} loading={loading} />
 
-            <ReportesExcel onDescargar={descargar} loading={loading} />
+            <ReportesExcel onDescargar={descargarConApi} loading={loading} />
 
             <section className="space-y-4">
                 <div className="flex items-center gap-2.5">
