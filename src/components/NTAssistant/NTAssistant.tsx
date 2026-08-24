@@ -5,31 +5,11 @@ import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
 
-// ─── Constantes de layout ─────────────────────────────────────────────────────
-
-const BTN_SIZE = 48;
-const PANEL_W  = 350;
-const PANEL_H  = 500;
-const GAP      = 8;
-
-// ─────────────────────────────────────────────────────────────────────────────
-
 export default function NTAssistant() {
     const [open, setOpen] = useState(false);
 
-    // Posición del botón (left / top en px, inicializada a bottom-right)
-    const [pos, setPos] = useState(() => ({
-        x: window.innerWidth  - 24 - BTN_SIZE,
-        y: window.innerHeight - 24 - BTN_SIZE,
-    }));
-
     const bottomRef = useRef<HTMLDivElement>(null);
     const inputRef  = useRef<HTMLTextAreaElement>(null);
-
-    // Estado de drag en refs → no necesita re-render
-    const isDragging = useRef(false);
-    const hasMoved   = useRef(false);
-    const dragStart  = useRef({ mouseX: 0, mouseY: 0, btnX: 0, btnY: 0 });
 
     const { messages, isLoading, input, setInput, sendMessage, sendQuick } = useNTAssistant();
 
@@ -50,73 +30,6 @@ export default function NTAssistant() {
         if (open) inputRef.current?.focus();
     }, [open]);
 
-    // ── Listeners de drag en window ───────────────────────────────────────────
-
-    useEffect(() => {
-        const onMouseMove = (e: MouseEvent) => {
-            if (!isDragging.current) return;
-
-            const dx = e.clientX - dragStart.current.mouseX;
-            const dy = e.clientY - dragStart.current.mouseY;
-
-            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                hasMoved.current = true;
-            }
-
-            const newX = Math.min(
-                Math.max(0, dragStart.current.btnX + dx),
-                window.innerWidth - BTN_SIZE,
-            );
-            const newY = Math.min(
-                Math.max(0, dragStart.current.btnY + dy),
-                window.innerHeight - BTN_SIZE,
-            );
-
-            setPos({ x: newX, y: newY });
-        };
-
-        const onMouseUp = () => {
-            if (!isDragging.current) return;
-            isDragging.current         = false;
-            document.body.style.userSelect = '';
-            if (!hasMoved.current) setOpen(v => !v);
-        };
-
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup',   onMouseUp);
-        return () => {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup',   onMouseUp);
-        };
-    }, []);
-
-    // ── Handler mousedown del botón ───────────────────────────────────────────
-
-    const onMouseDown = (e: React.MouseEvent) => {
-        e.preventDefault();
-        isDragging.current = true;
-        hasMoved.current   = false;
-        dragStart.current  = {
-            mouseX: e.clientX,
-            mouseY: e.clientY,
-            btnX:   pos.x,
-            btnY:   pos.y,
-        };
-        document.body.style.userSelect = 'none';
-    };
-
-    // ── Posición del panel: arriba del botón, o abajo si no hay espacio ───────
-
-    const panelLeft = Math.min(
-        Math.max(GAP, pos.x - (PANEL_W - BTN_SIZE)),
-        window.innerWidth - PANEL_W - GAP,
-    );
-    const panelTop = pos.y - PANEL_H - GAP >= GAP
-        ? pos.y - PANEL_H - GAP
-        : pos.y + BTN_SIZE + GAP;
-
-    // ─────────────────────────────────────────────────────────────────────────
-
     const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -129,9 +42,10 @@ export default function NTAssistant() {
             {/* ── Panel de chat ─────────────────────────────────────────── */}
             {open && (
                 <div
-                    style={{ left: panelLeft, top: panelTop, width: PANEL_W }}
-                    className="fixed z-50 flex flex-col animate-slide-up
-                               h-[500px] rounded-xl border border-border/50
+                    className="fixed z-50 bottom-24 right-6 flex flex-col animate-slide-up
+                               w-[350px] max-w-[calc(100vw-3rem)]
+                               max-h-[min(600px,calc(100vh-7rem))]
+                               rounded-xl border border-border/50
                                bg-card/95 backdrop-blur-md shadow-modal overflow-hidden"
                 >
                     {/* Header */}
@@ -245,17 +159,15 @@ export default function NTAssistant() {
                 </div>
             )}
 
-            {/* ── Botón flotante (draggable) ─────────────────────────────── */}
+            {/* ── Botón flotante ───────────────────────────────────────── */}
             <button
-                onMouseDown={onMouseDown}
-                style={{ left: pos.x, top: pos.y, width: BTN_SIZE, height: BTN_SIZE }}
+                onClick={() => setOpen(v => !v)}
                 className={clsx(
-                    'fixed z-50 rounded-full',
-                    'cursor-grab active:cursor-grabbing',
+                    'fixed z-50 bottom-6 right-6 w-12 h-12 rounded-full',
                     'bg-cafe-gradient shadow-glow-cafe',
                     'flex items-center justify-center',
-                    'hover:opacity-90 transition-all duration-200',
-                    open && 'rotate-12 scale-95',
+                    'hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-200',
+                    open && 'rotate-12',
                 )}
                 title="NT Assistant"
             >
