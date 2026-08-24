@@ -130,17 +130,17 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                         </TableCell>
                                         <TableCell>
                                             {(canEdit || canDelete) && (
-                                                <div className="flex gap-1">
+                                                <div className="flex gap-2">
                                                     {canEdit && (
                                                         <Button variant="ghost" size="icon" onClick={() => onEdit(p)}
-                                                                className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
-                                                            <Edit2 size={13} />
+                                                                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                                            <Edit2 size={14} />
                                                         </Button>
                                                     )}
                                                     {canDelete && (
                                                         <Button variant="ghost" size="icon" onClick={() => onDelete(p)}
-                                                                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
-                                                            <Trash2 size={13} />
+                                                                className="h-8 w-8 text-destructive/60 hover:text-destructive hover:bg-destructive/10">
+                                                            <Trash2 size={14} />
                                                         </Button>
                                                     )}
                                                 </div>

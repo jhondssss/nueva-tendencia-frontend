@@ -201,31 +201,31 @@ export default function ClientesView() {
                                     </TableCell>
                                     <TableCell>
                                         {(canEdit || canDelete) && (
-                                            <div className="flex gap-1">
+                                            <div className="flex gap-2">
                                                 {canEdit && (
                                                     tieneAcceso(c) ? (
                                                         <Button variant="ghost" size="icon" disabled title="Acceso ya otorgado"
-                                                                className="h-7 w-7 text-secondary opacity-60 cursor-not-allowed">
-                                                            <CheckCircle2 size={13} />
+                                                                className="h-8 w-8 text-secondary opacity-60 cursor-not-allowed">
+                                                            <CheckCircle2 size={14} />
                                                         </Button>
                                                     ) : (
                                                         <Button variant="ghost" size="icon" onClick={() => setAccessTarget(c)}
                                                                 title="Dar acceso al portal"
-                                                                className="h-7 w-7 text-muted-foreground hover:text-secondary hover:bg-secondary/10">
-                                                            <KeyRound size={13} />
+                                                                className="h-8 w-8 text-muted-foreground hover:text-secondary hover:bg-secondary/10">
+                                                            <KeyRound size={14} />
                                                         </Button>
                                                     )
                                                 )}
                                                 {canEdit && (
                                                     <Button variant="ghost" size="icon" onClick={() => openEdit(c)}
-                                                            className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
-                                                        <Edit2 size={13} />
+                                                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                                        <Edit2 size={14} />
                                                     </Button>
                                                 )}
                                                 {canDelete && (
                                                     <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(c)}
-                                                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
-                                                        <Trash2 size={13} />
+                                                            className="h-8 w-8 text-destructive/60 hover:text-destructive hover:bg-destructive/10">
+                                                        <Trash2 size={14} />
                                                     </Button>
                                                 )}
                                             </div>
