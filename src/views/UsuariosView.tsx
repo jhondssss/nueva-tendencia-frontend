@@ -148,6 +148,11 @@ export default function UsuariosView() {
     const pagination = usePagination(filtered, 10);
 
     // ── Access guard ────────────────────────────────────────────────────────────
+    // Guard inline específico de esta vista: no sigue el patrón de /insumos, /kardex,
+    // /clientes, /reportes o /auditoria, que dependen solo de StaffRoute (bloquea 'cliente')
+    // y de que el sidebar oculte el link — esas vistas no chequean el rol internamente.
+    // Aquí, en cambio, un 'operario' sí puede navegar a /usuarios (no hay redirect) pero
+    // ve este mensaje en vez del listado. Ver UsuariosView.test.tsx para el detalle.
     if (!isAdmin) {
         return (
             <div className="flex items-center justify-center h-64">
