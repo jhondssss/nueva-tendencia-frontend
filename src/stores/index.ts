@@ -209,7 +209,7 @@ export const useMisPedidosStore = create<MisPedidosState>((set, get) => ({
         set({ isLoading: true });
         try {
             const { data } = await pedidoApi.misPedidos(filtros);
-            set({ pedidos: [...data].sort((a, b) => b.id_pedido - a.id_pedido) });
+            set({ pedidos: [...data.data].sort((a, b) => b.id_pedido - a.id_pedido) });
         } finally { set({ isLoading: false }); }
     },
     fetchOne: async (id) => {
@@ -243,7 +243,7 @@ export const useCatalogoStore = create<CatalogoState>((set) => ({
 
     fetchAll: async () => {
         set({ isLoading: true });
-        try { const { data } = await productoApi.catalogo(); set({ productos: data }); }
+        try { const { data } = await productoApi.catalogo(); set({ productos: data.data }); }
         finally { set({ isLoading: false }); }
     },
 }));
@@ -263,7 +263,7 @@ export const useMisSolicitudesStore = create<MisSolicitudesState>((set, get) => 
         set({ isLoading: true });
         try {
             const { data } = await solicitudPedidoApi.misSolicitudes();
-            set({ solicitudes: [...data].sort((a, b) => b.id_solicitud - a.id_solicitud) });
+            set({ solicitudes: [...data.data].sort((a, b) => b.id_solicitud - a.id_solicitud) });
         } finally { set({ isLoading: false }); }
     },
     create: async (dto) => {

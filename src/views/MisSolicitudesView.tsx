@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardList, Package, Calendar, XCircle, ArrowRight } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -7,7 +7,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
+import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
+import type { PageSize } from '@/components/shared/AdvancedPagination';
 import type { EstadoSolicitud, SolicitudPedido } from '@/types';
+
+const LS_KEY = 'mis-solicitudes-page-size';
+
+function readPageSize(): PageSize {
+    const saved = localStorage.getItem(LS_KEY);
+    return (PAGE_SIZES as readonly number[]).includes(Number(saved))
+        ? (Number(saved) as PageSize)
+        : 10;
+}
 
 function formatFecha(iso: string): string {
     return new Date(iso).toLocaleDateString('es-BO', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -88,7 +99,18 @@ export default function MisSolicitudesView() {
     const isLoading    = useMisSolicitudesStore(s => s.isLoading);
     const fetchAll     = useMisSolicitudesStore(s => s.fetchAll);
 
+    const [page, setPage]         = useState(1);
+    const [pageSize, setPageSize] = useState<PageSize>(readPageSize);
+
     useEffect(() => { fetchAll(); }, [fetchAll]);
+
+    const totalPages = Math.max(1, Math.ceil(solicitudes.length / pageSize));
+    const paginated  = solicitudes.slice((page - 1) * pageSize, page * pageSize);
+
+    const handlePageSizeChange = (s: PageSize) => {
+        localStorage.setItem(LS_KEY, String(s));
+        setPageSize(s);
+    };
 
     return (
         <div className="space-y-6">
@@ -123,8 +145,20 @@ export default function MisSolicitudesView() {
 
             {solicitudes.length > 0 && (
                 <div className="space-y-3">
-                    {solicitudes.map(s => <SolicitudCard key={s.id_solicitud} solicitud={s} />)}
+                    {paginated.map(s => <SolicitudCard key={s.id_solicitud} solicitud={s} />)}
                 </div>
+            )}
+
+            {!isLoading && solicitudes.length > 0 && (
+                <AdvancedPagination
+                    page={page}
+                    totalPages={totalPages}
+                    total={solicitudes.length}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={handlePageSizeChange}
+                    noun="solicitudes"
+                />
             )}
         </div>
     );

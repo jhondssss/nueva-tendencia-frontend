@@ -6,7 +6,18 @@ import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
 import Modal from '@/components/shared/Modal';
 import ZoomImage from '@/components/shared/ZoomImage';
+import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
+import type { PageSize } from '@/components/shared/AdvancedPagination';
 import type { ProductoCatalogo } from '@/types';
+
+const LS_KEY = 'catalogo-page-size';
+
+function readPageSize(): PageSize {
+    const saved = localStorage.getItem(LS_KEY);
+    return (PAGE_SIZES as readonly number[]).includes(Number(saved))
+        ? (Number(saved) as PageSize)
+        : 10;
+}
 
 function formatPrecio(precio: string) {
     return `Bs. ${Number(precio).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -25,8 +36,18 @@ export default function CatalogoView() {
     const isLoading  = useCatalogoStore(s => s.isLoading);
     const fetchAll   = useCatalogoStore(s => s.fetchAll);
     const [selected, setSelected] = useState<ProductoCatalogo | null>(null);
+    const [page, setPage]         = useState(1);
+    const [pageSize, setPageSize] = useState<PageSize>(readPageSize);
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
+
+    const totalPages = Math.max(1, Math.ceil(productos.length / pageSize));
+    const paginated  = productos.slice((page - 1) * pageSize, page * pageSize);
+
+    const handlePageSizeChange = (s: PageSize) => {
+        localStorage.setItem(LS_KEY, String(s));
+        setPageSize(s);
+    };
 
     return (
         <div className="space-y-6">
@@ -60,7 +81,7 @@ export default function CatalogoView() {
 
             {productos.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                    {productos.map((producto, i) => (
+                    {paginated.map((producto, i) => (
                         <Card
                             key={`${producto.nombre}-${i}`}
                             onClick={() => setSelected(producto)}
@@ -103,6 +124,18 @@ export default function CatalogoView() {
                         </Card>
                     ))}
                 </div>
+            )}
+
+            {!isLoading && productos.length > 0 && (
+                <AdvancedPagination
+                    page={page}
+                    totalPages={totalPages}
+                    total={productos.length}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={handlePageSizeChange}
+                    noun="productos"
+                />
             )}
 
             <Modal isOpen={!!selected} onClose={() => setSelected(null)} title={selected?.nombre ?? ''} size="lg">

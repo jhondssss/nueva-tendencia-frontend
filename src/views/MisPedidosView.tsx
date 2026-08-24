@@ -12,9 +12,20 @@ import {
 import StatusBadge from '@/components/shared/StatusBadge';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
+import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
+import type { PageSize } from '@/components/shared/AdvancedPagination';
 import type { EstadoPedido } from '@/types';
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
+
+const LS_KEY = 'mis-pedidos-page-size';
+
+function readPageSize(): PageSize {
+    const saved = localStorage.getItem(LS_KEY);
+    return (PAGE_SIZES as readonly number[]).includes(Number(saved))
+        ? (Number(saved) as PageSize)
+        : 10;
+}
 
 export default function MisPedidosView() {
     const navigate = useNavigate();
@@ -26,6 +37,8 @@ export default function MisPedidosView() {
     const [desde, setDesde]   = useState('');
     const [hasta, setHasta]   = useState('');
     const [estado, setEstado] = useState<EstadoPedido | 'todos'>('todos');
+    const [page, setPage]         = useState(1);
+    const [pageSize, setPageSize] = useState<PageSize>(readPageSize);
 
     const hayFiltros = !!desde || !!hasta || estado !== 'todos';
 
@@ -35,9 +48,18 @@ export default function MisPedidosView() {
             hasta:  hasta || undefined,
             estado: estado === 'todos' ? undefined : estado,
         });
+        setPage(1);
     }, [fetchAll, desde, hasta, estado]);
 
     const limpiarFiltros = () => { setDesde(''); setHasta(''); setEstado('todos'); };
+
+    const totalPages = Math.max(1, Math.ceil(pedidos.length / pageSize));
+    const paginated  = pedidos.slice((page - 1) * pageSize, page * pageSize);
+
+    const handlePageSizeChange = (s: PageSize) => {
+        localStorage.setItem(LS_KEY, String(s));
+        setPageSize(s);
+    };
 
     return (
         <div className="space-y-6">
@@ -106,7 +128,7 @@ export default function MisPedidosView() {
 
             {pedidos.length > 0 && (
                 <div className="space-y-3">
-                    {pedidos.map(pedido => (
+                    {paginated.map(pedido => (
                         <button
                             key={pedido.id_pedido}
                             onClick={() => navigate(`/mis-pedidos/${pedido.id_pedido}`)}
@@ -144,6 +166,18 @@ export default function MisPedidosView() {
                         </button>
                     ))}
                 </div>
+            )}
+
+            {!isLoading && pedidos.length > 0 && (
+                <AdvancedPagination
+                    page={page}
+                    totalPages={totalPages}
+                    total={pedidos.length}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={handlePageSizeChange}
+                    noun="pedidos"
+                />
             )}
         </div>
     );

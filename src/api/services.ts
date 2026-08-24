@@ -50,7 +50,7 @@ export const productoApi = {
     getAll:     ()           => api.get<Producto[]>('/productos'),
     getOne:     (id: number) => api.get<Producto>(`/productos/${id}`),
     getAlertas: ()           => api.get<Producto[]>('/productos/alertas-stock'),
-    catalogo:   ()           => api.get<ProductoCatalogo[]>('/productos/catalogo'),
+    catalogo:   ()           => api.get<PaginatedResponse<ProductoCatalogo>>('/productos/catalogo'),
 
     create: (dto: CreateProductoDto, imagen?: File) => {
         const form = new FormData();
@@ -94,7 +94,7 @@ export const pedidoApi = {
     remove:       (id: number)             => api.delete(`/pedidos/${id}`),
 
     misPedidos:       (filtros?: MisPedidosFiltros) =>
-        api.get<Pedido[]>('/pedidos/mis-pedidos', { params: filtros }),
+        api.get<PaginatedResponse<Pedido>>('/pedidos/mis-pedidos', { params: filtros }),
     misPedidoDetalle: (id: number) => api.get<Pedido>(`/pedidos/mis-pedidos/${id}`),
     calificar:        (id: number, dto: CalificarPedidoDto) =>
         api.post<CalificacionPedido>(`/pedidos/mis-pedidos/${id}/calificar`, dto),
@@ -103,7 +103,7 @@ export const pedidoApi = {
 // ─── Solicitudes de pedido ──────────────────────────────────────────────────────
 export const solicitudPedidoApi = {
     create:         (dto: CreateSolicitudPedidoDto)              => api.post<SolicitudPedido>('/solicitudes-pedido', dto),
-    misSolicitudes: ()                                            => api.get<SolicitudPedido[]>('/solicitudes-pedido/mis-solicitudes'),
+    misSolicitudes: ()                                            => api.get<PaginatedResponse<SolicitudPedido>>('/solicitudes-pedido/mis-solicitudes'),
     getAll:         (estado?: string)                             => api.get<PaginatedResponse<SolicitudPedido>>('/solicitudes-pedido', { params: { estado } }),
     aprobar:        (id: number, dto: AprobarSolicitudDto)        => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/aprobar`, dto),
     rechazar:       (id: number, dto: RechazarSolicitudDto)       => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/rechazar`, dto),

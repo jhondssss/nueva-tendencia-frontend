@@ -14,10 +14,21 @@ import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
 import TallaInfoBox, { defaultTallas, CATEGORIA_INFO } from '@/components/pedidos/TallaInfoBox';
 import type { TallaItem } from '@/components/pedidos/TallaInfoBox';
+import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
+import type { PageSize } from '@/components/shared/AdvancedPagination';
 import type { ProductoCatalogo } from '@/types';
 
 function formatPrecio(precio: string) {
     return `Bs. ${Number(precio).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+const LS_KEY = 'solicitar-pedido-page-size';
+
+function readPageSize(): PageSize {
+    const saved = localStorage.getItem(LS_KEY);
+    return (PAGE_SIZES as readonly number[]).includes(Number(saved))
+        ? (Number(saved) as PageSize)
+        : 10;
 }
 
 const schema = z.object({
@@ -42,6 +53,16 @@ export default function SolicitarPedidoView() {
 
     const [seleccionado, setSeleccionado] = useState<ProductoCatalogo | null>(null);
     const [tallas, setTallas] = useState<TallaItem[] | null>(null);
+    const [page, setPage]         = useState(1);
+    const [pageSize, setPageSize] = useState<PageSize>(readPageSize);
+
+    const totalPages = Math.max(1, Math.ceil(productos.length / pageSize));
+    const paginated  = productos.slice((page - 1) * pageSize, page * pageSize);
+
+    const handlePageSizeChange = (s: PageSize) => {
+        localStorage.setItem(LS_KEY, String(s));
+        setPageSize(s);
+    };
 
     const { handleSubmit, setValue, register, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema) as Resolver<FormData>,
@@ -110,7 +131,7 @@ export default function SolicitarPedidoView() {
 
                 {productos.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                        {productos.map((producto, i) => {
+                        {paginated.map((producto, i) => {
                             const isSelected = seleccionado?.id_producto === producto.id_producto;
                             return (
                                 <Card
@@ -152,6 +173,19 @@ export default function SolicitarPedidoView() {
                         })}
                     </div>
                 )}
+
+                {!catalogoLoading && productos.length > 0 && (
+                    <AdvancedPagination
+                        page={page}
+                        totalPages={totalPages}
+                        total={productos.length}
+                        pageSize={pageSize}
+                        onPageChange={setPage}
+                        onPageSizeChange={handlePageSizeChange}
+                        noun="productos"
+                    />
+                )}
+
                 {errors.producto_id && <p className="text-destructive text-xs">{errors.producto_id.message}</p>}
             </div>
 
