@@ -6,6 +6,7 @@ import { usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import NTAssistant from '@/components/NTAssistant/NTAssistant';
+import GlobalSearch from '@/components/shared/GlobalSearch';
 import LeatherSeal from '@/components/shared/LeatherSeal';
 import { parseLocalDate } from '@/utils/dates';
 import { Button } from '@/components/ui/button';
@@ -267,6 +268,7 @@ export default function AppLayout() {
                 </div>
 
                 <NTAssistant />
+                <GlobalSearch />
             </div>
         </TooltipProvider>
     );

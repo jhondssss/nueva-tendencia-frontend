@@ -15,6 +15,7 @@ import type {
     ReporteDiarioResponse,
     UsuarioAdmin, CreateUsuarioDto, UpdateUsuarioDto,
     PaginatedResponse,
+    SearchResult,
 } from '@/types';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -183,6 +184,11 @@ export const dashboardApi = {
         alerta: boolean; critico: boolean;
     }[]>('/dashboard/prediccion-stock'),
     proximosAEntregar:   () => api.get<ProximoPedido[]>('/dashboard/proximos-a-entregar'),
+};
+
+// ─── Búsqueda global ──────────────────────────────────────────────────────────
+export const searchApi = {
+    buscar: (q: string) => api.get<SearchResult>('/search', { params: { q } }),
 };
 
 // ─── Asistente IA ─────────────────────────────────────────────────────────────
