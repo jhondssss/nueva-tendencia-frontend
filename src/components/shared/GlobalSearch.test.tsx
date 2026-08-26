@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import GlobalSearch from './GlobalSearch';
 import { searchApi } from '@/api/services';
+import { useCommandPaletteStore } from '@/stores/commandPalette.store';
 
 vi.mock('@/api/services', () => ({
     searchApi: { buscar: vi.fn() },
@@ -27,6 +28,7 @@ function renderGlobalSearch() {
 describe('GlobalSearch', () => {
     beforeEach(() => {
         buscarMock.mockReset();
+        useCommandPaletteStore.setState({ open: false });
     });
 
     it('se abre con Ctrl+K y muestra el estado vacío inicial', async () => {

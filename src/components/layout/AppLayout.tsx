@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Bell, Star } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Bell, Star, Search } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePedidoStore } from '@/stores/index';
+import { useCommandPaletteStore } from '@/stores/commandPalette.store';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import NTAssistant from '@/components/NTAssistant/NTAssistant';
@@ -74,6 +75,10 @@ export default function AppLayout() {
     const { user, logout } = useAuthStore();
     const { isAdmin, isOperario } = useRole();
     const navigate = useNavigate();
+    const setSearchOpen = useCommandPaletteStore(s => s.setOpen);
+
+    const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    const shortcutLabel = isMac ? '⌘K' : 'Ctrl K';
 
     const pedidos      = usePedidoStore(s => s.pedidos);
     const fetchPedidos = usePedidoStore(s => s.fetchAll);
@@ -243,22 +248,43 @@ export default function AppLayout() {
                         >
                             {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => navigate('/dashboard')}
-                            className="relative text-muted-foreground hover:text-foreground"
-                        >
-                            <Bell size={17} />
-                            {vencidosCount > 0 && (
-                                <Badge
-                                    variant="destructive"
-                                    className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full text-2xs font-bold"
-                                >
-                                    {vencidosCount > 99 ? '99+' : vencidosCount}
-                                </Badge>
-                            )}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setSearchOpen(true)}
+                                className="hidden sm:flex items-center gap-2 h-9 px-3 text-muted-foreground hover:text-foreground"
+                            >
+                                <Search size={16} />
+                                <span className="text-sm">Buscar...</span>
+                                <kbd className="ml-1 rounded border border-border bg-muted px-1.5 py-0.5 text-2xs font-mono text-muted-foreground">
+                                    {shortcutLabel}
+                                </kbd>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setSearchOpen(true)}
+                                className="sm:hidden text-muted-foreground hover:text-foreground"
+                            >
+                                <Search size={17} />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate('/dashboard')}
+                                className="relative text-muted-foreground hover:text-foreground"
+                            >
+                                <Bell size={17} />
+                                {vencidosCount > 0 && (
+                                    <Badge
+                                        variant="destructive"
+                                        className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full text-2xs font-bold"
+                                    >
+                                        {vencidosCount > 99 ? '99+' : vencidosCount}
+                                    </Badge>
+                                )}
+                            </Button>
+                        </div>
                     </header>
                     <main className="flex-1 overflow-y-auto p-6 bg-background">
                         <div className="page-transition">

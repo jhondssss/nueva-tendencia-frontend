@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Package, ShoppingBag, Loader2 } from 'lucide-react';
 import {
@@ -6,10 +6,13 @@ import {
     CommandEmpty, CommandGroup, CommandItem,
 } from '@/components/ui/command';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
+import { useCommandPaletteStore } from '@/stores/commandPalette.store';
 import type { SearchResultItem } from '@/types';
 
 export default function GlobalSearch() {
-    const [open, setOpen] = useState(false);
+    const open = useCommandPaletteStore(s => s.open);
+    const setOpen = useCommandPaletteStore(s => s.setOpen);
+    const toggle = useCommandPaletteStore(s => s.toggle);
     const navigate = useNavigate();
     const { query, setQuery, results, isLoading, hasResults, reset } = useGlobalSearch();
 
@@ -17,12 +20,12 @@ export default function GlobalSearch() {
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
-                setOpen(v => !v);
+                toggle();
             }
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [toggle]);
 
     const handleOpenChange = useCallback((next: boolean) => {
         setOpen(next);
