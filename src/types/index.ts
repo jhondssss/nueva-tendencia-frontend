@@ -381,3 +381,15 @@ export interface PrediccionStock {
     alerta: boolean;
     critico: boolean;
 }
+
+// ─── Búsqueda global ──────────────────────────────────────────────────────────
+export interface SearchResultItem {
+    id: number;
+    titulo: string;
+    subtitulo: string;
+}
+export interface SearchResult {
+    clientes:  SearchResultItem[];
+    productos: SearchResultItem[];
+    pedidos:   SearchResultItem[];
+}
