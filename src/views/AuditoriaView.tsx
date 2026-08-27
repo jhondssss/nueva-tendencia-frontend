@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ClipboardList, Search, Archive, X, AlertTriangle } from 'lucide-react';
+import { ClipboardList, Search, Archive, X, AlertTriangle, FileSpreadsheet, FileDown } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
 import toast from 'react-hot-toast';
@@ -88,6 +91,44 @@ function generateCsv(logs: AuditoriaLog[]): string {
     return [header, ...rows].join('\n');
 }
 
+const EXPORT_HEADERS = ['Fecha / Hora', 'Usuario', 'Módulo', 'Acción', 'Descripción'];
+
+function exportFilename(ext: string): string {
+    const now  = new Date();
+    const pad  = (n: number) => String(n).padStart(2, '0');
+    return `auditoria-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}.${ext}`;
+}
+
+function exportarExcel(logs: AuditoriaLog[]): void {
+    const rows = logs.map(l => ({
+        [EXPORT_HEADERS[0]]: formatFecha(l.fecha),
+        [EXPORT_HEADERS[1]]: l.usuario?.email ?? 'Sistema',
+        [EXPORT_HEADERS[2]]: l.modulo,
+        [EXPORT_HEADERS[3]]: l.accion,
+        [EXPORT_HEADERS[4]]: l.descripcion,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Auditoría');
+    XLSX.writeFile(wb, exportFilename('xlsx'));
+}
+
+function exportarPdf(logs: AuditoriaLog[]): void {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(14);
+    doc.text('Log de Auditoría', 14, 15);
+    autoTable(doc, {
+        startY: 20,
+        head: [EXPORT_HEADERS],
+        body: logs.map(l => [
+            formatFecha(l.fecha), l.usuario?.email ?? 'Sistema', l.modulo, l.accion, l.descripcion,
+        ]),
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [63, 44, 33] },
+    });
+    doc.save(exportFilename('pdf'));
+}
+
 // ─── View ──────────────────────────────────────────────────────────────────────
 
 export default function AuditoriaView() {
@@ -156,6 +197,26 @@ export default function AuditoriaView() {
     };
 
     const hasActiveFilters = search !== '' || filterAccion !== 'todos' || filterAnio !== 0 || filterMes !== 0;
+
+    const handleExportarExcel = () => {
+        if (filtered.length === 0) { toast.error('No hay registros para exportar'); return; }
+        try {
+            exportarExcel(filtered);
+            toast.success('Excel exportado');
+        } catch {
+            toast.error('Error al exportar el Excel');
+        }
+    };
+
+    const handleExportarPdf = () => {
+        if (filtered.length === 0) { toast.error('No hay registros para exportar'); return; }
+        try {
+            exportarPdf(filtered);
+            toast.success('PDF exportado');
+        } catch {
+            toast.error('Error al exportar el PDF');
+        }
+    };
 
     const handleModulo  = (v: ModuloFilter) => { setModulo(v); setSearch(''); setPage(1); };
     const handleSearch  = (v: string)       => { setSearch(v); setPage(1); };
@@ -229,10 +290,20 @@ export default function AuditoriaView() {
                     <h1 className="page-title section-title">Log de Auditoría</h1>
                     <p className="page-subtitle">Registro de todas las acciones del sistema</p>
                 </div>
-                <Button variant="outline" onClick={() => setArchiveOpen(true)}>
-                    <Archive size={15} />
-                    Archivar y limpiar
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={handleExportarExcel} disabled={filtered.length === 0}>
+                        <FileSpreadsheet size={15} />
+                        Exportar Excel
+                    </Button>
+                    <Button variant="outline" onClick={handleExportarPdf} disabled={filtered.length === 0}>
+                        <FileDown size={15} />
+                        Exportar PDF
+                    </Button>
+                    <Button variant="outline" onClick={() => setArchiveOpen(true)}>
+                        <Archive size={15} />
+                        Archivar y limpiar
+                    </Button>
+                </div>
             </div>
 
             {/* ── SECCIÓN 1 — Filtros ─────────────────────────────────────────── */}
