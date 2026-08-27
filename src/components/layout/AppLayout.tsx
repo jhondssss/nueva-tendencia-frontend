@@ -1,15 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Bell, Star, Search } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Star, Search } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
-import { usePedidoStore } from '@/stores/index';
 import { useCommandPaletteStore } from '@/stores/commandPalette.store';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import NTAssistant from '@/components/NTAssistant/NTAssistant';
 import GlobalSearch from '@/components/shared/GlobalSearch';
 import LeatherSeal from '@/components/shared/LeatherSeal';
-import { parseLocalDate } from '@/utils/dates';
+import NotificacionesDropdown from '@/components/layout/NotificacionesDropdown';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -79,19 +78,6 @@ export default function AppLayout() {
 
     const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
     const shortcutLabel = isMac ? '⌘K' : 'Ctrl K';
-
-    const pedidos      = usePedidoStore(s => s.pedidos);
-    const fetchPedidos = usePedidoStore(s => s.fetchAll);
-
-    useEffect(() => { fetchPedidos(); }, [fetchPedidos]);
-
-    const vencidosCount = useMemo(() => {
-        const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-        return pedidos.filter(p => {
-            const fecha = parseLocalDate(p.fecha_entrega); fecha.setHours(0, 0, 0, 0);
-            return fecha < hoy && p.estado !== 'Terminado';
-        }).length;
-    }, [pedidos]);
 
     const handleLogout = () => { logout(); navigate('/login'); };
     const userRole = isAdmin ? 'admin' : isOperario ? 'operario' : '';
@@ -268,22 +254,7 @@ export default function AppLayout() {
                             >
                                 <Search size={17} />
                             </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => navigate('/dashboard')}
-                                className="relative text-muted-foreground hover:text-foreground"
-                            >
-                                <Bell size={17} />
-                                {vencidosCount > 0 && (
-                                    <Badge
-                                        variant="destructive"
-                                        className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full text-2xs font-bold"
-                                    >
-                                        {vencidosCount > 99 ? '99+' : vencidosCount}
-                                    </Badge>
-                                )}
-                            </Button>
+                            <NotificacionesDropdown />
                         </div>
                     </header>
                     <main className="flex-1 overflow-y-auto p-6 bg-background">
