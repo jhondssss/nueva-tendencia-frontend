@@ -140,7 +140,7 @@ export default function MisSolicitudesView() {
                 <EmptyState
                     icon={ClipboardList}
                     title="Aún no tienes solicitudes"
-                    description="Cuando pidas un producto nuevo desde 'Solicitar pedido', aparecerá aquí con su estado."
+                    description="Cuando pidas un producto nuevo desde el Catálogo, aparecerá aquí con su estado."
                 />
             )}
 
