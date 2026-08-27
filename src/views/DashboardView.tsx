@@ -3,10 +3,13 @@ import {
     ResponsiveContainer, Tooltip, Cell,
     BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Legend,
 } from 'recharts';
+import { isToday, isThisWeek, isThisMonth } from 'date-fns';
 import { Clock, Scissors, Hammer, Layers, Package, CheckCircle, PieChart as PieChartIcon, GitBranch, Inbox } from 'lucide-react';
 import { useDashboardStore, usePedidoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { clsx } from 'clsx';
 import StatusBadge from '@/components/shared/StatusBadge';
 import type { EstadoPedido } from '@/types';
 import KpiCards from '@/components/dashboard/KpiCards';
@@ -118,12 +121,31 @@ function EmptyChartState({ icon: Icon, message }: { icon: React.ElementType; mes
     );
 }
 
+// ── Filtro de rango para Actividad reciente ─────────────────────────────────
+type FiltroActividad = 'hoy' | 'semana' | 'mes' | 'todo';
+const FILTROS_ACTIVIDAD: { value: FiltroActividad; label: string }[] = [
+    { value: 'hoy',    label: 'Hoy' },
+    { value: 'semana', label: 'Esta semana' },
+    { value: 'mes',    label: 'Este mes' },
+    { value: 'todo',   label: 'Todo' },
+];
+function filtrarPorRango<T extends { fecha: string }>(items: T[], filtro: FiltroActividad): T[] {
+    if (filtro === 'todo') return items;
+    return items.filter(item => {
+        const fecha = new Date(item.fecha);
+        if (filtro === 'hoy')    return isToday(fecha);
+        if (filtro === 'semana') return isThisWeek(fecha, { weekStartsOn: 1 });
+        return isThisMonth(fecha);
+    });
+}
+
 export default function DashboardView() {
     const { kpis, ordersStatus, productionFunnel: produccionPorEtapa, recentActivity,
             topProductos, ventasPorMes, prediccionStock, proximosAEntregar, isLoading, fetchAll } = useDashboardStore();
 
     const { isAdmin, isOperario } = useRole();
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [filtroActividad, setFiltroActividad] = useState<FiltroActividad>('todo');
 
     const pedidos       = usePedidoStore(s => s.pedidos);
     const fetchPedidos  = usePedidoStore(s => s.fetchAll);
@@ -156,6 +178,11 @@ export default function DashboardView() {
     const totalCategorias = useMemo(() =>
         categoriasData.reduce((s, d) => s + d.value, 0),
     [categoriasData]);
+
+    const actividadFiltrada = useMemo(() =>
+        filtrarPorRango(recentActivity, filtroActividad),
+    [recentActivity, filtroActividad]);
+
     useEffect(() => { document.title = 'Dashboard | NT'; }, []);
 
     return (
@@ -294,7 +321,22 @@ export default function DashboardView() {
 
             {!isOperario && (
                 <div className="rounded-xl border border-border/50 bg-card/50 p-6 backdrop-blur">
-                    <h3 className="font-display text-base font-semibold tracking-tight text-foreground mb-4">Actividad Reciente</h3>
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h3 className="font-display text-base font-semibold tracking-tight text-foreground">Actividad Reciente</h3>
+                        <div className="flex items-center gap-1.5">
+                            {FILTROS_ACTIVIDAD.map(({ value, label }) => (
+                                <Button
+                                    key={value}
+                                    size="sm"
+                                    variant={filtroActividad === value ? 'default' : 'outline'}
+                                    onClick={() => setFiltroActividad(value)}
+                                    className={clsx('h-7 px-2.5 text-xs transition-all duration-200 hover:scale-[1.01]')}
+                                >
+                                    {label}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
                     {isLoading ? (
                         <div className="space-y-3">
                             {Array.from({ length: 4 }).map((_, i) => (
@@ -307,14 +349,18 @@ export default function DashboardView() {
                                 </div>
                             ))}
                         </div>
-                    ) : recentActivity.length === 0 ? (
+                    ) : actividadFiltrada.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
                             <Inbox size={26} className="text-muted-foreground/50" />
-                            <p className="text-muted-foreground text-sm">No hay actividad reciente</p>
+                            <p className="text-muted-foreground text-sm">
+                                {recentActivity.length === 0
+                                    ? 'No hay actividad reciente'
+                                    : 'No hay actividad en el rango seleccionado'}
+                            </p>
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {recentActivity.map(act => {
+                            {actividadFiltrada.map(act => {
                                 const cfg = ACTIVITY_ICON[act.estado] ?? ACTIVITY_ICON['Pendiente'];
                                 const IconComp = cfg.icon;
                                 return (
