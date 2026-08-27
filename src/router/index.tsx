@@ -27,7 +27,6 @@ const MisPedidosView       = lazy(() => import('@/views/MisPedidosView'));
 const MisPedidoDetalleView = lazy(() => import('@/views/MisPedidoDetalleView'));
 const CatalogoView         = lazy(() => import('@/views/CatalogoView'));
 const CalificacionesView   = lazy(() => import('@/views/CalificacionesView'));
-const SolicitarPedidoView  = lazy(() => import('@/views/SolicitarPedidoView'));
 const MisSolicitudesView   = lazy(() => import('@/views/MisSolicitudesView'));
 const SolicitudesView      = lazy(() => import('@/views/SolicitudesView'));
 
@@ -125,7 +124,6 @@ export const router = createBrowserRouter([
                                     { path: '/mis-pedidos',      element: <Lazy><MisPedidosView /></Lazy> },
                                     { path: '/mis-pedidos/:id',  element: <Lazy><MisPedidoDetalleView /></Lazy> },
                                     { path: '/catalogo',         element: <Lazy><CatalogoView /></Lazy> },
-                                    { path: '/solicitar-pedido', element: <Lazy><SolicitarPedidoView /></Lazy> },
                                     { path: '/mis-solicitudes',  element: <Lazy><MisSolicitudesView /></Lazy> },
                                 ],
                             },

@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react';
-import { ShoppingBag } from 'lucide-react';
-import { useCatalogoStore } from '@/stores/index';
+import { useNavigate } from 'react-router-dom';
+import { ShoppingBag, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useCatalogoStore, useMisSolicitudesStore } from '@/stores/index';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
 import Modal from '@/components/shared/Modal';
 import ZoomImage from '@/components/shared/ZoomImage';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
+import TallaInfoBox, { defaultTallas } from '@/components/pedidos/TallaInfoBox';
+import type { TallaItem } from '@/components/pedidos/TallaInfoBox';
 import type { ProductoCatalogo } from '@/types';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 const LS_KEY = 'catalogo-page-size';
+const hoy = new Date().toISOString().split('T')[0];
 
 function readPageSize(): PageSize {
     const saved = localStorage.getItem(LS_KEY);
@@ -33,14 +40,70 @@ function disponibilidadBadgeClass(disponible: boolean) {
 }
 
 export default function CatalogoView() {
+    const navigate = useNavigate();
+
     const productos  = useCatalogoStore(s => s.productos);
     const isLoading  = useCatalogoStore(s => s.isLoading);
     const fetchAll   = useCatalogoStore(s => s.fetchAll);
+    const crearSolicitud = useMisSolicitudesStore(s => s.create);
+
     const [selected, setSelected] = useState<ProductoCatalogo | null>(null);
+    const [tallas, setTallas]     = useState<TallaItem[] | null>(null);
+    const [fechaEntrega, setFechaEntrega] = useState('');
+    const [comentario, setComentario]     = useState('');
+    const [comentarioError, setComentarioError] = useState('');
+    const [enviando, setEnviando] = useState(false);
     const [page, setPage]         = useState(1);
     const [pageSize, setPageSize] = useState<PageSize>(readPageSize);
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
+
+    const handleOpen = (producto: ProductoCatalogo) => {
+        setSelected(producto);
+        setTallas(defaultTallas(producto.categoria));
+        setFechaEntrega('');
+        setComentario('');
+        setComentarioError('');
+    };
+
+    const handleClose = () => {
+        setSelected(null);
+        setTallas(null);
+        setFechaEntrega('');
+        setComentario('');
+        setComentarioError('');
+    };
+
+    const handleSolicitar = async () => {
+        if (!selected) return;
+        const tallasValidas = (tallas ?? []).filter(t => t.cantidad_pares > 0);
+        if (tallasValidas.length === 0) {
+            toast.error('Indica al menos un par en alguna talla');
+            return;
+        }
+        if (comentario.length > 500) {
+            setComentarioError('Máximo 500 caracteres');
+            return;
+        }
+        setComentarioError('');
+        setEnviando(true);
+        try {
+            await crearSolicitud({
+                producto_id: selected.id_producto,
+                categoria: selected.categoria,
+                tallas: tallasValidas,
+                comentario_cliente: comentario || undefined,
+                fecha_entrega_deseada: fechaEntrega || undefined,
+            });
+        } catch {
+            toast.error('No se pudo enviar la solicitud. Intenta nuevamente.');
+            return;
+        } finally {
+            setEnviando(false);
+        }
+        handleClose();
+        navigate('/mis-solicitudes');
+    };
 
     const totalPages = Math.max(1, Math.ceil(productos.length / pageSize));
     const paginated  = productos.slice((page - 1) * pageSize, page * pageSize);
@@ -85,14 +148,14 @@ export default function CatalogoView() {
                     {paginated.map((producto, i) => (
                         <Card
                             key={`${producto.nombre}-${i}`}
-                            onClick={() => setSelected(producto)}
+                            onClick={() => handleOpen(producto)}
                             tabIndex={0}
                             role="button"
                             aria-label={`Ver detalle de ${producto.nombre}`}
                             onKeyDown={e => {
                                 if (e.key === 'Enter' || e.key === ' ') {
                                     e.preventDefault();
-                                    setSelected(producto);
+                                    handleOpen(producto);
                                 }
                             }}
                             className="border-border/50 bg-card/50 backdrop-blur overflow-hidden cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -139,7 +202,7 @@ export default function CatalogoView() {
                 />
             )}
 
-            <Modal isOpen={!!selected} onClose={() => setSelected(null)} title={selected?.nombre ?? ''} size="lg">
+            <Modal isOpen={!!selected} onClose={handleClose} title={selected?.nombre ?? ''} size="lg">
                 {selected && (
                     <div className="space-y-4">
                         <ZoomImage src={selected.imagen} alt={selected.nombre} />
@@ -150,6 +213,56 @@ export default function CatalogoView() {
                             <p className="text-foreground font-bold text-lg">{formatPrecio(selected.precio)}</p>
                         </div>
                         <p className="text-sm text-muted-foreground whitespace-pre-line">{selected.descripcion}</p>
+
+                        <div className="space-y-3 pt-2 border-t border-border">
+                            <p className="label mb-0 pt-2">Cantidad de pares por talla</p>
+                            <TallaInfoBox
+                                categoria={selected.categoria}
+                                editable
+                                value={tallas ?? undefined}
+                                onChange={setTallas}
+                            />
+
+                            <div>
+                                <label className="label">Fecha de entrega deseada (opcional)</label>
+                                <Input
+                                    type="date"
+                                    min={hoy}
+                                    value={fechaEntrega}
+                                    onChange={e => setFechaEntrega(e.target.value)}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="label">Comentario (opcional)</label>
+                                <textarea
+                                    value={comentario}
+                                    onChange={e => { setComentario(e.target.value); setComentarioError(''); }}
+                                    rows={3}
+                                    placeholder="Detalles adicionales sobre tu pedido..."
+                                    className={`input h-auto resize-none ${comentarioError ? 'input-error' : ''}`}
+                                />
+                                {comentarioError && <p className="text-destructive text-xs mt-1">{comentarioError}</p>}
+                            </div>
+
+                            <div className="flex justify-end pt-1">
+                                <Button
+                                    type="button"
+                                    disabled={!selected.disponible || enviando}
+                                    onClick={handleSolicitar}
+                                    className="hover:scale-[1.02] transition-transform"
+                                >
+                                    {enviando
+                                        ? <><Loader2 size={14} className="animate-spin" /> Enviando...</>
+                                        : 'Solicitar este pedido'}
+                                </Button>
+                            </div>
+                            {!selected.disponible && (
+                                <p className="text-xs text-muted-foreground text-right">
+                                    Este producto no tiene stock disponible por el momento.
+                                </p>
+                            )}
+                        </div>
                     </div>
                 )}
             </Modal>
