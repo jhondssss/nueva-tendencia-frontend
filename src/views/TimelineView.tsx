@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Check, CalendarX, Workflow } from 'lucide-react';
+import { CalendarX, Workflow } from 'lucide-react';
 import { usePedidoStore } from '@/stores/index';
 import EmptyState from '@/components/shared/EmptyState';
 import { TimelineCardSkeleton } from '@/components/shared/Skeleton';
+import Pagination from '@/components/shared/Pagination';
+import { usePagination } from '@/hooks/usePagination';
 import type { EstadoPedido, UnidadPedido, Pedido } from '@/types';
 import { clsx } from 'clsx';
 import { parseLocalDate } from '@/utils/dates';
@@ -26,6 +28,30 @@ function formatCantidad(cantidad: number, unidad: UnidadPedido, cantidadPares?: 
 }
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
+
+// Color por etapa: usado en el paso activo del stepper y en el badge de estado de la tarjeta.
+// Clases completas (no interpoladas) para que Tailwind las detecte al compilar.
+const ESTADO_COLOR: Record<EstadoPedido, { dot: string; text: string; badge: string; ring: string }> = {
+    Pendiente: { dot: 'bg-chart-3', text: 'text-chart-3', badge: 'bg-chart-3/10 text-chart-3 border-chart-3/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-3)/0.16)]' },
+    Cortado:   { dot: 'bg-chart-4', text: 'text-chart-4', badge: 'bg-chart-4/10 text-chart-4 border-chart-4/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-4)/0.16)]' },
+    Aparado:   { dot: 'bg-chart-1', text: 'text-chart-1', badge: 'bg-chart-1/10 text-chart-1 border-chart-1/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-1)/0.16)]' },
+    Solado:    { dot: 'bg-chart-5', text: 'text-chart-5', badge: 'bg-chart-5/10 text-chart-5 border-chart-5/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-5)/0.16)]' },
+    Empaque:   { dot: 'bg-chart-2', text: 'text-chart-2', badge: 'bg-chart-2/10 text-chart-2 border-chart-2/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-2)/0.16)]' },
+    Terminado: { dot: 'bg-success', text: 'text-success', badge: 'bg-success/10 text-success border-success/30', ring: 'shadow-[0_0_0_4px_hsl(var(--success)/0.16)]' },
+};
+
+function EstadoBadge({ estado }: { estado: EstadoPedido }) {
+    const cfg = ESTADO_COLOR[estado];
+    return (
+        <span className={clsx(
+            'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-2xs font-semibold uppercase tracking-wider border',
+            cfg.badge,
+        )}>
+            <span className={clsx('w-1.5 h-1.5 rounded-full', cfg.dot)} />
+            {estado}
+        </span>
+    );
+}
 
 const MESES = [
     'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -75,7 +101,8 @@ function PedidoCard({ p }: { p: Pedido }) {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <EstadoBadge estado={p.estado} />
                     <span className={clsx(
                         'text-xs font-mono flex items-center gap-1',
                         vencido ? 'text-destructive font-semibold' : 'text-muted-foreground',
@@ -96,14 +123,14 @@ function PedidoCard({ p }: { p: Pedido }) {
              * — Línea de fondo: left-[10%] right-[10%]   (de centro col-0 a col-4)
              * — Línea progreso: left-[10%] width=(idx*20)%
              */}
-            <div className="relative">
+            <div className="relative pt-1">
                 {/* Línea de fondo */}
-                <div className="absolute top-[10px] left-[10%] right-[10%] h-px bg-border" />
+                <div className="absolute top-[14px] left-[10%] right-[10%] h-px bg-border" />
 
                 {/* Línea de progreso */}
                 {currentIdx > 0 && (
                     <div
-                        className="absolute top-[10px] left-[10%] h-px bg-primary transition-all duration-500"
+                        className="absolute top-[14px] left-[10%] h-px bg-muted-foreground/30 transition-all duration-500"
                         style={{ width: `${(currentIdx / (ESTADOS.length - 1)) * 80}%` }}
                     />
                 )}
@@ -113,21 +140,21 @@ function PedidoCard({ p }: { p: Pedido }) {
                     {ESTADOS.map((estado, i) => {
                         const done   = i < currentIdx;
                         const active = i === currentIdx;
+                        const color  = ESTADO_COLOR[estado];
                         return (
                             <div key={estado} className="flex flex-col items-center gap-1.5">
                                 <div className={clsx(
-                                    'w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-200',
-                                    done   && 'bg-primary text-primary-foreground',
-                                    active && 'bg-chart-3 text-white shadow-[0_0_0_4px_hsl(var(--chart-3)/0.18)]',
-                                    !done && !active && 'bg-muted border-2 border-border',
+                                    'rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200',
+                                    done   && 'w-5 h-5 bg-transparent border-2 border-muted-foreground/30',
+                                    active && clsx('w-7 h-7 text-white', color.dot, color.ring),
+                                    !done && !active && 'w-5 h-5 bg-muted border-2 border-border',
                                 )}>
-                                    {done   && <Check size={10} strokeWidth={3} />}
                                     {active && <span className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
                                 <span className={clsx(
                                     'text-2xs text-center leading-tight',
-                                    done            && 'text-muted-foreground',
-                                    active          && 'text-chart-3 font-semibold',
+                                    done            && 'text-muted-foreground/70',
+                                    active          && clsx('font-semibold', color.text),
                                     !done && !active && 'text-muted-foreground/50',
                                 )}>
                                     {estado}
@@ -163,6 +190,8 @@ export default function TimelineView() {
         }
         return true;
     });
+
+    const pagination = usePagination(filtered, 10);
 
     return (
         <div className="space-y-5 animate-fade-in">
@@ -249,9 +278,19 @@ export default function TimelineView() {
                     />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {filtered.map(p => <PedidoCard key={p.id_pedido} p={p} />)}
-                </div>
+                <>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {pagination.pageData.map(p => <PedidoCard key={p.id_pedido} p={p} />)}
+                    </div>
+                    <Pagination
+                        page={pagination.page}
+                        totalPages={pagination.totalPages}
+                        total={filtered.length}
+                        goToPage={pagination.goToPage}
+                        nextPage={pagination.nextPage}
+                        prevPage={pagination.prevPage}
+                    />
+                </>
             )}
         </div>
     );
