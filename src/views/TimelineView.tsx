@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Check, CalendarX, Workflow } from 'lucide-react';
+import { CalendarX, Check, Workflow } from 'lucide-react';
 import { usePedidoStore } from '@/stores/index';
 import EmptyState from '@/components/shared/EmptyState';
 import { TimelineCardSkeleton } from '@/components/shared/Skeleton';
+import Pagination from '@/components/shared/Pagination';
+import { usePagination } from '@/hooks/usePagination';
 import type { EstadoPedido, UnidadPedido, Pedido } from '@/types';
 import { clsx } from 'clsx';
 import { parseLocalDate } from '@/utils/dates';
@@ -26,6 +28,17 @@ function formatCantidad(cantidad: number, unidad: UnidadPedido, cantidadPares?: 
 }
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
+
+// Color por etapa: usado en el paso activo del stepper y en el label debajo del círculo activo.
+// Clases completas (no interpoladas) para que Tailwind las detecte al compilar.
+const ESTADO_COLOR: Record<EstadoPedido, { dot: string; text: string }> = {
+    Pendiente: { dot: 'bg-chart-3', text: 'text-chart-3' },
+    Cortado:   { dot: 'bg-chart-4', text: 'text-chart-4' },
+    Aparado:   { dot: 'bg-chart-1', text: 'text-chart-1' },
+    Solado:    { dot: 'bg-chart-5', text: 'text-chart-5' },
+    Empaque:   { dot: 'bg-chart-2', text: 'text-chart-2' },
+    Terminado: { dot: 'bg-secondary', text: 'text-secondary' },
+};
 
 const MESES = [
     'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -75,7 +88,7 @@ function PedidoCard({ p }: { p: Pedido }) {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     <span className={clsx(
                         'text-xs font-mono flex items-center gap-1',
                         vencido ? 'text-destructive font-semibold' : 'text-muted-foreground',
@@ -96,14 +109,14 @@ function PedidoCard({ p }: { p: Pedido }) {
              * — Línea de fondo: left-[10%] right-[10%]   (de centro col-0 a col-4)
              * — Línea progreso: left-[10%] width=(idx*20)%
              */}
-            <div className="relative">
+            <div className="relative pt-1">
                 {/* Línea de fondo */}
-                <div className="absolute top-[10px] left-[10%] right-[10%] h-px bg-border" />
+                <div className="absolute top-[14px] left-[10%] right-[10%] h-px bg-border" />
 
                 {/* Línea de progreso */}
                 {currentIdx > 0 && (
                     <div
-                        className="absolute top-[10px] left-[10%] h-px bg-primary transition-all duration-500"
+                        className="absolute top-[14px] left-[10%] h-px bg-muted-foreground/30 transition-all duration-500"
                         style={{ width: `${(currentIdx / (ESTADOS.length - 1)) * 80}%` }}
                     />
                 )}
@@ -113,21 +126,22 @@ function PedidoCard({ p }: { p: Pedido }) {
                     {ESTADOS.map((estado, i) => {
                         const done   = i < currentIdx;
                         const active = i === currentIdx;
+                        const color  = ESTADO_COLOR[estado];
                         return (
                             <div key={estado} className="flex flex-col items-center gap-1.5">
                                 <div className={clsx(
-                                    'w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-200',
-                                    done   && 'bg-primary text-primary-foreground',
-                                    active && 'bg-chart-3 text-white shadow-[0_0_0_4px_hsl(var(--chart-3)/0.18)]',
-                                    !done && !active && 'bg-muted border-2 border-border',
+                                    'rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200',
+                                    done   && 'w-5 h-5 bg-transparent border-2 border-muted-foreground/50',
+                                    active && clsx('w-7 h-7 text-white', color.dot),
+                                    !done && !active && 'w-5 h-5 bg-muted border-2 border-border',
                                 )}>
-                                    {done   && <Check size={10} strokeWidth={3} />}
+                                    {done && <Check size={12} strokeWidth={3} className="text-muted-foreground" />}
                                     {active && <span className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
                                 <span className={clsx(
                                     'text-2xs text-center leading-tight',
-                                    done            && 'text-muted-foreground',
-                                    active          && 'text-chart-3 font-semibold',
+                                    done            && 'text-muted-foreground/70',
+                                    active          && clsx('font-semibold', color.text),
                                     !done && !active && 'text-muted-foreground/50',
                                 )}>
                                     {estado}
@@ -163,6 +177,8 @@ export default function TimelineView() {
         }
         return true;
     });
+
+    const pagination = usePagination(filtered, 10);
 
     return (
         <div className="space-y-5 animate-fade-in">
@@ -249,9 +265,19 @@ export default function TimelineView() {
                     />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {filtered.map(p => <PedidoCard key={p.id_pedido} p={p} />)}
-                </div>
+                <>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {pagination.pageData.map(p => <PedidoCard key={p.id_pedido} p={p} />)}
+                    </div>
+                    <Pagination
+                        page={pagination.page}
+                        totalPages={pagination.totalPages}
+                        total={filtered.length}
+                        goToPage={pagination.goToPage}
+                        nextPage={pagination.nextPage}
+                        prevPage={pagination.prevPage}
+                    />
+                </>
             )}
         </div>
     );
