@@ -96,6 +96,15 @@ export interface ProductoCatalogo {
 // ─── Tallas ───────────────────────────────────────────────────────────────────
 export type CategoriaCalzado = 'nino' | 'juvenil' | 'adulto';
 
+// ─── Reportes ─────────────────────────────────────────────────────────────────
+export interface ReporteFiltrosPedidos {
+    cliente?:   string;
+    producto?:  string;
+    categoria?: CategoriaCalzado;
+    desde?:     string;
+    hasta?:     string;
+}
+
 export interface TallaDetalle {
     id_talla?:      number;
     categoria:      CategoriaCalzado;

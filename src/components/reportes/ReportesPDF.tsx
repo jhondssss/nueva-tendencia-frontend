@@ -4,6 +4,10 @@ import { TrendingUp, ClipboardList, AlertTriangle, Loader2, Download, Eye } from
 import { Button } from '@/components/ui/button';
 import { useRole } from '@/hooks/useRole';
 import { reportesApi } from '@/api/services';
+import type { ReporteFiltrosPedidos, CategoriaCalzado } from '@/types';
+import FiltrosPedidosReporte from './FiltrosPedidosReporte';
+import FiltroCategoria from './FiltroCategoria';
+import { limpiarFiltrosPedidos } from './reporteFiltrosUtils';
 
 interface PdfCard {
     key:      string;
@@ -27,6 +31,9 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
     const [yearVentas, setYearVentas] = useState(currentYear);
     const years = [currentYear - 2, currentYear - 1, currentYear];
 
+    const [filtrosPedidos, setFiltrosPedidos] = useState<ReporteFiltrosPedidos>({});
+    const [categoriaStock, setCategoriaStock] = useState<CategoriaCalzado | undefined>(undefined);
+
     const cards: PdfCard[] = [
         ...(isAdmin ? [{
             key:      'pdf-ventas',
@@ -46,16 +53,18 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
             icon:     ClipboardList,
             title:    'Pedidos',
             desc:     'Estado y detalle de todos los pedidos registrados',
-            fetcher:  () => reportesApi.getPdfPedidos(),
+            fetcher:  () => reportesApi.getPdfPedidos(limpiarFiltrosPedidos(filtrosPedidos)),
             filename: () => 'pedidos.pdf',
+            extra: <FiltrosPedidosReporte value={filtrosPedidos} onChange={setFiltrosPedidos} />,
         },
         {
             key:      'pdf-stock',
             icon:     AlertTriangle,
             title:    'Stock Crítico',
             desc:     'Productos con stock por debajo del nivel mínimo',
-            fetcher:  () => reportesApi.getPdfStockCritico(),
+            fetcher:  () => reportesApi.getPdfStockCritico(categoriaStock),
             filename: () => 'stock-critico.pdf',
+            extra: <FiltroCategoria value={categoriaStock} onChange={setCategoriaStock} />,
         },
     ];
 

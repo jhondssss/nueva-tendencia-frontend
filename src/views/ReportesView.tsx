@@ -6,28 +6,10 @@ import { Button } from '@/components/ui/button';
 import ReportesPDF from '@/components/reportes/ReportesPDF';
 import ReportesExcel from '@/components/reportes/ReportesExcel';
 import SelectorMesAnio, { MESES } from '@/components/reportes/SelectorMesAnio';
+import FiltrosPedidosReporte from '@/components/reportes/FiltrosPedidosReporte';
+import { limpiarFiltrosPedidos } from '@/components/reportes/reporteFiltrosUtils';
 import { useRole } from '@/hooks/useRole';
-
-const ENTREGAS_CARDS = [
-    {
-        key: 'pdf-pedidos-entregados', icon: FileText, title: 'Pedidos Entregados PDF',
-        desc: 'Listado completo de pedidos en estado Terminado',
-        fetcher: () => reportesApi.getPdfPedidosEntregados(),
-        filename: 'pedidos-entregados.pdf',
-        label: 'Descargar PDF', icon2: Download,
-        iconBg: 'bg-destructive/10 border-destructive/20', iconCls: 'text-destructive',
-        isPdf: true,
-    },
-    {
-        key: 'excel-pedidos-entregados', icon: FileSpreadsheet, title: 'Pedidos Entregados Excel',
-        desc: 'Exportación de pedidos terminados con detalle',
-        fetcher: () => reportesApi.getExcelPedidosEntregados(),
-        filename: 'pedidos-entregados.xlsx',
-        label: 'Exportar Excel', icon2: FileSpreadsheet,
-        iconBg: 'bg-secondary/10 border-secondary/20', iconCls: 'text-secondary',
-        isPdf: false,
-    },
-];
+import type { ReporteFiltrosPedidos } from '@/types';
 
 export default function ReportesView() {
     const { isAdmin }  = useRole();
@@ -36,6 +18,32 @@ export default function ReportesView() {
     const [gananciasMes,  setGananciasMes]  = useState(currentMonth);
     const [gananciasYear, setGananciasYear] = useState(currentYear);
     const [loading, setLoading]             = useState<Record<string, boolean>>({});
+
+    const [filtrosPdfEntregados,   setFiltrosPdfEntregados]   = useState<ReporteFiltrosPedidos>({});
+    const [filtrosExcelEntregados, setFiltrosExcelEntregados] = useState<ReporteFiltrosPedidos>({});
+
+    const ENTREGAS_CARDS = [
+        {
+            key: 'pdf-pedidos-entregados', icon: FileText, title: 'Pedidos Entregados PDF',
+            desc: 'Listado completo de pedidos en estado Terminado',
+            fetcher: () => reportesApi.getPdfPedidosEntregados(limpiarFiltrosPedidos(filtrosPdfEntregados)),
+            filename: 'pedidos-entregados.pdf',
+            label: 'Descargar PDF', icon2: Download,
+            iconBg: 'bg-destructive/10 border-destructive/20', iconCls: 'text-destructive',
+            isPdf: true,
+            extra: <FiltrosPedidosReporte value={filtrosPdfEntregados} onChange={setFiltrosPdfEntregados} />,
+        },
+        {
+            key: 'excel-pedidos-entregados', icon: FileSpreadsheet, title: 'Pedidos Entregados Excel',
+            desc: 'Exportación de pedidos terminados con detalle',
+            fetcher: () => reportesApi.getExcelPedidosEntregados(limpiarFiltrosPedidos(filtrosExcelEntregados)),
+            filename: 'pedidos-entregados.xlsx',
+            label: 'Exportar Excel', icon2: FileSpreadsheet,
+            iconBg: 'bg-secondary/10 border-secondary/20', iconCls: 'text-secondary',
+            isPdf: false,
+            extra: <FiltrosPedidosReporte value={filtrosExcelEntregados} onChange={setFiltrosExcelEntregados} />,
+        },
+    ];
 
     useEffect(() => { document.title = 'Reportes | NT'; }, []);
 
@@ -101,7 +109,7 @@ export default function ReportesView() {
 
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {ENTREGAS_CARDS.map(({ key, icon: Icon, title, desc, fetcher, filename, label, icon2: Icon2, iconBg, iconCls, isPdf }) => (
+                        {ENTREGAS_CARDS.map(({ key, icon: Icon, title, desc, fetcher, filename, label, icon2: Icon2, iconBg, iconCls, isPdf, extra }) => (
                             <div key={key}
                                  className="rounded-xl border border-border/50 bg-card/50 backdrop-blur p-5 flex flex-col gap-4
                                             transition-all duration-200 hover:shadow-lg hover:scale-[1.01]">
@@ -114,6 +122,7 @@ export default function ReportesView() {
                                         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
                                     </div>
                                 </div>
+                                {extra}
                                 {isPdf ? (
                                     <div className="mt-auto grid grid-cols-2 gap-2">
                                         <Button

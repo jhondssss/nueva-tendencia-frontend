@@ -13,6 +13,7 @@ import type {
     KardexMovimiento, CreateKardexDto,
     AuditoriaLog,
     ReporteDiarioResponse,
+    ReporteFiltrosPedidos, CategoriaCalzado,
     UsuarioAdmin, CreateUsuarioDto, UpdateUsuarioDto,
     PaginatedResponse,
     SearchResult,
@@ -140,22 +141,22 @@ export const kardexApi = {
 export const reportesApi = {
     getPdfVentas:              (year: number) =>
         api.get<Blob>(`/reportes/pdf/ventas?year=${year}`, { responseType: 'blob' }),
-    getPdfPedidos:             () =>
-        api.get<Blob>('/reportes/pdf/pedidos', { responseType: 'blob' }),
-    getPdfStockCritico:        () =>
-        api.get<Blob>('/reportes/pdf/stock-critico', { responseType: 'blob' }),
-    getExcelPedidos:           () =>
-        api.get<Blob>('/reportes/excel/pedidos', { responseType: 'blob' }),
+    getPdfPedidos:             (filtros?: ReporteFiltrosPedidos) =>
+        api.get<Blob>('/reportes/pdf/pedidos', { responseType: 'blob', params: filtros }),
+    getPdfStockCritico:        (categoria?: CategoriaCalzado) =>
+        api.get<Blob>('/reportes/pdf/stock-critico', { responseType: 'blob', params: { categoria } }),
+    getExcelPedidos:           (filtros?: ReporteFiltrosPedidos) =>
+        api.get<Blob>('/reportes/excel/pedidos', { responseType: 'blob', params: filtros }),
     getExcelClientes:          () =>
         api.get<Blob>('/reportes/excel/clientes', { responseType: 'blob' }),
-    getExcelStock:             () =>
-        api.get<Blob>('/reportes/excel/stock', { responseType: 'blob' }),
-    getPdfPedidosEntregados:   () =>
-        api.get<Blob>('/reportes/pdf/pedidos-entregados', { responseType: 'blob' }),
+    getExcelStock:             (categoria?: CategoriaCalzado) =>
+        api.get<Blob>('/reportes/excel/stock', { responseType: 'blob', params: { categoria } }),
+    getPdfPedidosEntregados:   (filtros?: ReporteFiltrosPedidos) =>
+        api.get<Blob>('/reportes/pdf/pedidos-entregados', { responseType: 'blob', params: filtros }),
     getPdfGanancias:           (month: number, year: number) =>
         api.get<Blob>(`/reportes/pdf/ganancias?month=${month}&year=${year}`, { responseType: 'blob' }),
-    getExcelPedidosEntregados: () =>
-        api.get<Blob>('/reportes/excel/pedidos-entregados', { responseType: 'blob' }),
+    getExcelPedidosEntregados: (filtros?: ReporteFiltrosPedidos) =>
+        api.get<Blob>('/reportes/excel/pedidos-entregados', { responseType: 'blob', params: filtros }),
     getExcelGanancias:         (month: number, year: number) =>
         api.get<Blob>(`/reportes/excel/ganancias?month=${month}&year=${year}`, { responseType: 'blob' }),
     getDiario:     () => api.get<ReporteDiarioResponse>('/reportes/diario'),
