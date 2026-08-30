@@ -1,6 +1,7 @@
-import { TrendingUp, Package, Package2, AlertTriangle, Users } from 'lucide-react';
+import { TrendingUp, Package, Package2, AlertTriangle, Users, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useRole } from '@/hooks/useRole';
 import { clsx } from 'clsx';
 import type { DashboardKpis } from '@/types';
@@ -26,6 +27,7 @@ interface KpiCardProps {
     icon:         React.ElementType;
     accent:       Accent;
     trend:        string;
+    trendInfo?:   string;
     alert?:       boolean;
     sub?:         string;
     financiero?:  boolean;
@@ -33,7 +35,7 @@ interface KpiCardProps {
     detailLines?: DetailLine[];
 }
 
-function KpiCard({ label, value, icon: Icon, accent, trend, alert, sub, className, detailLines }: KpiCardProps) {
+function KpiCard({ label, value, icon: Icon, accent, trend, trendInfo, alert, sub, className, detailLines }: KpiCardProps) {
     const a = ACCENT[accent];
     return (
         <div
@@ -74,6 +76,14 @@ function KpiCard({ label, value, icon: Icon, accent, trend, alert, sub, classNam
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <TrendingUp size={11} className={a.text} />
                 {trend}
+                {trendInfo && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Info size={11} className="text-muted-foreground/70 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-56">{trendInfo}</TooltipContent>
+                    </Tooltip>
+                )}
             </div>
         </div>
     );
@@ -104,14 +114,15 @@ export default function KpiCards({ kpis, isLoading }: Props) {
             label: 'Ventas Totales',
             value: `Bs. ${Number(kpis.totalVentas ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             icon: TrendingUp, accent: 'chart-1',
-            trend: 'Ventas del mes',
+            trend: 'Pedidos completados este mes',
+            trendInfo: 'Se cuenta cuando el pedido pasa a Terminado, no cuando se crea.',
             financiero: true,
         },
         {
             label: 'Total Pedidos',
             value: kpis.totalPedidos ?? 0,
             icon: Users, accent: 'chart-2',
-            trend: 'Con entrega este mes',
+            trend: 'Pedidos registrados este mes',
         },
         {
             label: 'Stock Total',
@@ -135,7 +146,8 @@ export default function KpiCards({ kpis, isLoading }: Props) {
             label: 'Producción Mensual',
             value: `${kpis.produccionMensual} pares`,
             icon: Package2, accent: 'chart-3' as Accent,
-            trend: 'Pares producidos este mes',
+            trend: 'Pares de pedidos completados este mes',
+            trendInfo: 'Se cuenta cuando el pedido pasa a Terminado, no cuando se crea.',
             financiero: true,
         }] : []),
     ] : [];
