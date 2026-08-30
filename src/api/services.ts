@@ -82,8 +82,8 @@ export const productoApi = {
 
 // ─── Pedidos ──────────────────────────────────────────────────────────────────
 export const pedidoApi = {
-    getAll:   (cliente?: string, producto?: string) =>
-        api.get<PaginatedResponse<Pedido>>('/pedidos', { params: { cliente, producto } }),
+    getAll:   (cliente?: string, producto?: string, page?: number, limit?: number) =>
+        api.get<PaginatedResponse<Pedido>>('/pedidos', { params: { cliente, producto, page, limit } }),
     getOne:   (id: number)             => api.get<Pedido>(`/pedidos/${id}`),
     getKanban:()                       => api.get<Record<EstadoPedido, Pedido[]>>('/pedidos/kanban'),
     create:       (dto: CreatePedidoDto)   => api.post<Pedido>('/pedidos', dto),

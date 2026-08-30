@@ -111,8 +111,18 @@ export const usePedidoStore = create<PedidoState>((set, get) => ({
     fetchAll: async (cliente, producto) => {
         set({ isLoading: true });
         try {
-            const { data } = await pedidoApi.getAll(cliente, producto);
-            set({ pedidos: [...data.data].sort((a, b) => a.id_pedido - b.id_pedido) });
+            const first = await pedidoApi.getAll(cliente, producto, 1);
+            let all = first.data.data;
+            const { totalPages, limit } = first.data;
+            // El backend pagina /pedidos (default limit) — hay que traer el resto de páginas
+            // para que el conteo por estado y el total mostrados en la UI sean reales, no solo de la página 1.
+            if (totalPages > 1) {
+                const rest = await Promise.all(
+                    Array.from({ length: totalPages - 1 }, (_, i) => pedidoApi.getAll(cliente, producto, i + 2, limit)),
+                );
+                all = all.concat(...rest.map(r => r.data.data));
+            }
+            set({ pedidos: all.sort((a, b) => a.id_pedido - b.id_pedido) });
         }
         finally { set({ isLoading: false }); }
     },
