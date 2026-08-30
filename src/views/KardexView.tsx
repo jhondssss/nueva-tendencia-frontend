@@ -83,11 +83,21 @@ export default function KardexView() {
     const loadAll = async () => {
         setLoadingData(true);
         try {
-            const [movRes, insRes] = await Promise.all([
-                kardexApi.getAll(),
+            const [movFirst, insRes] = await Promise.all([
+                kardexApi.getAll(1),
                 insumoApi.getAll(),
             ]);
-            setMovimientos(movRes.data.data.filter(m => m.insumo != null));
+            let movs = movFirst.data.data;
+            const { totalPages, limit } = movFirst.data;
+            // El backend pagina /kardex (default limit) — hay que traer el resto de páginas
+            // para no truncar el historial a solo la primera.
+            if (totalPages > 1) {
+                const rest = await Promise.all(
+                    Array.from({ length: totalPages - 1 }, (_, i) => kardexApi.getAll(i + 2, limit)),
+                );
+                movs = movs.concat(...rest.map(r => r.data.data));
+            }
+            setMovimientos(movs.filter(m => m.insumo != null));
             setInsumos(insRes.data);
         } catch {
             toast.error('Error al cargar datos');

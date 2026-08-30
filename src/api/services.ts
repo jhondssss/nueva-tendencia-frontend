@@ -38,7 +38,7 @@ export const usuariosApi = {
 
 // ─── Clientes ─────────────────────────────────────────────────────────────────
 export const clienteApi = {
-    getAll:  ()                              => api.get<PaginatedResponse<Cliente>>('/clientes'),
+    getAll:  (page?: number, limit?: number) => api.get<PaginatedResponse<Cliente>>('/clientes', { params: { page, limit } }),
     getOne:  (id: number)                   => api.get<Cliente>(`/clientes/${id}`),
     create:  (dto: CreateClienteDto)        => api.post<Cliente>('/clientes', dto),
     update:  (id: number, dto: UpdateClienteDto) => api.patch<Cliente>(`/clientes/${id}`, dto),
@@ -131,7 +131,7 @@ export const insumoApi = {
 
 // ─── Kardex ───────────────────────────────────────────────────────────────────
 export const kardexApi = {
-    getAll:        ()                     => api.get<PaginatedResponse<KardexMovimiento>>('/kardex'),
+    getAll:        (page?: number, limit?: number) => api.get<PaginatedResponse<KardexMovimiento>>('/kardex', { params: { page, limit } }),
     getByProducto: (id: number)           => api.get<KardexMovimiento[]>(`/kardex/producto/${id}`),
     registrar:     (dto: CreateKardexDto) => api.post<KardexMovimiento>('/kardex', dto),
 };

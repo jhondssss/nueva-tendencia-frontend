@@ -27,7 +27,20 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
 
     fetchAll: async () => {
         set({ isLoading: true });
-        try { const { data } = await clienteApi.getAll(); set({ clientes: data.data }); }
+        try {
+            const first = await clienteApi.getAll(1);
+            let all = first.data.data;
+            const { totalPages, limit } = first.data;
+            // El backend pagina /clientes (default limit) — hay que traer el resto de páginas
+            // para no truncar el listado a solo la primera.
+            if (totalPages > 1) {
+                const rest = await Promise.all(
+                    Array.from({ length: totalPages - 1 }, (_, i) => clienteApi.getAll(i + 2, limit)),
+                );
+                all = all.concat(...rest.map(r => r.data.data));
+            }
+            set({ clientes: all });
+        }
         finally { set({ isLoading: false }); }
     },
     create: async (dto) => {
