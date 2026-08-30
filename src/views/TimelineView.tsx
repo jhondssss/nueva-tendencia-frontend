@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CalendarX, Workflow } from 'lucide-react';
+import { CalendarX, Check, Workflow } from 'lucide-react';
 import { usePedidoStore } from '@/stores/index';
 import EmptyState from '@/components/shared/EmptyState';
 import { TimelineCardSkeleton } from '@/components/shared/Skeleton';
@@ -29,29 +29,16 @@ function formatCantidad(cantidad: number, unidad: UnidadPedido, cantidadPares?: 
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
 
-// Color por etapa: usado en el paso activo del stepper y en el badge de estado de la tarjeta.
+// Color por etapa: usado en el paso activo del stepper y en el label debajo del círculo activo.
 // Clases completas (no interpoladas) para que Tailwind las detecte al compilar.
-const ESTADO_COLOR: Record<EstadoPedido, { dot: string; text: string; badge: string; ring: string }> = {
-    Pendiente: { dot: 'bg-chart-3', text: 'text-chart-3', badge: 'bg-chart-3/10 text-chart-3 border-chart-3/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-3)/0.16)]' },
-    Cortado:   { dot: 'bg-chart-4', text: 'text-chart-4', badge: 'bg-chart-4/10 text-chart-4 border-chart-4/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-4)/0.16)]' },
-    Aparado:   { dot: 'bg-chart-1', text: 'text-chart-1', badge: 'bg-chart-1/10 text-chart-1 border-chart-1/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-1)/0.16)]' },
-    Solado:    { dot: 'bg-chart-5', text: 'text-chart-5', badge: 'bg-chart-5/10 text-chart-5 border-chart-5/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-5)/0.16)]' },
-    Empaque:   { dot: 'bg-chart-2', text: 'text-chart-2', badge: 'bg-chart-2/10 text-chart-2 border-chart-2/30', ring: 'shadow-[0_0_0_4px_hsl(var(--chart-2)/0.16)]' },
-    Terminado: { dot: 'bg-success', text: 'text-success', badge: 'bg-success/10 text-success border-success/30', ring: 'shadow-[0_0_0_4px_hsl(var(--success)/0.16)]' },
+const ESTADO_COLOR: Record<EstadoPedido, { dot: string; text: string }> = {
+    Pendiente: { dot: 'bg-chart-3', text: 'text-chart-3' },
+    Cortado:   { dot: 'bg-chart-4', text: 'text-chart-4' },
+    Aparado:   { dot: 'bg-chart-1', text: 'text-chart-1' },
+    Solado:    { dot: 'bg-chart-5', text: 'text-chart-5' },
+    Empaque:   { dot: 'bg-chart-2', text: 'text-chart-2' },
+    Terminado: { dot: 'bg-success', text: 'text-success' },
 };
-
-function EstadoBadge({ estado }: { estado: EstadoPedido }) {
-    const cfg = ESTADO_COLOR[estado];
-    return (
-        <span className={clsx(
-            'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-2xs font-semibold uppercase tracking-wider border',
-            cfg.badge,
-        )}>
-            <span className={clsx('w-1.5 h-1.5 rounded-full', cfg.dot)} />
-            {estado}
-        </span>
-    );
-}
 
 const MESES = [
     'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -102,7 +89,6 @@ function PedidoCard({ p }: { p: Pedido }) {
                 </div>
 
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                    <EstadoBadge estado={p.estado} />
                     <span className={clsx(
                         'text-xs font-mono flex items-center gap-1',
                         vencido ? 'text-destructive font-semibold' : 'text-muted-foreground',
@@ -145,10 +131,11 @@ function PedidoCard({ p }: { p: Pedido }) {
                             <div key={estado} className="flex flex-col items-center gap-1.5">
                                 <div className={clsx(
                                     'rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200',
-                                    done   && 'w-5 h-5 bg-transparent border-2 border-muted-foreground/30',
-                                    active && clsx('w-7 h-7 text-white', color.dot, color.ring),
+                                    done   && 'w-5 h-5 bg-transparent border-2 border-muted-foreground/50',
+                                    active && clsx('w-7 h-7 text-white', color.dot),
                                     !done && !active && 'w-5 h-5 bg-muted border-2 border-border',
                                 )}>
+                                    {done && <Check size={12} strokeWidth={3} className="text-muted-foreground" />}
                                     {active && <span className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
                                 <span className={clsx(
