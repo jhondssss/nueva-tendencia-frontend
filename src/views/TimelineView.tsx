@@ -37,7 +37,7 @@ const ESTADO_COLOR: Record<EstadoPedido, { dot: string; text: string }> = {
     Aparado:   { dot: 'bg-chart-1', text: 'text-chart-1' },
     Solado:    { dot: 'bg-chart-5', text: 'text-chart-5' },
     Empaque:   { dot: 'bg-chart-2', text: 'text-chart-2' },
-    Terminado: { dot: 'bg-success', text: 'text-success' },
+    Terminado: { dot: 'bg-secondary', text: 'text-secondary' },
 };
 
 const MESES = [
