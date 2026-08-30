@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { isToday, isThisWeek, isThisMonth } from 'date-fns';
 import { Clock, Scissors, Hammer, Layers, Package, CheckCircle, PieChart as PieChartIcon, GitBranch, Inbox } from 'lucide-react';
-import { useDashboardStore, usePedidoStore } from '@/stores/index';
+import { useDashboardStore, usePedidoStore, useInsumoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,8 @@ import TopProductos from '@/components/dashboard/TopProductos';
 import PrediccionStock from '@/components/dashboard/PrediccionStock';
 import PedidosVencidos from '@/components/dashboard/PedidosVencidos';
 import StageBarChart from '@/components/dashboard/StageBarChart';
+import ProduccionActivaOperario from '@/components/dashboard/ProduccionActivaOperario';
+import { InsumosAlertBanner } from '@/components/insumos/InsumosAlertBanner';
 
 // ── Actividad reciente ──────────────────────────────────────────────────────
 const ACTIVITY_ICON: Record<string, { icon: React.ElementType; text: string; bg: string }> = {
@@ -150,7 +152,11 @@ export default function DashboardView() {
     const pedidos       = usePedidoStore(s => s.pedidos);
     const fetchPedidos  = usePedidoStore(s => s.fetchAll);
 
+    const insumoAlertas      = useInsumoStore(s => s.alertas);
+    const fetchInsumoAlertas = useInsumoStore(s => s.fetchAlertas);
+
     useEffect(() => { fetchAll(); fetchPedidos(); }, [fetchAll, fetchPedidos]);
+    useEffect(() => { if (isOperario) fetchInsumoAlertas(); }, [isOperario, fetchInsumoAlertas]);
 
     const barData = useMemo(() => {
         const currentYear = new Date().getFullYear();
@@ -241,6 +247,13 @@ export default function DashboardView() {
                     )}
                 </div>
             </div>
+
+            {isOperario && (
+                <>
+                    <InsumosAlertBanner alertas={insumoAlertas} />
+                    <ProduccionActivaOperario pedidos={pedidos} isLoading={isLoading} />
+                </>
+            )}
 
             {isAdmin && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
