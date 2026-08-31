@@ -25,6 +25,15 @@ function resolveImageUrl(url?: string | null): string | null {
 const nanToDefault = (fallback: number) => (v: unknown) =>
     typeof v === 'number' && isNaN(v) ? fallback : v;
 
+// Vacío (input sin tocar) o NaN → undefined, para poder distinguir "no configurado" de "0".
+const emptyToUndefined = (v: unknown) => {
+    if (v === '' || v === null) return undefined;
+    if (typeof v === 'number' && isNaN(v)) return undefined;
+    return v;
+};
+
+const LITROS_POR_DOCENA = 0.5;
+
 const schema = z.object({
     nombre_modelo:      z.string().min(3, 'Mínimo 3 caracteres'),
     marca:              z.string().min(1, 'Requerido'),
@@ -40,6 +49,17 @@ const schema = z.object({
     nivel_minimo:       z.preprocess(nanToDefault(0), z.number().min(0, 'No puede ser negativo')),
     unidad_medida:      z.string().default('unidades'),
     activo:             z.boolean(),
+    porcentaje_clefa:   z.preprocess(emptyToUndefined, z.number().min(0).max(100).optional()),
+    porcentaje_pasta:   z.preprocess(emptyToUndefined, z.number().min(0).max(100).optional()),
+}).refine(({ porcentaje_clefa, porcentaje_pasta }) => {
+    const clefaProvisto = porcentaje_clefa !== undefined;
+    const pastaProvisto = porcentaje_pasta !== undefined;
+    if (!clefaProvisto && !pastaProvisto) return true;
+    if (clefaProvisto !== pastaProvisto) return false;
+    return Math.round((porcentaje_clefa! + porcentaje_pasta!) * 100) / 100 === 100;
+}, {
+    message: '% Clefa y % Pasta deben venir ambos y sumar exactamente 100',
+    path: ['porcentaje_pasta'],
 });
 
 export type ProductoFormData = z.infer<typeof schema>;
@@ -65,11 +85,14 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
     const [imagen, setImagen]   = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
 
-    const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<ProductoFormData>({
+    const { register, handleSubmit, reset, control, watch, formState: { errors, isSubmitting } } = useForm<ProductoFormData>({
         resolver: zodResolver(schema) as Resolver<ProductoFormData>,
         mode: 'onTouched',
         defaultValues: { activo: true, stock: 0, nivel_minimo: 0 },
     });
+
+    const pctClefa = watch('porcentaje_clefa');
+    const pctPasta = watch('porcentaje_pasta');
 
     useEffect(() => {
         if (isOpen && producto) {
@@ -88,6 +111,8 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 nivel_minimo:       Number(producto.nivel_minimo),
                 unidad_medida:      producto.unidad_medida ?? 'unidades',
                 activo:             Boolean(producto.activo),
+                porcentaje_clefa:   producto.porcentaje_clefa ?? undefined,
+                porcentaje_pasta:   producto.porcentaje_pasta ?? undefined,
             });
             setPreview(getImagenEstandarizada(resolveImageUrl(producto.imagen_url), 400));
             setImagen(null);
@@ -217,6 +242,43 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                     <label className="label">Descripción corta *</label>
                     <textarea {...register('descripcion_corta')} rows={2} placeholder="Descripción breve del producto..."
                               className={`input resize-none ${errors.descripcion_corta ? 'input-error' : ''}`} />
+                </div>
+
+                <div className="rounded-lg border border-border p-3 space-y-2">
+                    <label className="label">Fórmula de mezcla (Clefa / Pasta)</label>
+                    <p className="text-2xs text-muted-foreground">
+                        Opcional. Si se configura, se usa para descontar insumos automáticamente al pasar el pedido a Solado.
+                        Debe sumar 100%.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="label text-2xs">% Clefa</label>
+                            <input type="number" step="0.1" min="0" max="100"
+                                   {...register('porcentaje_clefa', { valueAsNumber: true })}
+                                   placeholder="70"
+                                   className={`input ${errors.porcentaje_clefa || errors.porcentaje_pasta ? 'input-error' : ''}`} />
+                        </div>
+                        <div>
+                            <label className="label text-2xs">% Pasta</label>
+                            <input type="number" step="0.1" min="0" max="100"
+                                   {...register('porcentaje_pasta', { valueAsNumber: true })}
+                                   placeholder="30"
+                                   className={`input ${errors.porcentaje_clefa || errors.porcentaje_pasta ? 'input-error' : ''}`} />
+                        </div>
+                    </div>
+                    {(Number.isFinite(pctClefa) || Number.isFinite(pctPasta)) && (
+                        <p className="text-2xs text-muted-foreground">
+                            Referencia por docena (0.5L total):{' '}
+                            {Number.isFinite(pctClefa) && <>Clefa {(LITROS_POR_DOCENA * pctClefa! / 100).toFixed(2)}L</>}
+                            {Number.isFinite(pctClefa) && Number.isFinite(pctPasta) && ' · '}
+                            {Number.isFinite(pctPasta) && <>Pasta {(LITROS_POR_DOCENA * pctPasta! / 100).toFixed(2)}L</>}
+                        </p>
+                    )}
+                    {(errors.porcentaje_clefa || errors.porcentaje_pasta) && (
+                        <p className="text-destructive text-xs">
+                            {errors.porcentaje_pasta?.message ?? errors.porcentaje_clefa?.message}
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2">

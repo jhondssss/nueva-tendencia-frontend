@@ -162,7 +162,12 @@ export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDe
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                onClick={e => { e.stopPropagation(); onMover(p.id_pedido, next); }}
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    // El toast de error específico ya lo muestra el interceptor
+                                                    // global de axios; acá solo evitamos una promesa sin capturar.
+                                                    Promise.resolve(onMover(p.id_pedido, next)).catch(() => {});
+                                                }}
                                                 className="h-7 px-2 text-xs gap-1 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary hover:scale-[1.02] transition-all">
                                                 {next} <ArrowRight size={12} />
                                             </Button>

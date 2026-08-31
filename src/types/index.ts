@@ -78,6 +78,8 @@ export interface Producto {
     imagen_url?: string;
     categoria?: CategoriaCalzado;
     talles?: TallaDetalle[];
+    porcentaje_clefa?: number | null;
+    porcentaje_pasta?: number | null;
 }
 export type CreateProductoDto = Omit<Producto, 'id_producto'>;
 export type UpdateProductoDto = Partial<CreateProductoDto>;
