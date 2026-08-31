@@ -230,11 +230,15 @@ export type UpdateInsumoDto = Partial<CreateInsumoDto>;
 // ─── Kardex ───────────────────────────────────────────────────────────────────
 export type TipoMovimiento = 'entrada' | 'salida' | 'ajuste';
 
+export type OrigenMovimiento = 'manual' | 'automatico';
+
 export interface KardexMovimiento {
     id_movimiento:  number;
     producto:       Producto | null;
     insumo?:        Insumo   | null;
+    pedido?:        { id_pedido: number; token_seguimiento?: string | null } | null;
     tipo:           TipoMovimiento;
+    origen?:        OrigenMovimiento;
     cantidad:       number;
     stock_anterior: number;
     stock_nuevo:    number;

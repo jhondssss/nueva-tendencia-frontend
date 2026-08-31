@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeftRight, ArrowDownCircle, ArrowUpCircle, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowLeftRight, ArrowDownCircle, ArrowUpCircle, SlidersHorizontal, X, ExternalLink } from 'lucide-react';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
 import { useForm } from 'react-hook-form';
@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { kardexApi, insumoApi } from '@/api/services';
-import type { KardexMovimiento, Insumo, TipoMovimiento } from '@/types';
+import type { KardexMovimiento, Insumo, TipoMovimiento, OrigenMovimiento } from '@/types';
 import { useRole } from '@/hooks/useRole';
 import { TableSkeleton } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
@@ -71,6 +71,7 @@ export default function KardexView() {
     const [filterAnio,  setFilterAnio]  = useState<number>(0);
     const [filterMes,   setFilterMes]   = useState<number>(0);
     const [filterTipo,  setFilterTipo]  = useState<'todos' | TipoMovimiento>('todos');
+    const [filterOrigen, setFilterOrigen] = useState<'todos' | OrigenMovimiento>('todos');
 
     const [page,     setPage]     = useState(1);
     const [pageSize, setPageSize] = useState<PageSize>(readPageSize);
@@ -142,6 +143,7 @@ export default function KardexView() {
             const nombre = m.producto?.nombre_modelo ?? m.insumo?.nombre ?? '';
             if (filterProd && !nombre.toLowerCase().includes(filterProd.toLowerCase())) return false;
             if (filterTipo !== 'todos' && m.tipo !== filterTipo) return false;
+            if (filterOrigen !== 'todos' && (m.origen ?? 'manual') !== filterOrigen) return false;
             if (filterAnio !== 0 || filterMes !== 0) {
                 const d = new Date(m.fecha);
                 if (filterAnio !== 0 && d.getFullYear() !== filterAnio) return false;
@@ -149,7 +151,7 @@ export default function KardexView() {
             }
             return true;
         });
-    }, [movimientos, filterProd, filterTipo, filterAnio, filterMes]);
+    }, [movimientos, filterProd, filterTipo, filterOrigen, filterAnio, filterMes]);
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
     const paginated  = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -165,10 +167,11 @@ export default function KardexView() {
         setFilterAnio(0);
         setFilterMes(0);
         setFilterTipo('todos');
+        setFilterOrigen('todos');
         setPage(1);
     };
 
-    const hasActiveFilters = filterProd !== '' || filterAnio !== 0 || filterMes !== 0 || filterTipo !== 'todos';
+    const hasActiveFilters = filterProd !== '' || filterAnio !== 0 || filterMes !== 0 || filterTipo !== 'todos' || filterOrigen !== 'todos';
 
     const handleFilterChange = (v: string) => { setFilterProd(v); setPage(1); };
 
@@ -312,6 +315,20 @@ export default function KardexView() {
                         </select>
                     </div>
 
+                    {/* Origen */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">Origen</label>
+                        <select
+                            value={filterOrigen}
+                            onChange={e => { setFilterOrigen(e.target.value as typeof filterOrigen); setPage(1); }}
+                            className="select w-32"
+                        >
+                            <option value="todos">Todos</option>
+                            <option value="manual">Manual</option>
+                            <option value="automatico">Automático</option>
+                        </select>
+                    </div>
+
                     {/* Nombre */}
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-medium text-muted-foreground">Nombre</label>
@@ -379,6 +396,22 @@ export default function KardexView() {
                                                 <p className="text-2xs text-muted-foreground">
                                                     {m.producto?.marca ?? (m.insumo ? 'Insumo' : '')}
                                                 </p>
+                                                {m.pedido && (
+                                                    m.pedido.token_seguimiento ? (
+                                                        <a
+                                                            href={`/seguimiento/token/${m.pedido.token_seguimiento}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-0.5 text-2xs text-primary hover:underline"
+                                                        >
+                                                            Pedido #{m.pedido.id_pedido} <ExternalLink size={10} />
+                                                        </a>
+                                                    ) : (
+                                                        <span className="text-2xs text-muted-foreground/70">
+                                                            Pedido #{m.pedido.id_pedido}
+                                                        </span>
+                                                    )
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="outline" className={clsx('font-medium gap-1', TIPO_BADGE[m.tipo])}>
