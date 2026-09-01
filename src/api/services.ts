@@ -34,7 +34,7 @@ export const usuariosApi = {
     create:  (dto: CreateUsuarioDto)             => api.post<UsuarioAdmin>('/users', dto),
     update:  (id: number, dto: UpdateUsuarioDto) => api.patch<UsuarioAdmin>(`/users/${id}`, dto),
     toggle:  (id: number)                        => api.patch<UsuarioAdmin>(`/users/${id}/toggle`),
-    remove:  (id: number)                        => api.delete(`/users/${id}`),
+    remove:  (id: number, config?: AxiosRequestConfig) => api.delete(`/users/${id}`, config),
 };
 
 // ─── Clientes ─────────────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ export const productoApi = {
         });
     },
 
-    remove: (id: number) => api.delete(`/productos/${id}`),
+    remove: (id: number, config?: AxiosRequestConfig) => api.delete(`/productos/${id}`, config),
 };
 
 // ─── Pedidos ──────────────────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ export const pedidoApi = {
         api.patch<Pedido>(`/pedidos/${id}/tallas`, data),
     mover:        (id: number, nuevoEstado: EstadoPedido) =>
         api.patch<Pedido>(`/pedidos/${id}/mover`, { nuevoEstado }),
-    remove:       (id: number)             => api.delete(`/pedidos/${id}`),
+    remove:       (id: number, config?: AxiosRequestConfig) => api.delete(`/pedidos/${id}`, config),
 
     misPedidos:       (filtros?: MisPedidosFiltros) =>
         api.get<PaginatedResponse<Pedido>>('/pedidos/mis-pedidos', { params: filtros }),
@@ -124,7 +124,7 @@ export const insumoApi = {
     getOne:    (id: number)                       => api.get<Insumo>(`/insumos/${id}`),
     create:    (dto: CreateInsumoDto)             => api.post<Insumo>('/insumos', dto),
     update:    (id: number, dto: UpdateInsumoDto) => api.patch<Insumo>(`/insumos/${id}`, dto),
-    remove:       (id: number)                       => api.delete(`/insumos/${id}`),
+    remove:       (id: number, config?: AxiosRequestConfig) => api.delete(`/insumos/${id}`, config),
     uploadImagen: (id: number, formData: FormData)  => api.post<Insumo>(`/insumos/${id}/imagen`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }),
