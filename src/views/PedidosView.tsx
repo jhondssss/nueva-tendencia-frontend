@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { usePedidoStore, useClienteStore, useProductoStore } from '@/stores/index';
-import { pedidoApi } from '@/api/services';
+import { pedidoApi, kardexApi } from '@/api/services';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { usePagination } from '@/hooks/usePagination';
@@ -32,6 +32,8 @@ export default function PedidosView() {
     const [editTarget, setEditTarget]     = useState<Pedido | null>(null);
     const [modalKey, setModalKey]         = useState(0);
     const [deleteTarget, setDeleteTarget] = useState<Pedido | null>(null);
+    const [deleteTieneKardex, setDeleteTieneKardex] = useState(false);
+    const deleteRequestIdRef = useRef<number | null>(null);
     const [search, setSearch]             = useState('');
     const [filterEstado, setFilterEstado] = useState<EstadoPedido | ''>('');
 
@@ -104,6 +106,19 @@ export default function PedidosView() {
         }
     };
     const closeModal = () => setModalOpen(false);
+
+    const handleDeleteClick = (p: Pedido) => {
+        setDeleteTarget(p);
+        setDeleteTieneKardex(false);
+        deleteRequestIdRef.current = p.id_pedido;
+        kardexApi.tienePedidoMovimientos(p.id_pedido)
+            .then(res => {
+                if (deleteRequestIdRef.current === p.id_pedido) {
+                    setDeleteTieneKardex(res.data.tieneMovimientos);
+                }
+            })
+            .catch(() => {});
+    };
 
     const handleSubmit = async (data: CreatePedidoDto) => {
         if (editTarget) await update(editTarget.id_pedido, data);
@@ -243,7 +258,7 @@ export default function PedidosView() {
 
             <PedidosTable
                 onEdit={openEdit}
-                onDelete={setDeleteTarget}
+                onDelete={handleDeleteClick}
                 onMover={mover}
                 canEdit={canEdit}
                 canDelete={canDelete}
@@ -271,6 +286,9 @@ export default function PedidosView() {
                 message={deleteTarget
                     ? `¿Estás seguro de eliminar el pedido #${deleteTarget.id_pedido} de ${deleteTarget.cliente.nombre} ${deleteTarget.cliente.apellido}? Esta acción no se puede deshacer.`
                     : ''}
+                warningMessage={deleteTieneKardex
+                    ? 'Este pedido tiene movimientos de stock asociados. Si lo eliminás, esos registros de Kardex quedarán sin referencia al pedido.'
+                    : undefined}
             />
         </div>
     );

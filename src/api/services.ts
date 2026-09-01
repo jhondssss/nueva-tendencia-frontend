@@ -135,6 +135,8 @@ export const kardexApi = {
     getAll:        (page?: number, limit?: number) => api.get<PaginatedResponse<KardexMovimiento>>('/kardex', { params: { page, limit } }),
     getByProducto: (id: number)           => api.get<KardexMovimiento[]>(`/kardex/producto/${id}`),
     registrar:     (dto: CreateKardexDto) => api.post<KardexMovimiento>('/kardex', dto),
+    tienePedidoMovimientos: (id: number) =>
+        api.get<{ tieneMovimientos: boolean }>(`/kardex/pedido/${id}/existe`),
 };
 
 // ─── Reportes ─────────────────────────────────────────────────────────────────
