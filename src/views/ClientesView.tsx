@@ -78,26 +78,33 @@ export default function ClientesView() {
         setEditTarget(c);
         reset({
             tipo_cliente:         c.tipo_cliente,
-            nombre:               c.nombre               ?? undefined,
-            apellido:             c.apellido             ?? undefined,
-            nombre_completo:      c.nombre_completo      ?? undefined,
-            documento_identidad:  c.documento_identidad  ?? undefined,
-            correo_electronico:   c.correo_electronico   ?? undefined,
-            telefono_principal:   c.telefono_principal   ?? undefined,
-            telefono_alternativo: c.telefono_alternativo ?? undefined,
-            direccion_calle:      c.direccion_calle      ?? undefined,
-            direccion_colonia:    c.direccion_colonia    ?? undefined,
-            ciudad:               c.ciudad               ?? undefined,
-            estado_provincia:     c.estado_provincia     ?? undefined,
-            codigo_postal:        c.codigo_postal        ?? undefined,
-            pais:                 c.pais                 ?? 'Bolivia',
-            activo:               c.activo               ?? true,
+            nombre:               c.nombre                    ?? undefined,
+            apellido:             c.apellido                  ?? undefined,
+            nombre_completo:      c.nombre_completo           ?? undefined,
+            documento_identidad:  c.documento_identidad       ?? undefined,
+            correo_electronico:   c.correo_electronico        ?? undefined,
+            telefono_principal:   c.telefono_principal        ?? undefined,
+            telefono_alternativo: c.telefono_alternativo      ?? undefined,
+            direccion_calle:      c.direccion?.calle          ?? undefined,
+            direccion_colonia:    c.direccion?.colonia        ?? undefined,
+            ciudad:               c.direccion?.ciudad         ?? undefined,
+            estado_provincia:     c.direccion?.estado_provincia ?? undefined,
+            codigo_postal:        c.direccion?.codigo_postal  ?? undefined,
+            pais:                 c.direccion?.pais           ?? 'Bolivia',
+            activo:               c.activo                    ?? true,
         });
         setModalOpen(true);
     };
 
     const onSubmit = async (data: FormData) => {
-        const dto = data as CreateClienteDto;
+        const {
+            direccion_calle, direccion_colonia, ciudad, estado_provincia, codigo_postal, pais,
+            ...resto
+        } = data;
+        const dto: CreateClienteDto = {
+            ...resto,
+            direccion: { calle: direccion_calle, colonia: direccion_colonia, ciudad, estado_provincia, codigo_postal, pais },
+        };
         if (editTarget) await update(editTarget.id_cliente, dto);
         else await create(dto);
         setModalOpen(false);
@@ -188,7 +195,7 @@ export default function ClientesView() {
                                     <TableCell className="font-medium text-foreground">{c.nombre_completo || `${c.nombre} ${c.apellido ?? ''}`}</TableCell>
                                     <TableCell className="text-muted-foreground text-xs">{c.correo_electronico}</TableCell>
                                     <TableCell className="font-mono text-xs text-muted-foreground">{c.telefono_principal}</TableCell>
-                                    <TableCell className="text-muted-foreground">{c.ciudad}</TableCell>
+                                    <TableCell className="text-muted-foreground">{c.direccion?.ciudad}</TableCell>
                                     <TableCell className="text-muted-foreground text-xs">
                                         {c.fecha_registro ? new Date(c.fecha_registro).toLocaleDateString('es-BO') : '—'}
                                     </TableCell>

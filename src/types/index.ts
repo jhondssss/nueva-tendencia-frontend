@@ -35,6 +35,17 @@ export interface CreateUsuarioDto {
 export type UpdateUsuarioDto = Partial<Omit<CreateUsuarioDto, 'password'> & { password?: string }>;
 
 // ─── Cliente ──────────────────────────────────────────────────────────────────
+// La dirección viene anidada desde el backend (relación 1:1 con DireccionCliente),
+// no como columnas planas del cliente.
+export interface DireccionCliente {
+    calle: string;
+    colonia: string;
+    ciudad: string;
+    estado_provincia: string;
+    codigo_postal: string;
+    pais: string;
+    es_principal?: boolean;
+}
 export interface Cliente {
     id_cliente: number;
     tipo_cliente: string;
@@ -45,12 +56,7 @@ export interface Cliente {
     correo_electronico: string;
     telefono_principal: string;
     telefono_alternativo?: string;
-    direccion_calle: string;
-    direccion_colonia: string;
-    ciudad: string;
-    estado_provincia: string;
-    codigo_postal: string;
-    pais: string;
+    direccion?: DireccionCliente;
     fecha_registro: string;
     activo: boolean;
     pedidos?: Pedido[];
