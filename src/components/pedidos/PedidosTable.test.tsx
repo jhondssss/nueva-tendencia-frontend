@@ -11,8 +11,10 @@ function makePedido(overrides: Partial<Pedido> = {}): Pedido {
         cliente: {
             id_cliente: 1, tipo_cliente: 'natural', nombre: 'Ana', apellido: 'Pérez',
             correo_electronico: 'ana@correo.com', telefono_principal: '70000000',
-            direccion_calle: 'Calle 1', direccion_colonia: 'Centro', ciudad: 'Cochabamba',
-            estado_provincia: 'Cochabamba', codigo_postal: '0000', pais: 'Bolivia',
+            direccion: {
+                calle: 'Calle 1', colonia: 'Centro', ciudad: 'Cochabamba',
+                estado_provincia: 'Cochabamba', codigo_postal: '0000', pais: 'Bolivia',
+            },
             fecha_registro: '2026-01-01', activo: true,
         },
         producto: {
