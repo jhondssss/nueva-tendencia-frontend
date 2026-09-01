@@ -75,6 +75,30 @@ describe('UsuariosView — acceso admin', () => {
         expect(screen.getByText('Editar Usuario')).toBeInTheDocument();
         expect(screen.getByDisplayValue('ana@nuevatendencia.com')).toBeInTheDocument();
     });
+
+    it('bloquea la edición de una cuenta cliente con un mensaje claro, en vez de fallar en silencio', async () => {
+        // Las cuentas role:'cliente' (creadas vía Cliente > "dar acceso") no tienen nombre/apellido
+        // propios — ese dato vive en la ficha del Cliente. Este formulario es solo para staff.
+        vi.mocked(usuariosApi.getAll).mockResolvedValue({
+            data: {
+                data: [...USUARIOS, { id: 3, email: 'cliente@ejemplo.com', nombre: null, apellido: null, role: 'cliente', activo: true }],
+                total: 3, page: 1, totalPages: 1,
+            },
+        } as never);
+
+        const user = userEvent.setup();
+        renderView();
+        await screen.findByText('Ana Gómez');
+
+        const row = screen.getByText('cliente@ejemplo.com').closest('tr')!;
+        const [, editButton] = row.querySelectorAll('button');
+        await user.click(editButton);
+
+        expect(toast.error).toHaveBeenCalledWith(
+            'Las cuentas de cliente se gestionan desde la ficha del Cliente correspondiente, no desde acá.',
+        );
+        expect(screen.queryByText('Editar Usuario')).not.toBeInTheDocument();
+    });
 });
 
 describe('UsuariosView — rol sin permiso', () => {

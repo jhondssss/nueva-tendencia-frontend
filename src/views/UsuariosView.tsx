@@ -69,6 +69,10 @@ export default function UsuariosView() {
     };
 
     const openEdit = (u: UsuarioAdmin) => {
+        if (u.role === 'cliente') {
+            toast.error('Las cuentas de cliente se gestionan desde la ficha del Cliente correspondiente, no desde acá.');
+            return;
+        }
         setEditTarget(u);
         reset({ email: u.email, password: '', nombre: u.nombre, apellido: u.apellido, role: u.role });
         setShowPass(false);

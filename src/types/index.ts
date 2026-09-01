@@ -16,7 +16,7 @@ export interface AuthResponse { access_token: string; user: User; }
 export interface User { id: number; email: string; role: string; }
 
 // ─── Usuario (gestión admin) ───────────────────────────────────────────────────
-export type RolUsuario = 'admin' | 'operario';
+export type RolUsuario = 'admin' | 'operario' | 'cliente';
 export interface UsuarioAdmin {
     id:       number;
     email:    string;
