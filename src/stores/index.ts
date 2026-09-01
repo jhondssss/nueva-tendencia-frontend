@@ -13,6 +13,13 @@ import type {
     SolicitudPedido, CreateSolicitudPedidoDto, AprobarSolicitudDto, RechazarSolicitudDto,
 } from '@/types';
 
+/** Extrae el mensaje de negocio que manda el backend en un error, con fallback. */
+function errorMessage(err: unknown, fallback: string): string {
+    const data = (err as AxiosError<{ message?: string | string[] }>)?.response?.data;
+    const msg = data?.message;
+    return Array.isArray(msg) ? msg.join(', ') : msg || fallback;
+}
+
 // ─── Clientes ─────────────────────────────────────────────────────────────────
 interface ClienteState {
     clientes: Cliente[]; isLoading: boolean;
@@ -60,10 +67,7 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
             set({ clientes: get().clientes.filter(c => c.id_cliente !== id) });
             toast.success('Cliente eliminado');
         } catch (err) {
-            const status = (err as AxiosError)?.response?.status;
-            if (status === 500) {
-                toast.error('No se puede eliminar: el cliente tiene pedidos asociados.');
-            }
+            toast.error(errorMessage(err, 'Error al eliminar el cliente'));
             throw err;
         }
     },
@@ -102,9 +106,14 @@ export const useProductoStore = create<ProductoState>((set, get) => ({
         toast.success('Producto actualizado');
     },
     remove: async (id) => {
-        await productoApi.remove(id);
-        set({ productos: get().productos.filter(p => p.id_producto !== id) });
-        toast.success('Producto eliminado');
+        try {
+            await productoApi.remove(id, { headers: { 'x-silent': 'true' } });
+            set({ productos: get().productos.filter(p => p.id_producto !== id) });
+            toast.success('Producto eliminado');
+        } catch (err) {
+            toast.error(errorMessage(err, 'Error al eliminar el producto'));
+            throw err;
+        }
     },
 }));
 
@@ -155,9 +164,14 @@ export const usePedidoStore = create<PedidoState>((set, get) => ({
         toast.success(`Pedido movido a ${estado}`);
     },
     remove: async (id) => {
-        await pedidoApi.remove(id);
-        set({ pedidos: get().pedidos.filter(p => p.id_pedido !== id) });
-        toast.success('Pedido eliminado');
+        try {
+            await pedidoApi.remove(id, { headers: { 'x-silent': 'true' } });
+            set({ pedidos: get().pedidos.filter(p => p.id_pedido !== id) });
+            toast.success('Pedido eliminado');
+        } catch (err) {
+            toast.error(errorMessage(err, 'Error al eliminar el pedido'));
+            throw err;
+        }
     },
 }));
 
@@ -210,9 +224,14 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
         return merged;
     },
     remove: async (id) => {
-        await insumoApi.remove(id);
-        set({ insumos: get().insumos.filter(i => i.id_insumo !== id) });
-        toast.success('Insumo eliminado');
+        try {
+            await insumoApi.remove(id, { headers: { 'x-silent': 'true' } });
+            set({ insumos: get().insumos.filter(i => i.id_insumo !== id) });
+            toast.success('Insumo eliminado');
+        } catch (err) {
+            toast.error(errorMessage(err, 'Error al eliminar el insumo'));
+            throw err;
+        }
     },
 }));
 

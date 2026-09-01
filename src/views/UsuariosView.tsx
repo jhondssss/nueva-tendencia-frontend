@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { isAxiosError } from 'axios';
 import {
     Plus, Search, Loader2, Trash2, Edit2, Users,
     Eye, EyeOff, ShieldCheck, User as UserIcon,
@@ -134,11 +135,12 @@ export default function UsuariosView() {
     const handleDelete = async () => {
         if (!deleteTarget) return;
         try {
-            await usuariosApi.remove(deleteTarget.id);
+            await usuariosApi.remove(deleteTarget.id, { headers: { 'x-silent': 'true' } });
             setUsuarios(prev => prev.filter(u => u.id !== deleteTarget.id));
             toast.success('Usuario eliminado');
-        } catch {
-            toast.error('No se pudo eliminar el usuario');
+        } catch (err) {
+            const data = isAxiosError<{ message?: string | string[] }>(err) ? err.response?.data?.message : undefined;
+            toast.error(Array.isArray(data) ? data.join(', ') : data || 'No se pudo eliminar el usuario');
         }
     };
 
