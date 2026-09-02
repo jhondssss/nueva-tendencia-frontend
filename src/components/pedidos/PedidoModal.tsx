@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import StarRating from '@/components/shared/StarRating';
 import TallaInfoBox, { defaultTallas } from './TallaInfoBox';
 import type { TallaItem } from './TallaInfoBox';
-import type { Pedido, Cliente, Producto, CategoriaCalzado, UnidadPedido, CreatePedidoDto } from '@/types';
+import type { Pedido, Cliente, Producto, Insumo, CategoriaCalzado, UnidadPedido, CreatePedidoDto } from '@/types';
 
 function formatFechaCalificacion(fechaIso: string): string {
     return new Date(fechaIso).toLocaleDateString('es-BO', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -29,6 +29,7 @@ const schema = z.object({
                         'La fecha de entrega no puede ser en el pasado',
                     ),
     categoria:     z.enum(['nino', 'juvenil', 'adulto']).optional(),
+    cuero_insumo_id: z.number().optional(),
 });
 
 export type PedidoFormData = z.infer<typeof schema>;
@@ -45,6 +46,7 @@ function buildDefaultValues(pedido: Pedido | null | undefined): Partial<PedidoFo
         total:         Number(pedido.total),
         fecha_entrega: pedido.fecha_entrega.split('T')[0],
         categoria:     pedido.categoria,
+        cuero_insumo_id: pedido.cuero_insumo_id ?? undefined,
     };
 }
 
@@ -62,9 +64,10 @@ interface Props {
     pedido?:   Pedido | null;
     clientes:  Cliente[];
     productos: Producto[];
+    insumos:   Insumo[];
 }
 
-export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, clientes, productos }: Props) {
+export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, clientes, productos, insumos }: Props) {
     const isEditing = !!pedido;
 
     // defaultValues se inicializa desde pedido en el primer render.
@@ -110,7 +113,7 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                 return;
             }
         }
-        const dto: CreatePedidoDto = { ...data } as CreatePedidoDto;
+        const dto: CreatePedidoDto = { ...data, cuero_insumo_id: data.cuero_insumo_id ?? null } as CreatePedidoDto;
         // Incluir tallas personalizadas solo si difieren del estándar
         if (tallasPersonalizadas && data.categoria) {
             const std = defaultTallas(data.categoria);
@@ -179,6 +182,20 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
                         ))}
                     </select>
                     {errors.producto_id && <p className="text-destructive text-xs mt-1">{errors.producto_id.message}</p>}
+                </div>
+
+                <div>
+                    <label className="label">Tipo de Cuero</label>
+                    <select className="select"
+                            value={watch('cuero_insumo_id') ?? ''}
+                            onChange={e => setValue('cuero_insumo_id', e.target.value ? Number(e.target.value) : undefined, { shouldValidate: true })}>
+                        <option value="">Sin especificar</option>
+                        {insumos.map(i => (
+                            <option key={i.id_insumo} value={i.id_insumo}>
+                                {i.nombre}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div>

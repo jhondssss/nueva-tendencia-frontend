@@ -145,6 +145,7 @@ export interface Pedido {
     talles?:            TallaDetalle[];
     token_seguimiento?: string | null;
     calificacion?:      CalificacionPedido | null;
+    cuero_insumo_id?:   number | null;
 }
 export interface CalificacionPedido {
     id_calificacion: number;
@@ -183,6 +184,7 @@ export interface CreatePedidoDto {
     estado?:                EstadoPedido;
     categoria?:             CategoriaCalzado;
     tallas_personalizadas?: { talla: number; cantidad_pares: number }[];
+    cuero_insumo_id?:       number | null;
 }
 export type UpdatePedidoDto = Partial<CreatePedidoDto>;
 

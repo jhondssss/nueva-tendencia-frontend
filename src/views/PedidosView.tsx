@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Search, Plus } from 'lucide-react';
-import { usePedidoStore, useClienteStore, useProductoStore } from '@/stores/index';
+import { usePedidoStore, useClienteStore, useProductoStore, useInsumoStore } from '@/stores/index';
 import { pedidoApi, kardexApi } from '@/api/services';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import StatusBadge from '@/components/shared/StatusBadge';
@@ -47,11 +47,14 @@ export default function PedidosView() {
     const [filterCategoria,  setFilterCategoria]  = useState('');
 
     const { pedidos, isLoading, fetchAll, create, update, mover, remove } = usePedidoStore();
-    const { canCreate, canEdit, canDelete, isOperario } = useRole();
+    const { canCreate, canEdit, canDelete, isOperario, isAdmin } = useRole();
     const { clientes, fetchAll: fetchClientes }   = useClienteStore();
     const { productos, fetchAll: fetchProductos } = useProductoStore();
+    const { insumos, fetchAll: fetchInsumos }     = useInsumoStore();
 
     useEffect(() => { fetchAll(); fetchClientes(); fetchProductos(); }, [fetchAll, fetchClientes, fetchProductos]);
+    // GET /insumos está restringido a admin — el selector de cuero del modal solo lo necesita ese rol.
+    useEffect(() => { if (isAdmin) fetchInsumos(); }, [isAdmin, fetchInsumos]);
     useEffect(() => { document.title = 'Pedidos | NT'; }, []);
 
     const handleEstadoChange = (estado: EstadoPedido | '') => {
@@ -276,6 +279,7 @@ export default function PedidosView() {
                 pedido={editTarget}
                 clientes={clientes}
                 productos={productos}
+                insumos={insumos}
             />
 
             <ConfirmDialog
