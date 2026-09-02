@@ -1,4 +1,4 @@
-import type { UnidadMedida, Insumo } from '@/types';
+import type { Insumo } from '@/types';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -10,28 +10,6 @@ export function resolveImageUrl(url?: string | null): string | null {
 export function capitalize(text: string): string {
     return text.charAt(0).toUpperCase() + text.slice(1);
 }
-
-// ─── Catálogos ────────────────────────────────────────────────────────────────
-
-export const UNIDADES: UnidadMedida[] = ['litro', 'kilo', 'metro', 'unidad', 'galon', 'pie'];
-
-export const UNIDAD_LABEL: Record<UnidadMedida, string> = {
-    litro:  'Litro (L)',
-    kilo:   'Kilogramo (Kg)',
-    metro:  'Metro (m)',
-    unidad: 'Unidad',
-    galon:  'Galón',
-    pie:    'Pie',
-};
-
-export const UNIDAD_SHORT: Record<UnidadMedida, string> = {
-    litro:  'L',
-    kilo:   'Kg',
-    metro:  'm',
-    unidad: 'u.',
-    galon:  'gal',
-    pie:    'pie',
-};
 
 /**
  * Acento cromático por categoría — coherente con el resto del sistema (tokens shadcn).

@@ -8,7 +8,8 @@ import type {
     CalificacionPedido, CalificarPedidoDto, MisPedidosFiltros,
     CalificacionAdmin, CalificacionesFiltros,
     SolicitudPedido, CreateSolicitudPedidoDto, AprobarSolicitudDto, RechazarSolicitudDto,
-    Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo,
+    Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo, UnidadMedida,
+    CategoriaProducto,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity, ProximoPedido,
     KardexMovimiento, CreateKardexDto,
     AuditoriaLog,
@@ -57,6 +58,9 @@ export const productoApi = {
     create: (dto: CreateProductoDto, imagen?: File) => {
         const form = new FormData();
         Object.entries(dto).forEach(([k, v]) => {
+            // categoria_id: null es "sin categoría" explícito — multipart no soporta
+            // null real, así que se manda '' y el backend lo interpreta como tal.
+            if (k === 'categoria_id' && v === null) { form.append(k, ''); return; }
             if (v === undefined || v === null) return;
             form.append(k, typeof v === 'boolean' ? (v ? 'true' : 'false') : String(v));
         });
@@ -69,6 +73,7 @@ export const productoApi = {
     update: (id: number, dto: UpdateProductoDto, imagen?: File) => {
         const form = new FormData();
         Object.entries(dto).forEach(([k, v]) => {
+            if (k === 'categoria_id' && v === null) { form.append(k, ''); return; }
             if (v === undefined || v === null) return;
             form.append(k, typeof v === 'boolean' ? (v ? 'true' : 'false') : String(v));
         });
@@ -131,7 +136,18 @@ export const insumoApi = {
 };
 
 export const categoriaInsumoApi = {
-    getAll: () => api.get<CategoriaInsumo[]>('/categorias-insumo'),
+    getAll:  () => api.get<CategoriaInsumo[]>('/categorias-insumo'),
+    create:  (nombre: string) => api.post<CategoriaInsumo>('/categorias-insumo', { nombre }),
+};
+
+export const unidadMedidaApi = {
+    getAll:  () => api.get<UnidadMedida[]>('/unidades-medida'),
+    create:  (nombre: string) => api.post<UnidadMedida>('/unidades-medida', { nombre }),
+};
+
+export const categoriaProductoApi = {
+    getAll:  () => api.get<CategoriaProducto[]>('/categorias-producto'),
+    create:  (nombre: string) => api.post<CategoriaProducto>('/categorias-producto', { nombre }),
 };
 
 // ─── Kardex ───────────────────────────────────────────────────────────────────

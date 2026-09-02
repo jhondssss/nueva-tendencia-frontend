@@ -1,6 +1,8 @@
-import type { useForm } from 'react-hook-form';
+import { Controller, type useForm } from 'react-hook-form';
 import { useInsumoStore } from '@/stores/index';
-import { UNIDADES, UNIDAD_LABEL, capitalize } from './insumoHelpers';
+import { useRole } from '@/hooks/useRole';
+import CreatableSelect from '@/components/shared/CreatableSelect';
+import { capitalize } from './insumoHelpers';
 import type { InsumoFormData } from './insumoSchema';
 
 function FormError({ message }: { message?: string }) {
@@ -13,8 +15,12 @@ function FormError({ message }: { message?: string }) {
 type FormInstance = ReturnType<typeof useForm<InsumoFormData>>;
 
 export function InsumoFormFields({ form, idPrefix }: { form: FormInstance; idPrefix: string }) {
-    const { register, formState: { errors } } = form;
-    const categorias = useInsumoStore(s => s.categorias);
+    const { register, control, formState: { errors } } = form;
+    const categorias      = useInsumoStore(s => s.categorias);
+    const unidadesMedida  = useInsumoStore(s => s.unidadesMedida);
+    const createCategoria = useInsumoStore(s => s.createCategoria);
+    const createUnidad    = useInsumoStore(s => s.createUnidadMedida);
+    const { canCreate }   = useRole();
 
     return (
         <>
@@ -37,27 +43,51 @@ export function InsumoFormFields({ form, idPrefix }: { form: FormInstance; idPre
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label className="label">Categoría *</label>
-                    <select {...register('categoria_id', { valueAsNumber: true })}
-                            defaultValue=""
-                            className={`select ${errors.categoria_id ? 'input-error' : ''}`}>
-                        <option value="" disabled>Selecciona una categoría</option>
-                        {categorias.filter(c => c.activo).map(c => (
-                            <option key={c.id_categoria_insumo} value={c.id_categoria_insumo}>
-                                {capitalize(c.nombre)}
-                            </option>
-                        ))}
-                    </select>
-                    <FormError message={errors.categoria_id?.message} />
+                    <Controller
+                        name="categoria_id"
+                        control={control}
+                        render={({ field }) => (
+                            <CreatableSelect
+                                value={field.value}
+                                onChange={id => field.onChange(id ?? undefined)}
+                                options={categorias.map(c => ({
+                                    id: c.id_categoria_insumo, nombre: capitalize(c.nombre), activo: c.activo,
+                                }))}
+                                onCreate={async nombre => {
+                                    const c = await createCategoria(nombre);
+                                    return { id: c.id_categoria_insumo, nombre: capitalize(c.nombre), activo: c.activo };
+                                }}
+                                placeholder="Selecciona una categoría"
+                                newLabel="+ Nueva categoría"
+                                canCreateNew={canCreate}
+                                error={errors.categoria_id?.message}
+                            />
+                        )}
+                    />
                 </div>
                 <div>
                     <label className="label">Unidad de medida *</label>
-                    <select {...register('unidad_medida')}
-                            className={`select ${errors.unidad_medida ? 'input-error' : ''}`}>
-                        {UNIDADES.map(u => (
-                            <option key={u} value={u}>{UNIDAD_LABEL[u]}</option>
-                        ))}
-                    </select>
-                    <FormError message={errors.unidad_medida?.message} />
+                    <Controller
+                        name="unidad_medida_id"
+                        control={control}
+                        render={({ field }) => (
+                            <CreatableSelect
+                                value={field.value}
+                                onChange={id => field.onChange(id ?? undefined)}
+                                options={unidadesMedida.map(u => ({
+                                    id: u.id_unidad_medida, nombre: capitalize(u.nombre), activo: u.activo,
+                                }))}
+                                onCreate={async nombre => {
+                                    const u = await createUnidad(nombre);
+                                    return { id: u.id_unidad_medida, nombre: capitalize(u.nombre), activo: u.activo };
+                                }}
+                                placeholder="Selecciona una unidad"
+                                newLabel="+ Nueva unidad"
+                                canCreateNew={canCreate}
+                                error={errors.unidad_medida_id?.message}
+                            />
+                        )}
+                    />
                 </div>
             </div>
 

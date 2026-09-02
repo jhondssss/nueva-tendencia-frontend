@@ -65,6 +65,13 @@ export interface Cliente {
 export type CreateClienteDto = Omit<Cliente, 'id_cliente' | 'fecha_registro' | 'pedidos'>;
 export type UpdateClienteDto = Partial<CreateClienteDto>;
 
+// ─── Categoría de Producto ──────────────────────────────────────────────────────
+export interface CategoriaProducto {
+    id_categoria_producto: number;
+    nombre:                string;
+    activo:                boolean;
+}
+
 // ─── Producto ─────────────────────────────────────────────────────────────────
 export interface Producto {
     id_producto: number;
@@ -82,7 +89,7 @@ export interface Producto {
     unidad_medida: string;
     nivel_minimo: number;
     imagen_url?: string;
-    categoria?: CategoriaCalzado;
+    categoria: CategoriaProducto | null;
     talles?: TallaDetalle[];
     // Fórmula de producción — cantidad fija por docena de pares, consumida
     // automáticamente en cada etapa del Kanban. null = etapa no configurada.
@@ -94,7 +101,7 @@ export interface Producto {
     clefa_empaque_litros?: number | null;
     esponja_empaque_hojas?: number | null;
 }
-export type CreateProductoDto = Omit<Producto, 'id_producto'>;
+export type CreateProductoDto = Omit<Producto, 'id_producto' | 'categoria'> & { categoria_id?: number | null };
 export type UpdateProductoDto = Partial<CreateProductoDto>;
 
 // ─── Catálogo público (portal de cliente) ──────────────────────────────────────
@@ -231,7 +238,11 @@ export interface CategoriaInsumo {
     nombre:              string;
     activo:              boolean;
 }
-export type UnidadMedida    = 'litro' | 'kilo' | 'metro' | 'unidad' | 'galon' | 'pie';
+export interface UnidadMedida {
+    id_unidad_medida: number;
+    nombre:           string;
+    activo:           boolean;
+}
 
 export interface Insumo {
     id_insumo:       number;
@@ -246,7 +257,8 @@ export interface Insumo {
     fecha_creacion:  string;
     imagen_url?:     string | null;
 }
-export type CreateInsumoDto = Omit<Insumo, 'id_insumo' | 'fecha_creacion' | 'categoria'> & { categoria_id: number };
+export type CreateInsumoDto = Omit<Insumo, 'id_insumo' | 'fecha_creacion' | 'categoria' | 'unidad_medida'>
+    & { categoria_id: number; unidad_medida_id: number };
 export type UpdateInsumoDto = Partial<CreateInsumoDto>;
 
 // ─── Kardex ───────────────────────────────────────────────────────────────────

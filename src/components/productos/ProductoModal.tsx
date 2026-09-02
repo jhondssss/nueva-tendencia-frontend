@@ -7,14 +7,11 @@ import { Upload, Loader2 } from 'lucide-react';
 import Modal from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import type { Producto, CreateProductoDto, CategoriaCalzado } from '@/types';
+import type { Producto, CreateProductoDto } from '@/types';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
-
-const CATEGORIA_OPTIONS: { value: CategoriaCalzado; label: string }[] = [
-    { value: 'nino',    label: 'Niño (tallas 27–32)' },
-    { value: 'juvenil', label: 'Juvenil (tallas 33–36)' },
-    { value: 'adulto',  label: 'Adulto (tallas 37–42)' },
-];
+import { useProductoStore } from '@/stores/index';
+import { useRole } from '@/hooks/useRole';
+import CreatableSelect from '@/components/shared/CreatableSelect';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -42,7 +39,7 @@ const schema = z.object({
     genero:             z.string().min(1, 'Requerido'),
     material_principal: z.string().min(1, 'Requerido'),
     color:              z.string().min(1, 'Requerido'),
-    categoria:          z.enum(['nino', 'juvenil', 'adulto'], { error: 'Selecciona una categoría' }),
+    categoria_id:       z.number().nullable().optional(),
     precio_venta:       z.coerce.number().positive('Debe ser mayor a 0'),
     costo_unidad:       z.coerce.number().positive('Debe ser mayor a 0'),
     descripcion_corta:  z.string().min(10, 'Mínimo 10 caracteres'),
@@ -115,8 +112,12 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
     const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<ProductoFormData>({
         resolver: zodResolver(schema) as Resolver<ProductoFormData>,
         mode: 'onTouched',
-        defaultValues: { activo: true, stock: 0, nivel_minimo: 0 },
+        defaultValues: { activo: true, stock: 0, nivel_minimo: 0, categoria_id: null },
     });
+
+    const categoriasProducto     = useProductoStore(s => s.categoriasProducto);
+    const createCategoriaProducto = useProductoStore(s => s.createCategoriaProducto);
+    const { canCreate } = useRole();
 
     useEffect(() => {
         if (isOpen && producto) {
@@ -127,7 +128,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 genero:             producto.genero,
                 material_principal: producto.material_principal,
                 color:              producto.color,
-                categoria:          producto.categoria ?? undefined,
+                categoria_id:       producto.categoria?.id_categoria_producto ?? null,
                 precio_venta:       Number(producto.precio_venta),
                 costo_unidad:       Number(producto.costo_unidad),
                 descripcion_corta:  producto.descripcion_corta,
@@ -217,18 +218,31 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 </div>
 
                 <div>
-                    <label className="label">Categoría (tallas) *</label>
-                    <select {...register('categoria')}
-                            defaultValue=""
-                            className={`select ${errors.categoria ? 'input-error' : ''}`}>
-                        <option value="" disabled>Selecciona una categoría</option>
-                        {CATEGORIA_OPTIONS.map(({ value, label }) => (
-                            <option key={value} value={value}>{label}</option>
-                        ))}
-                    </select>
-                    {errors.categoria && <p className="text-destructive text-xs mt-1">{errors.categoria.message}</p>}
+                    <label className="label">Categoría</label>
+                    <Controller
+                        name="categoria_id"
+                        control={control}
+                        render={({ field }) => (
+                            <CreatableSelect
+                                value={field.value}
+                                onChange={id => field.onChange(id)}
+                                options={categoriasProducto.map(c => ({
+                                    id: c.id_categoria_producto, nombre: c.nombre, activo: c.activo,
+                                }))}
+                                onCreate={async nombre => {
+                                    const c = await createCategoriaProducto(nombre);
+                                    return { id: c.id_categoria_producto, nombre: c.nombre, activo: c.activo };
+                                }}
+                                placeholder="Selecciona una categoría"
+                                newLabel="+ Nueva categoría"
+                                nullOption={{ label: 'Sin categoría / oculto del catálogo' }}
+                                canCreateNew={canCreate}
+                                error={errors.categoria_id?.message}
+                            />
+                        )}
+                    />
                     <p className="text-2xs text-muted-foreground mt-1">
-                        Determina las tallas disponibles y si el producto aparece en el catálogo del portal de cliente.
+                        Sin categoría, el producto no aparece en el catálogo del portal de cliente.
                     </p>
                 </div>
 
