@@ -2,7 +2,7 @@ import api from './axios';
 import type { AxiosRequestConfig } from 'axios';
 import type {
     LoginDto, AuthResponse,
-    Cliente, CreateClienteDto, UpdateClienteDto,
+    Cliente, CreateClienteDto, UpdateClienteDto, TipoCliente,
     Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
     CalificacionPedido, CalificarPedidoDto, MisPedidosFiltros,
@@ -46,6 +46,11 @@ export const clienteApi = {
     update:  (id: number, dto: UpdateClienteDto) => api.patch<Cliente>(`/clientes/${id}`, dto),
     remove:  (id: number, config?: AxiosRequestConfig) => api.delete(`/clientes/${id}`, config),
     darAcceso: (id: number) => api.post<{ message: string }>(`/clientes/${id}/dar-acceso`),
+};
+
+export const tipoClienteApi = {
+    getAll:  () => api.get<TipoCliente[]>('/tipos-cliente'),
+    create:  (nombre: string) => api.post<TipoCliente>('/tipos-cliente', { nombre }),
 };
 
 // ─── Productos ────────────────────────────────────────────────────────────────

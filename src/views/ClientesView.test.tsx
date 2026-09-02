@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ClientesView from './ClientesView';
 import { useAuthStore } from '@/stores/auth.store';
 import { useClienteStore } from '@/stores/index';
-import { clienteApi } from '@/api/services';
+import { clienteApi, tipoClienteApi } from '@/api/services';
 import type { Cliente } from '@/types';
 
 vi.mock('@/api/services', () => ({
@@ -17,6 +17,10 @@ vi.mock('@/api/services', () => ({
         remove: vi.fn(),
         darAcceso: vi.fn(),
     },
+    tipoClienteApi: {
+        getAll: vi.fn(),
+        create: vi.fn(),
+    },
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -25,9 +29,14 @@ vi.mock('react-hot-toast', () => ({
 
 // Cliente tal como lo devuelve realmente el backend: dirección anidada
 // (relación 1:1 con DireccionCliente), no columnas planas en la raíz.
+const TIPOS_CLIENTE = [
+    { id_tipo_cliente: 1, nombre: 'Persona natural', activo: true },
+    { id_tipo_cliente: 2, nombre: 'Empresa', activo: true },
+];
+
 const CLIENTE_CON_DIRECCION: Cliente = {
     id_cliente: 2,
-    tipo_cliente: 'persona_natural',
+    tipo_cliente: TIPOS_CLIENTE[0],
     nombre: 'Carlos',
     apellido: 'Rojas',
     documento_identidad: '12345678',
@@ -69,11 +78,12 @@ function renderView() {
 beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
-    useClienteStore.setState({ clientes: [], isLoading: false });
+    useClienteStore.setState({ clientes: [], tiposCliente: [], isLoading: false });
     setAdmin();
     vi.mocked(clienteApi.getAll).mockResolvedValue({
         data: { data: [CLIENTE_CON_DIRECCION], total: 1, page: 1, limit: 30, totalPages: 1 },
     } as never);
+    vi.mocked(tipoClienteApi.getAll).mockResolvedValue({ data: TIPOS_CLIENTE } as never);
 });
 
 describe('ClientesView — precarga del modal de edición', () => {
@@ -111,7 +121,7 @@ describe('ClientesView — armado del DTO al guardar', () => {
         await user.click(screen.getByRole('button', { name: /nuevo cliente/i }));
         const modal = screen.getByText('Nuevo Cliente').closest('.modal-panel') as HTMLElement;
 
-        await user.selectOptions(screen.getByRole('combobox'), 'persona_natural');
+        await user.selectOptions(screen.getByRole('combobox'), 'Persona natural');
         await user.type(screen.getByPlaceholderText('Juan'), 'Ana');
         await user.type(screen.getByPlaceholderText('juan@ejemplo.com'), 'ana@correo.com');
         await user.type(screen.getByPlaceholderText('+591 70000000'), '70000003');

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,6 +12,7 @@ import Modal from '@/components/shared/Modal';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import Pagination from '@/components/shared/Pagination';
 import { TableSkeleton } from '@/components/shared/Skeleton';
+import CreatableSelect from '@/components/shared/CreatableSelect';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
@@ -21,7 +22,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import type { Cliente, CreateClienteDto } from '@/types';
 
 const schema = z.object({
-    tipo_cliente:         z.string().min(1, 'Requerido'),
+    tipo_cliente_id:      z.number({ error: 'Selecciona un tipo de cliente' }).min(1, 'Selecciona un tipo de cliente'),
     nombre:               z.string().min(1, 'Requerido'),
     apellido:             z.string().optional(),
     nombre_completo:      z.string().optional(),
@@ -57,13 +58,16 @@ export default function ClientesView() {
     const [accesoOtorgado, setAccesoOtorgado] = useState<Set<number>>(new Set());
     const [search, setSearch]             = useState('');
 
-    const { clientes, isLoading, fetchAll, create, update, remove } = useClienteStore();
+    const {
+        clientes, tiposCliente, isLoading,
+        fetchAll, fetchTiposCliente, createTipoCliente, create, update, remove,
+    } = useClienteStore();
     const { canCreate, canEdit, canDelete } = useRole();
 
-    useEffect(() => { fetchAll(); }, [fetchAll]);
+    useEffect(() => { fetchAll(); fetchTiposCliente(); }, [fetchAll, fetchTiposCliente]);
     useEffect(() => { document.title = 'Clientes | NT'; }, []);
 
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
+    const { register, control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema) as Resolver<FormData>,
         defaultValues: { pais: 'Bolivia', activo: true },
     });
@@ -77,7 +81,7 @@ export default function ClientesView() {
     const openEdit = (c: Cliente) => {
         setEditTarget(c);
         reset({
-            tipo_cliente:         c.tipo_cliente,
+            tipo_cliente_id:      c.tipo_cliente.id_tipo_cliente,
             nombre:               c.nombre                    ?? undefined,
             apellido:             c.apellido                  ?? undefined,
             nombre_completo:      c.nombre_completo           ?? undefined,
@@ -186,10 +190,10 @@ export default function ClientesView() {
                                 <TableRow key={c.id_cliente}>
                                     <TableCell>
                                         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                            {c.tipo_cliente === 'empresa'
+                                            {c.tipo_cliente.nombre === 'empresa'
                                                 ? <Building2 size={13} className="text-chart-3" />
                                                 : <User size={13} className="text-chart-1" />}
-                                            {c.tipo_cliente}
+                                            {c.tipo_cliente.nombre}
                                         </span>
                                     </TableCell>
                                     <TableCell className="font-medium text-foreground">{c.nombre_completo || `${c.nombre} ${c.apellido ?? ''}`}</TableCell>
@@ -268,11 +272,27 @@ export default function ClientesView() {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="label">Tipo de cliente *</label>
-                            <select {...register('tipo_cliente')} className={`select ${errors.tipo_cliente ? 'input-error' : ''}`}>
-                                <option value="">Seleccionar...</option>
-                                <option value="persona_natural">Persona natural</option>
-                                <option value="empresa">Empresa</option>
-                            </select>
+                            <Controller
+                                name="tipo_cliente_id"
+                                control={control}
+                                render={({ field }) => (
+                                    <CreatableSelect
+                                        value={field.value}
+                                        onChange={id => field.onChange(id ?? undefined)}
+                                        options={tiposCliente.map(t => ({
+                                            id: t.id_tipo_cliente, nombre: t.nombre, activo: t.activo,
+                                        }))}
+                                        onCreate={async nombre => {
+                                            const t = await createTipoCliente(nombre);
+                                            return { id: t.id_tipo_cliente, nombre: t.nombre, activo: t.activo };
+                                        }}
+                                        placeholder="Selecciona un tipo"
+                                        newLabel="+ Nuevo tipo"
+                                        canCreateNew={canCreate}
+                                        error={errors.tipo_cliente_id?.message}
+                                    />
+                                )}
+                            />
                         </div>
                         <div>
                             <label className="label">CI / RUC</label>

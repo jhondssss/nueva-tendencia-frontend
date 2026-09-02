@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { type AxiosError } from 'axios';
 import {
-    clienteApi, productoApi, pedidoApi, insumoApi, categoriaInsumoApi, unidadMedidaApi,
+    clienteApi, tipoClienteApi, productoApi, pedidoApi, insumoApi, categoriaInsumoApi, unidadMedidaApi,
     categoriaProductoApi, dashboardApi, solicitudPedidoApi,
 } from '@/api/services';
 import type {
-    Cliente, CreateClienteDto, UpdateClienteDto,
+    Cliente, CreateClienteDto, UpdateClienteDto, TipoCliente,
     Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo, CategoriaProducto,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
     Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo, UnidadMedida,
@@ -25,15 +25,17 @@ function errorMessage(err: unknown, fallback: string): string {
 
 // ─── Clientes ─────────────────────────────────────────────────────────────────
 interface ClienteState {
-    clientes: Cliente[]; isLoading: boolean;
+    clientes: Cliente[]; tiposCliente: TipoCliente[]; isLoading: boolean;
     fetchAll: () => Promise<void>;
+    fetchTiposCliente: () => Promise<void>;
+    createTipoCliente: (nombre: string) => Promise<TipoCliente>;
     create:   (dto: CreateClienteDto) => Promise<void>;
     update:   (id: number, dto: UpdateClienteDto) => Promise<void>;
     remove:   (id: number) => Promise<void>;
 }
 
 export const useClienteStore = create<ClienteState>((set, get) => ({
-    clientes: [], isLoading: false,
+    clientes: [], tiposCliente: [], isLoading: false,
 
     fetchAll: async () => {
         set({ isLoading: true });
@@ -52,6 +54,16 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
             set({ clientes: all });
         }
         finally { set({ isLoading: false }); }
+    },
+    fetchTiposCliente: async () => {
+        const { data } = await tipoClienteApi.getAll();
+        set({ tiposCliente: data });
+    },
+    createTipoCliente: async (nombre) => {
+        const { data } = await tipoClienteApi.create(nombre);
+        set({ tiposCliente: [...get().tiposCliente, data] });
+        toast.success('Tipo de cliente creado');
+        return data;
     },
     create: async (dto) => {
         const { data } = await clienteApi.create(dto);

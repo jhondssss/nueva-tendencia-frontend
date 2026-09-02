@@ -46,9 +46,14 @@ export interface DireccionCliente {
     pais: string;
     es_principal?: boolean;
 }
+export interface TipoCliente {
+    id_tipo_cliente: number;
+    nombre:          string;
+    activo:          boolean;
+}
 export interface Cliente {
     id_cliente: number;
-    tipo_cliente: string;
+    tipo_cliente: TipoCliente;
     nombre: string;
     apellido?: string;
     nombre_completo?: string;
@@ -62,7 +67,7 @@ export interface Cliente {
     pedidos?: Pedido[];
     tieneUsuario?: boolean;
 }
-export type CreateClienteDto = Omit<Cliente, 'id_cliente' | 'fecha_registro' | 'pedidos'>;
+export type CreateClienteDto = Omit<Cliente, 'id_cliente' | 'fecha_registro' | 'pedidos' | 'tipo_cliente'> & { tipo_cliente_id: number };
 export type UpdateClienteDto = Partial<CreateClienteDto>;
 
 // ─── Categoría de Producto ──────────────────────────────────────────────────────

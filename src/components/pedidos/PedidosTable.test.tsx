@@ -9,7 +9,7 @@ function makePedido(overrides: Partial<Pedido> = {}): Pedido {
     return {
         id_pedido: 1,
         cliente: {
-            id_cliente: 1, tipo_cliente: 'natural', nombre: 'Ana', apellido: 'Pérez',
+            id_cliente: 1, tipo_cliente: { id_tipo_cliente: 1, nombre: 'Persona natural', activo: true }, nombre: 'Ana', apellido: 'Pérez',
             correo_electronico: 'ana@correo.com', telefono_principal: '70000000',
             direccion: {
                 calle: 'Calle 1', colonia: 'Centro', ciudad: 'Cochabamba',
