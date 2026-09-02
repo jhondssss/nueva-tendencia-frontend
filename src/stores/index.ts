@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { type AxiosError } from 'axios';
-import { clienteApi, productoApi, pedidoApi, insumoApi, dashboardApi, solicitudPedidoApi } from '@/api/services';
+import { clienteApi, productoApi, pedidoApi, insumoApi, categoriaInsumoApi, dashboardApi, solicitudPedidoApi } from '@/api/services';
 import type {
     Cliente, CreateClienteDto, UpdateClienteDto,
     Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
-    Insumo, CreateInsumoDto, UpdateInsumoDto,
+    Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity,
     TopProducto, VentaMes, PrediccionStock, ProximoPedido,
     CalificarPedidoDto, CalificacionPedido, MisPedidosFiltros,
@@ -179,9 +179,11 @@ export const usePedidoStore = create<PedidoState>((set, get) => ({
 interface InsumoState {
     insumos:      Insumo[];
     alertas:      Insumo[];
+    categorias:   CategoriaInsumo[];
     isLoading:    boolean;
-    fetchAll:     () => Promise<void>;
-    fetchAlertas: () => Promise<void>;
+    fetchAll:       () => Promise<void>;
+    fetchAlertas:   () => Promise<void>;
+    fetchCategorias: () => Promise<void>;
     create:        (dto: CreateInsumoDto)              => Promise<Insumo>;
     update:        (id: number, dto: UpdateInsumoDto)  => Promise<Insumo>;
     uploadImagen:  (id: number, formData: FormData)    => Promise<Insumo>;
@@ -189,7 +191,7 @@ interface InsumoState {
 }
 
 export const useInsumoStore = create<InsumoState>((set, get) => ({
-    insumos: [], alertas: [], isLoading: false,
+    insumos: [], alertas: [], categorias: [], isLoading: false,
 
     fetchAll: async () => {
         set({ isLoading: true });
@@ -202,6 +204,10 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
     fetchAlertas: async () => {
         const { data } = await insumoApi.getAlertas();
         set({ alertas: data });
+    },
+    fetchCategorias: async () => {
+        const { data } = await categoriaInsumoApi.getAll();
+        set({ categorias: data });
     },
     create: async (dto) => {
         const { data } = await insumoApi.create(dto);

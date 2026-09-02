@@ -226,8 +226,12 @@ export interface RechazarSolicitudDto {
 }
 
 // ─── Insumos ──────────────────────────────────────────────────────────────────
-export type CategoriaInsumo = 'adhesivo' | 'material' | 'herramienta' | 'quimico' | 'otro';
-export type UnidadMedida    = 'litro' | 'kilo' | 'metro' | 'unidad' | 'galon';
+export interface CategoriaInsumo {
+    id_categoria_insumo: number;
+    nombre:              string;
+    activo:              boolean;
+}
+export type UnidadMedida    = 'litro' | 'kilo' | 'metro' | 'unidad' | 'galon' | 'pie';
 
 export interface Insumo {
     id_insumo:       number;
@@ -242,7 +246,7 @@ export interface Insumo {
     fecha_creacion:  string;
     imagen_url?:     string | null;
 }
-export type CreateInsumoDto = Omit<Insumo, 'id_insumo' | 'fecha_creacion'>;
+export type CreateInsumoDto = Omit<Insumo, 'id_insumo' | 'fecha_creacion' | 'categoria'> & { categoria_id: number };
 export type UpdateInsumoDto = Partial<CreateInsumoDto>;
 
 // ─── Kardex ───────────────────────────────────────────────────────────────────

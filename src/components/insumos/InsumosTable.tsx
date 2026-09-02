@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import type { Insumo } from '@/types';
 import {
-    resolveImageUrl, CATEGORIA_LABEL, UNIDAD_LABEL, CATEGORIA_BADGE, ESTADO_INSUMO_BADGE, getEstadoInsumo,
+    resolveImageUrl, UNIDAD_LABEL, getCategoriaBadgeClass, ESTADO_INSUMO_BADGE, getEstadoInsumo, capitalize,
 } from './insumoHelpers';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
 
@@ -91,8 +91,8 @@ export function InsumosTable({
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant="outline" className={clsx('font-medium', CATEGORIA_BADGE[insumo.categoria])}>
-                                        {CATEGORIA_LABEL[insumo.categoria]}
+                                    <Badge variant="outline" className={clsx('font-medium', getCategoriaBadgeClass(insumo.categoria.id_categoria_insumo))}>
+                                        {capitalize(insumo.categoria.nombre)}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className={clsx(

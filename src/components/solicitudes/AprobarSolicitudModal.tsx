@@ -119,7 +119,7 @@ export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, soli
                                 value={watch('cuero_insumo_id') ?? ''}
                                 onChange={e => setValue('cuero_insumo_id', e.target.value ? Number(e.target.value) : undefined, { shouldValidate: true })}>
                             <option value="">Sin especificar</option>
-                            {insumos.map(i => (
+                            {insumos.filter(i => i.categoria.nombre === 'cuero').map(i => (
                                 <option key={i.id_insumo} value={i.id_insumo}>
                                     {i.nombre}
                                 </option>

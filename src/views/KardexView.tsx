@@ -208,7 +208,7 @@ export default function KardexView() {
                                     <option value={0}>Selecciona un insumo</option>
                                     {insumos.map(i => (
                                         <option key={i.id_insumo} value={i.id_insumo}>
-                                            {i.nombre} — {i.categoria}
+                                            {i.nombre} — {i.categoria.nombre}
                                         </option>
                                     ))}
                                 </select>

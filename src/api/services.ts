@@ -8,7 +8,7 @@ import type {
     CalificacionPedido, CalificarPedidoDto, MisPedidosFiltros,
     CalificacionAdmin, CalificacionesFiltros,
     SolicitudPedido, CreateSolicitudPedidoDto, AprobarSolicitudDto, RechazarSolicitudDto,
-    Insumo, CreateInsumoDto, UpdateInsumoDto,
+    Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity, ProximoPedido,
     KardexMovimiento, CreateKardexDto,
     AuditoriaLog,
@@ -128,6 +128,10 @@ export const insumoApi = {
     uploadImagen: (id: number, formData: FormData)  => api.post<Insumo>(`/insumos/${id}/imagen`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }),
+};
+
+export const categoriaInsumoApi = {
+    getAll: () => api.get<CategoriaInsumo[]>('/categorias-insumo'),
 };
 
 // ─── Kardex ───────────────────────────────────────────────────────────────────

@@ -11,8 +11,8 @@ import Pagination from '@/components/shared/Pagination';
 import { Button } from '@/components/ui/button';
 import { usePagination } from '@/hooks/usePagination';
 import { useRole } from '@/hooks/useRole';
-import type { CategoriaInsumo, CreateInsumoDto, Insumo } from '@/types';
-import { CATEGORIAS, CATEGORIA_LABEL, resolveImageUrl, validateImageFile } from '@/components/insumos/insumoHelpers';
+import type { CreateInsumoDto, Insumo } from '@/types';
+import { resolveImageUrl, validateImageFile, capitalize } from '@/components/insumos/insumoHelpers';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
 import { insumoSchema, INSUMO_DEFAULT_VALUES, type InsumoFormData } from '@/components/insumos/insumoSchema';
 import { InsumoFormFields } from '@/components/insumos/InsumoForm';
@@ -26,7 +26,7 @@ export default function InsumosView() {
     const [deleteTarget, setDeleteTarget] = useState<Insumo | null>(null);
     const [lightboxUrl, setLightboxUrl]   = useState<string | null>(null);
     const [search, setSearch]             = useState('');
-    const [filterCategoria, setFilterCategoria] = useState<CategoriaInsumo | ''>('');
+    const [filterCategoriaId, setFilterCategoriaId] = useState<number | ''>('');
 
     // Estado de imagen — crear
     const [createImagen, setCreateImagen]   = useState<File | null>(null);
@@ -38,10 +38,10 @@ export default function InsumosView() {
     const [editPreview, setEditPreview] = useState<string | null>(null);
     const editFileRef = useRef<HTMLInputElement>(null);
 
-    const { insumos, alertas, isLoading, fetchAll, fetchAlertas, create, update, uploadImagen, remove } = useInsumoStore();
+    const { insumos, alertas, categorias, isLoading, fetchAll, fetchAlertas, fetchCategorias, create, update, uploadImagen, remove } = useInsumoStore();
     const { canCreate, canEdit, canDelete } = useRole();
 
-    useEffect(() => { fetchAll(); fetchAlertas(); }, [fetchAll, fetchAlertas]);
+    useEffect(() => { fetchAll(); fetchAlertas(); fetchCategorias(); }, [fetchAll, fetchAlertas, fetchCategorias]);
     useEffect(() => { document.title = 'Insumos | NT'; }, []);
 
     // ── Handlers de imagen ────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ export default function InsumosView() {
         editForm.reset({
             nombre:          insumo.nombre,
             descripcion:     insumo.descripcion,
-            categoria:       insumo.categoria,
+            categoria_id:    insumo.categoria.id_categoria_insumo,
             unidad_medida:   insumo.unidad_medida,
             stock:           Number(insumo.stock),
             nivel_minimo:    Number(insumo.nivel_minimo),
@@ -141,7 +141,7 @@ export default function InsumosView() {
 
     const filtered = insumos.filter(i => {
         const matchSearch    = !search || i.nombre.toLowerCase().includes(search.toLowerCase());
-        const matchCategoria = !filterCategoria || i.categoria === filterCategoria;
+        const matchCategoria = !filterCategoriaId || i.categoria.id_categoria_insumo === filterCategoriaId;
         return matchSearch && matchCategoria;
     });
 
@@ -176,12 +176,14 @@ export default function InsumosView() {
                     <input value={search} onChange={e => setSearch(e.target.value)}
                            placeholder="Buscar insumo..." className="input pl-9 w-64" />
                 </div>
-                <select value={filterCategoria}
-                        onChange={e => setFilterCategoria(e.target.value as CategoriaInsumo | '')}
+                <select value={filterCategoriaId}
+                        onChange={e => setFilterCategoriaId(e.target.value ? Number(e.target.value) : '')}
                         className="select w-48">
                     <option value="">Todas las categorías</option>
-                    {CATEGORIAS.map(c => (
-                        <option key={c} value={c}>{CATEGORIA_LABEL[c]}</option>
+                    {categorias.map(c => (
+                        <option key={c.id_categoria_insumo} value={c.id_categoria_insumo}>
+                            {capitalize(c.nombre)}
+                        </option>
                     ))}
                 </select>
             </div>

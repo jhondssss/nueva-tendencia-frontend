@@ -1,5 +1,6 @@
 import type { useForm } from 'react-hook-form';
-import { CATEGORIAS, UNIDADES, CATEGORIA_LABEL, UNIDAD_LABEL } from './insumoHelpers';
+import { useInsumoStore } from '@/stores/index';
+import { UNIDADES, UNIDAD_LABEL, capitalize } from './insumoHelpers';
 import type { InsumoFormData } from './insumoSchema';
 
 function FormError({ message }: { message?: string }) {
@@ -13,6 +14,7 @@ type FormInstance = ReturnType<typeof useForm<InsumoFormData>>;
 
 export function InsumoFormFields({ form, idPrefix }: { form: FormInstance; idPrefix: string }) {
     const { register, formState: { errors } } = form;
+    const categorias = useInsumoStore(s => s.categorias);
 
     return (
         <>
@@ -35,13 +37,17 @@ export function InsumoFormFields({ form, idPrefix }: { form: FormInstance; idPre
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label className="label">Categoría *</label>
-                    <select {...register('categoria')}
-                            className={`select ${errors.categoria ? 'input-error' : ''}`}>
-                        {CATEGORIAS.map(c => (
-                            <option key={c} value={c}>{CATEGORIA_LABEL[c]}</option>
+                    <select {...register('categoria_id', { valueAsNumber: true })}
+                            defaultValue=""
+                            className={`select ${errors.categoria_id ? 'input-error' : ''}`}>
+                        <option value="" disabled>Selecciona una categoría</option>
+                        {categorias.filter(c => c.activo).map(c => (
+                            <option key={c.id_categoria_insumo} value={c.id_categoria_insumo}>
+                                {capitalize(c.nombre)}
+                            </option>
                         ))}
                     </select>
-                    <FormError message={errors.categoria?.message} />
+                    <FormError message={errors.categoria_id?.message} />
                 </div>
                 <div>
                     <label className="label">Unidad de medida *</label>

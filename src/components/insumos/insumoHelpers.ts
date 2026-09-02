@@ -1,4 +1,4 @@
-import type { CategoriaInsumo, UnidadMedida, Insumo } from '@/types';
+import type { UnidadMedida, Insumo } from '@/types';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -7,18 +7,13 @@ export function resolveImageUrl(url?: string | null): string | null {
     return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
 }
 
+export function capitalize(text: string): string {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 // ─── Catálogos ────────────────────────────────────────────────────────────────
 
-export const CATEGORIAS: CategoriaInsumo[] = ['adhesivo', 'material', 'herramienta', 'quimico', 'otro'];
-export const UNIDADES:   UnidadMedida[]    = ['litro', 'kilo', 'metro', 'unidad', 'galon'];
-
-export const CATEGORIA_LABEL: Record<CategoriaInsumo, string> = {
-    adhesivo:    'Adhesivo',
-    material:    'Material',
-    herramienta: 'Herramienta',
-    quimico:     'Químico',
-    otro:        'Otro',
-};
+export const UNIDADES: UnidadMedida[] = ['litro', 'kilo', 'metro', 'unidad', 'galon', 'pie'];
 
 export const UNIDAD_LABEL: Record<UnidadMedida, string> = {
     litro:  'Litro (L)',
@@ -26,6 +21,7 @@ export const UNIDAD_LABEL: Record<UnidadMedida, string> = {
     metro:  'Metro (m)',
     unidad: 'Unidad',
     galon:  'Galón',
+    pie:    'Pie',
 };
 
 export const UNIDAD_SHORT: Record<UnidadMedida, string> = {
@@ -34,16 +30,26 @@ export const UNIDAD_SHORT: Record<UnidadMedida, string> = {
     metro:  'm',
     unidad: 'u.',
     galon:  'gal',
+    pie:    'pie',
 };
 
-/** Acento cromático por categoría — coherente con el resto del sistema (tokens shadcn) */
-export const CATEGORIA_BADGE: Record<CategoriaInsumo, string> = {
-    adhesivo:    'bg-chart-3/10 text-chart-3 border-chart-3/30',
-    material:    'bg-chart-1/10 text-chart-1 border-chart-1/30',
-    herramienta: 'bg-secondary/10 text-secondary border-secondary/30',
-    quimico:     'bg-destructive/10 text-destructive border-destructive/30',
-    otro:        'bg-chart-4/10 text-chart-4 border-chart-4/30',
-};
+/**
+ * Acento cromático por categoría — coherente con el resto del sistema (tokens shadcn).
+ * Las categorías son dinámicas (vienen del backend), así que el color se asigna
+ * por índice sobre una paleta fija en vez de un Record cerrado por nombre.
+ */
+const CATEGORIA_BADGE_PALETTE = [
+    'bg-chart-1/10 text-chart-1 border-chart-1/30',
+    'bg-chart-3/10 text-chart-3 border-chart-3/30',
+    'bg-secondary/10 text-secondary border-secondary/30',
+    'bg-destructive/10 text-destructive border-destructive/30',
+    'bg-chart-4/10 text-chart-4 border-chart-4/30',
+    'bg-chart-2/10 text-chart-2 border-chart-2/30',
+];
+
+export function getCategoriaBadgeClass(idCategoriaInsumo: number): string {
+    return CATEGORIA_BADGE_PALETTE[idCategoriaInsumo % CATEGORIA_BADGE_PALETTE.length];
+}
 
 export type EstadoInsumo = 'Inactivo' | 'Agotado' | 'Stock bajo' | 'Activo';
 
