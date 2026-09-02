@@ -7,7 +7,7 @@ import type { Resolver } from 'react-hook-form';
 import Modal from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
 import TallaInfoBox, { CATEGORIA_INFO } from '@/components/pedidos/TallaInfoBox';
-import type { SolicitudPedido, AprobarSolicitudDto } from '@/types';
+import type { SolicitudPedido, AprobarSolicitudDto, Insumo } from '@/types';
 
 const schema = z.object({
     total:         z.number({ error: 'Ingresa el total' }).positive('Debe ser mayor a 0'),
@@ -17,6 +17,7 @@ const schema = z.object({
                         val => new Date(val + 'T12:00:00') >= new Date(new Date().toDateString()),
                         'La fecha de entrega no puede ser en el pasado',
                     ),
+    cuero_insumo_id: z.number().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -26,10 +27,11 @@ interface Props {
     onClose:   () => void;
     onConfirm: (id: number, dto: AprobarSolicitudDto) => Promise<SolicitudPedido>;
     solicitud: SolicitudPedido | null;
+    insumos:   Insumo[];
 }
 
-export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, solicitud }: Props) {
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
+export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, solicitud, insumos }: Props) {
+    const { register, handleSubmit, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema) as Resolver<FormData>,
     });
     const [pedidoGenerado, setPedidoGenerado] = useState<number | null>(null);
@@ -49,6 +51,7 @@ export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, soli
         const actualizada = await onConfirm(solicitud.id_solicitud, {
             total: data.total,
             fecha_entrega: data.fecha_entrega,
+            cuero_insumo_id: data.cuero_insumo_id,
         });
         setPedidoGenerado(actualizada.pedido_creado?.id_pedido ?? null);
     };
@@ -108,6 +111,20 @@ export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, soli
                                    className={`input ${errors.fecha_entrega ? 'input-error' : ''}`} />
                             {errors.fecha_entrega && <p className="text-destructive text-xs mt-1">{errors.fecha_entrega.message}</p>}
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="label">Tipo de Cuero</label>
+                        <select className="select"
+                                value={watch('cuero_insumo_id') ?? ''}
+                                onChange={e => setValue('cuero_insumo_id', e.target.value ? Number(e.target.value) : undefined, { shouldValidate: true })}>
+                            <option value="">Sin especificar</option>
+                            {insumos.map(i => (
+                                <option key={i.id_insumo} value={i.id_insumo}>
+                                    {i.nombre}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="flex justify-end gap-2 pt-2 border-t border-border">

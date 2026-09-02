@@ -216,9 +216,10 @@ export interface CreateSolicitudPedidoDto {
     fecha_entrega_deseada?: string;
 }
 export interface AprobarSolicitudDto {
-    total:         number;
-    fecha_entrega: string;
-    unidad?:       UnidadPedido;
+    total:            number;
+    fecha_entrega:    string;
+    unidad?:          UnidadPedido;
+    cuero_insumo_id?: number;
 }
 export interface RechazarSolicitudDto {
     motivo_rechazo: string;

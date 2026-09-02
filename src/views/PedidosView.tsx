@@ -53,7 +53,7 @@ export default function PedidosView() {
     const { insumos, fetchAll: fetchInsumos }     = useInsumoStore();
 
     useEffect(() => { fetchAll(); fetchClientes(); fetchProductos(); }, [fetchAll, fetchClientes, fetchProductos]);
-    // GET /insumos está restringido a admin — el selector de cuero del modal solo lo necesita ese rol.
+    // Solo admin abre el PedidoModal en esta vista (canCreate/canEdit son admin-only), por eso solo admin necesita insumos acá.
     useEffect(() => { if (isAdmin) fetchInsumos(); }, [isAdmin, fetchInsumos]);
     useEffect(() => { document.title = 'Pedidos | NT'; }, []);
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ClipboardList, CheckCircle2, XCircle } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useSolicitudesAdminStore } from '@/stores/index';
+import { useSolicitudesAdminStore, useInsumoStore } from '@/stores/index';
 import { Button } from '@/components/ui/button';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -32,6 +32,8 @@ export default function SolicitudesView() {
     const fetchAll     = useSolicitudesAdminStore(s => s.fetchAll);
     const aprobar      = useSolicitudesAdminStore(s => s.aprobar);
     const rechazar     = useSolicitudesAdminStore(s => s.rechazar);
+    const insumos      = useInsumoStore(s => s.insumos);
+    const fetchInsumos = useInsumoStore(s => s.fetchAll);
 
     const [estado, setEstado] = useState<EstadoSolicitud | 'todos'>('Pendiente');
     const [aAprobar, setAAprobar]   = useState<SolicitudPedido | null>(null);
@@ -39,6 +41,7 @@ export default function SolicitudesView() {
 
     useEffect(() => { document.title = 'Solicitudes | NT'; }, []);
     useEffect(() => { fetchAll(estado === 'todos' ? undefined : estado); }, [fetchAll, estado]);
+    useEffect(() => { fetchInsumos(); }, [fetchInsumos]);
 
     const handleAprobar = async (id: number, dto: AprobarSolicitudDto) => {
         const actualizada = await aprobar(id, dto);
@@ -152,6 +155,7 @@ export default function SolicitudesView() {
                 onClose={() => setAAprobar(null)}
                 onConfirm={handleAprobar}
                 solicitud={aAprobar}
+                insumos={insumos}
             />
             <RechazarSolicitudModal
                 isOpen={!!aRechazar}
