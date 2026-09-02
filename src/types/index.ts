@@ -84,8 +84,15 @@ export interface Producto {
     imagen_url?: string;
     categoria?: CategoriaCalzado;
     talles?: TallaDetalle[];
-    porcentaje_clefa?: number | null;
-    porcentaje_pasta?: number | null;
+    // Fórmula de producción — cantidad fija por docena de pares, consumida
+    // automáticamente en cada etapa del Kanban. null = etapa no configurada.
+    cuero_pies?: number | null;
+    clefa_aparado_litros?: number | null;
+    pasta_solado_litros?: number | null;
+    clefa_solado_litros?: number | null;
+    pvc_solado_litros?: number | null;
+    clefa_empaque_litros?: number | null;
+    esponja_empaque_hojas?: number | null;
 }
 export type CreateProductoDto = Omit<Producto, 'id_producto'>;
 export type UpdateProductoDto = Partial<CreateProductoDto>;
