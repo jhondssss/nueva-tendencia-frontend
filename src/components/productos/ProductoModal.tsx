@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Upload, Loader2 } from 'lucide-react';
 import Modal from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import type { Producto, CreateProductoDto, CategoriaCalzado } from '@/types';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
 
@@ -32,7 +33,7 @@ const emptyToUndefined = (v: unknown) => {
     return v;
 };
 
-const LITROS_POR_DOCENA = 0.5;
+const numeroOpcional = z.preprocess(emptyToUndefined, z.number().min(0, 'No puede ser negativo').optional());
 
 const schema = z.object({
     nombre_modelo:      z.string().min(3, 'Mínimo 3 caracteres'),
@@ -49,17 +50,13 @@ const schema = z.object({
     nivel_minimo:       z.preprocess(nanToDefault(0), z.number().min(0, 'No puede ser negativo')),
     unidad_medida:      z.string().default('unidades'),
     activo:             z.boolean(),
-    porcentaje_clefa:   z.preprocess(emptyToUndefined, z.number().min(0).max(100).optional()),
-    porcentaje_pasta:   z.preprocess(emptyToUndefined, z.number().min(0).max(100).optional()),
-}).refine(({ porcentaje_clefa, porcentaje_pasta }) => {
-    const clefaProvisto = porcentaje_clefa !== undefined;
-    const pastaProvisto = porcentaje_pasta !== undefined;
-    if (!clefaProvisto && !pastaProvisto) return true;
-    if (clefaProvisto !== pastaProvisto) return false;
-    return Math.round((porcentaje_clefa! + porcentaje_pasta!) * 100) / 100 === 100;
-}, {
-    message: '% Clefa y % Pasta deben venir ambos y sumar exactamente 100',
-    path: ['porcentaje_pasta'],
+    cuero_pies:             numeroOpcional,
+    clefa_aparado_litros:   numeroOpcional,
+    pasta_solado_litros:    numeroOpcional,
+    clefa_solado_litros:    numeroOpcional,
+    pvc_solado_litros:      numeroOpcional,
+    clefa_empaque_litros:   numeroOpcional,
+    esponja_empaque_hojas:  numeroOpcional,
 });
 
 export type ProductoFormData = z.infer<typeof schema>;
@@ -73,6 +70,36 @@ const FIELDS = [
     { name: 'color',              label: 'Color',             placeholder: 'Negro / Café'       },
 ] as const;
 
+const FORMULA_ETAPAS = [
+    {
+        titulo: '1 · Cortado',
+        campos: [
+            { name: 'cuero_pies', label: 'Cuero', unidad: 'pies' },
+        ],
+    },
+    {
+        titulo: '2 · Aparado',
+        campos: [
+            { name: 'clefa_aparado_litros', label: 'Clefa', unidad: 'L' },
+        ],
+    },
+    {
+        titulo: '3 · Solado',
+        campos: [
+            { name: 'pasta_solado_litros', label: 'Pasta', unidad: 'L' },
+            { name: 'clefa_solado_litros', label: 'Clefa', unidad: 'L' },
+            { name: 'pvc_solado_litros',   label: 'PVC',   unidad: 'L' },
+        ],
+    },
+    {
+        titulo: '4 · Empaquetado',
+        campos: [
+            { name: 'clefa_empaque_litros',  label: 'Clefa',   unidad: 'L' },
+            { name: 'esponja_empaque_hojas', label: 'Esponja', unidad: 'hojas' },
+        ],
+    },
+] as const satisfies readonly { titulo: string; campos: readonly { name: keyof ProductoFormData; label: string; unidad: string }[] }[];
+
 interface Props {
     isOpen:    boolean;
     onClose:   () => void;
@@ -85,14 +112,11 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
     const [imagen, setImagen]   = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
 
-    const { register, handleSubmit, reset, control, watch, formState: { errors, isSubmitting } } = useForm<ProductoFormData>({
+    const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<ProductoFormData>({
         resolver: zodResolver(schema) as Resolver<ProductoFormData>,
         mode: 'onTouched',
         defaultValues: { activo: true, stock: 0, nivel_minimo: 0 },
     });
-
-    const pctClefa = watch('porcentaje_clefa');
-    const pctPasta = watch('porcentaje_pasta');
 
     useEffect(() => {
         if (isOpen && producto) {
@@ -111,8 +135,13 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 nivel_minimo:       Number(producto.nivel_minimo),
                 unidad_medida:      producto.unidad_medida ?? 'unidades',
                 activo:             Boolean(producto.activo),
-                porcentaje_clefa:   producto.porcentaje_clefa ?? undefined,
-                porcentaje_pasta:   producto.porcentaje_pasta ?? undefined,
+                cuero_pies:             producto.cuero_pies ?? undefined,
+                clefa_aparado_litros:   producto.clefa_aparado_litros ?? undefined,
+                pasta_solado_litros:    producto.pasta_solado_litros ?? undefined,
+                clefa_solado_litros:    producto.clefa_solado_litros ?? undefined,
+                pvc_solado_litros:      producto.pvc_solado_litros ?? undefined,
+                clefa_empaque_litros:   producto.clefa_empaque_litros ?? undefined,
+                esponja_empaque_hojas:  producto.esponja_empaque_hojas ?? undefined,
             });
             setPreview(getImagenEstandarizada(resolveImageUrl(producto.imagen_url), 400));
             setImagen(null);
@@ -140,6 +169,13 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                title={producto ? 'Editar Producto' : 'Nuevo Producto'}
                subtitle="Completa la información del calzado" size="lg">
             <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+              <Tabs defaultValue="general">
+                <TabsList>
+                    <TabsTrigger value="general">Datos generales</TabsTrigger>
+                    <TabsTrigger value="formula">Fórmula de producción</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="general" className="space-y-4">
 
                 <div>
                     <label className="label">Imagen del producto</label>
@@ -244,43 +280,6 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                               className={`input resize-none ${errors.descripcion_corta ? 'input-error' : ''}`} />
                 </div>
 
-                <div className="rounded-lg border border-border p-3 space-y-2">
-                    <label className="label">Fórmula de mezcla (Clefa / Pasta)</label>
-                    <p className="text-2xs text-muted-foreground">
-                        Opcional. Si se configura, se usa para descontar insumos automáticamente al pasar el pedido a Solado.
-                        Debe sumar 100%.
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="label text-2xs">% Clefa</label>
-                            <input type="number" step="0.1" min="0" max="100"
-                                   {...register('porcentaje_clefa', { valueAsNumber: true })}
-                                   placeholder="70"
-                                   className={`input ${errors.porcentaje_clefa || errors.porcentaje_pasta ? 'input-error' : ''}`} />
-                        </div>
-                        <div>
-                            <label className="label text-2xs">% Pasta</label>
-                            <input type="number" step="0.1" min="0" max="100"
-                                   {...register('porcentaje_pasta', { valueAsNumber: true })}
-                                   placeholder="30"
-                                   className={`input ${errors.porcentaje_clefa || errors.porcentaje_pasta ? 'input-error' : ''}`} />
-                        </div>
-                    </div>
-                    {(Number.isFinite(pctClefa) || Number.isFinite(pctPasta)) && (
-                        <p className="text-2xs text-muted-foreground">
-                            Referencia por docena (0.5L total):{' '}
-                            {Number.isFinite(pctClefa) && <>Clefa {(LITROS_POR_DOCENA * pctClefa! / 100).toFixed(2)}L</>}
-                            {Number.isFinite(pctClefa) && Number.isFinite(pctPasta) && ' · '}
-                            {Number.isFinite(pctPasta) && <>Pasta {(LITROS_POR_DOCENA * pctPasta! / 100).toFixed(2)}L</>}
-                        </p>
-                    )}
-                    {(errors.porcentaje_clefa || errors.porcentaje_pasta) && (
-                        <p className="text-destructive text-xs">
-                            {errors.porcentaje_pasta?.message ?? errors.porcentaje_clefa?.message}
-                        </p>
-                    )}
-                </div>
-
                 <div className="flex items-center gap-2">
                     <Controller
                         name="activo"
@@ -297,6 +296,34 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                     />
                     <label htmlFor="activo" className="text-sm text-foreground cursor-pointer">Producto activo</label>
                 </div>
+
+                </TabsContent>
+
+                <TabsContent value="formula" className="space-y-3">
+                    <p className="text-2xs text-muted-foreground">
+                        Opcional. Cantidad fija de insumo consumida por docena de pares al pasar el pedido por cada etapa del Kanban.
+                        Dejar en blanco la etapa que no aplique a este producto.
+                    </p>
+                    {FORMULA_ETAPAS.map(etapa => (
+                        <div key={etapa.titulo} className="rounded-lg border border-border p-3 space-y-2">
+                            <label className="label">{etapa.titulo}</label>
+                            <div className="grid grid-cols-3 gap-3">
+                                {etapa.campos.map(({ name, label, unidad }) => (
+                                    <div key={name}>
+                                        <label className="label text-2xs">{label} ({unidad})</label>
+                                        <input type="number" step="0.01" min="0"
+                                               {...register(name, { valueAsNumber: true })}
+                                               placeholder="0"
+                                               className={`input ${errors[name] ? 'input-error' : ''}`} />
+                                        {errors[name] && <p className="text-destructive text-xs mt-1">{errors[name]?.message}</p>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </TabsContent>
+
+              </Tabs>
 
                 <div className="flex justify-end gap-2 pt-2 border-t border-border">
                     <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
