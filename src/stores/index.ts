@@ -1,12 +1,15 @@
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { type AxiosError } from 'axios';
-import { clienteApi, productoApi, pedidoApi, insumoApi, categoriaInsumoApi, dashboardApi, solicitudPedidoApi } from '@/api/services';
+import {
+    clienteApi, productoApi, pedidoApi, insumoApi, categoriaInsumoApi, unidadMedidaApi,
+    categoriaProductoApi, dashboardApi, solicitudPedidoApi,
+} from '@/api/services';
 import type {
     Cliente, CreateClienteDto, UpdateClienteDto,
-    Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
+    Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo, CategoriaProducto,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
-    Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo,
+    Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo, UnidadMedida,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity,
     TopProducto, VentaMes, PrediccionStock, ProximoPedido,
     CalificarPedidoDto, CalificacionPedido, MisPedidosFiltros,
@@ -75,16 +78,18 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
 
 // ─── Productos ────────────────────────────────────────────────────────────────
 interface ProductoState {
-    productos: Producto[]; alertas: Producto[]; isLoading: boolean;
+    productos: Producto[]; alertas: Producto[]; categoriasProducto: CategoriaProducto[]; isLoading: boolean;
     fetchAll:     () => Promise<void>;
     fetchAlertas: () => Promise<void>;
+    fetchCategoriasProducto: () => Promise<void>;
+    createCategoriaProducto: (nombre: string) => Promise<CategoriaProducto>;
     create:  (dto: CreateProductoDto, imagen?: File) => Promise<void>;
     update:  (id: number, dto: UpdateProductoDto, imagen?: File) => Promise<void>;
     remove:  (id: number) => Promise<void>;
 }
 
 export const useProductoStore = create<ProductoState>((set, get) => ({
-    productos: [], alertas: [], isLoading: false,
+    productos: [], alertas: [], categoriasProducto: [], isLoading: false,
 
     fetchAll: async () => {
         set({ isLoading: true });
@@ -94,6 +99,16 @@ export const useProductoStore = create<ProductoState>((set, get) => ({
     fetchAlertas: async () => {
         const { data } = await productoApi.getAlertas();
         set({ alertas: data });
+    },
+    fetchCategoriasProducto: async () => {
+        const { data } = await categoriaProductoApi.getAll();
+        set({ categoriasProducto: data });
+    },
+    createCategoriaProducto: async (nombre) => {
+        const { data } = await categoriaProductoApi.create(nombre);
+        set({ categoriasProducto: [...get().categoriasProducto, data] });
+        toast.success('Categoría de producto creada');
+        return data;
     },
     create: async (dto, imagen) => {
         const { data } = await productoApi.create(dto, imagen);
@@ -177,13 +192,17 @@ export const usePedidoStore = create<PedidoState>((set, get) => ({
 
 // ─── Insumos ──────────────────────────────────────────────────────────────────
 interface InsumoState {
-    insumos:      Insumo[];
-    alertas:      Insumo[];
-    categorias:   CategoriaInsumo[];
-    isLoading:    boolean;
-    fetchAll:       () => Promise<void>;
-    fetchAlertas:   () => Promise<void>;
-    fetchCategorias: () => Promise<void>;
+    insumos:        Insumo[];
+    alertas:        Insumo[];
+    categorias:     CategoriaInsumo[];
+    unidadesMedida: UnidadMedida[];
+    isLoading:      boolean;
+    fetchAll:            () => Promise<void>;
+    fetchAlertas:        () => Promise<void>;
+    fetchCategorias:     () => Promise<void>;
+    fetchUnidadesMedida: () => Promise<void>;
+    createCategoria:      (nombre: string) => Promise<CategoriaInsumo>;
+    createUnidadMedida:   (nombre: string) => Promise<UnidadMedida>;
     create:        (dto: CreateInsumoDto)              => Promise<Insumo>;
     update:        (id: number, dto: UpdateInsumoDto)  => Promise<Insumo>;
     uploadImagen:  (id: number, formData: FormData)    => Promise<Insumo>;
@@ -191,7 +210,7 @@ interface InsumoState {
 }
 
 export const useInsumoStore = create<InsumoState>((set, get) => ({
-    insumos: [], alertas: [], categorias: [], isLoading: false,
+    insumos: [], alertas: [], categorias: [], unidadesMedida: [], isLoading: false,
 
     fetchAll: async () => {
         set({ isLoading: true });
@@ -208,6 +227,22 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
     fetchCategorias: async () => {
         const { data } = await categoriaInsumoApi.getAll();
         set({ categorias: data });
+    },
+    fetchUnidadesMedida: async () => {
+        const { data } = await unidadMedidaApi.getAll();
+        set({ unidadesMedida: data });
+    },
+    createCategoria: async (nombre) => {
+        const { data } = await categoriaInsumoApi.create(nombre);
+        set({ categorias: [...get().categorias, data] });
+        toast.success('Categoría de insumo creada');
+        return data;
+    },
+    createUnidadMedida: async (nombre) => {
+        const { data } = await unidadMedidaApi.create(nombre);
+        set({ unidadesMedida: [...get().unidadesMedida, data] });
+        toast.success('Unidad de medida creada');
+        return data;
     },
     create: async (dto) => {
         const { data } = await insumoApi.create(dto);

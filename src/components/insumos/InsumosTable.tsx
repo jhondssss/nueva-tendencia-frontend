@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import type { Insumo } from '@/types';
 import {
-    resolveImageUrl, UNIDAD_LABEL, getCategoriaBadgeClass, ESTADO_INSUMO_BADGE, getEstadoInsumo, capitalize,
+    resolveImageUrl, getCategoriaBadgeClass, ESTADO_INSUMO_BADGE, getEstadoInsumo, capitalize,
 } from './insumoHelpers';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
 
@@ -102,7 +102,7 @@ export function InsumosTable({
                                     {insumo.stock}
                                 </TableCell>
                                 <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
-                                    {UNIDAD_LABEL[insumo.unidad_medida]}
+                                    {capitalize(insumo.unidad_medida.nombre)}
                                 </TableCell>
                                 <TableCell className="font-mono text-muted-foreground">{insumo.nivel_minimo}</TableCell>
                                 <TableCell className="font-mono text-primary">

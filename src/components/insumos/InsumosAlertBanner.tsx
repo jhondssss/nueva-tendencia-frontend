@@ -1,6 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
 import type { Insumo } from '@/types';
-import { UNIDAD_SHORT } from './insumoHelpers';
 
 export function InsumosAlertBanner({ alertas }: { alertas: Insumo[] }) {
     if (alertas.length === 0) return null;
@@ -25,7 +24,7 @@ export function InsumosAlertBanner({ alertas }: { alertas: Insumo[] }) {
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs
                                      bg-destructive/10 text-destructive border border-destructive/20">
                         <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse flex-shrink-0" />
-                        {a.nombre} — {a.stock} / {a.nivel_minimo} {UNIDAD_SHORT[a.unidad_medida]}
+                        {a.nombre} — {a.stock} / {a.nivel_minimo} {a.unidad_medida.nombre}
                     </span>
                 ))}
             </div>

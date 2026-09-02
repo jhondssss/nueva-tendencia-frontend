@@ -38,10 +38,10 @@ export default function InsumosView() {
     const [editPreview, setEditPreview] = useState<string | null>(null);
     const editFileRef = useRef<HTMLInputElement>(null);
 
-    const { insumos, alertas, categorias, isLoading, fetchAll, fetchAlertas, fetchCategorias, create, update, uploadImagen, remove } = useInsumoStore();
+    const { insumos, alertas, categorias, isLoading, fetchAll, fetchAlertas, fetchCategorias, fetchUnidadesMedida, create, update, uploadImagen, remove } = useInsumoStore();
     const { canCreate, canEdit, canDelete } = useRole();
 
-    useEffect(() => { fetchAll(); fetchAlertas(); fetchCategorias(); }, [fetchAll, fetchAlertas, fetchCategorias]);
+    useEffect(() => { fetchAll(); fetchAlertas(); fetchCategorias(); fetchUnidadesMedida(); }, [fetchAll, fetchAlertas, fetchCategorias, fetchUnidadesMedida]);
     useEffect(() => { document.title = 'Insumos | NT'; }, []);
 
     // ── Handlers de imagen ────────────────────────────────────────────────────
@@ -104,8 +104,8 @@ export default function InsumosView() {
         editForm.reset({
             nombre:          insumo.nombre,
             descripcion:     insumo.descripcion,
-            categoria_id:    insumo.categoria.id_categoria_insumo,
-            unidad_medida:   insumo.unidad_medida,
+            categoria_id:     insumo.categoria.id_categoria_insumo,
+            unidad_medida_id: insumo.unidad_medida.id_unidad_medida,
             stock:           Number(insumo.stock),
             nivel_minimo:    Number(insumo.nivel_minimo),
             precio_unitario: Number(insumo.precio_unitario),
