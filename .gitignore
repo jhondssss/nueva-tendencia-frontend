@@ -21,6 +21,9 @@ dist-ssr
 .claude/
 CLAUDE.md
 
+# Capturas de auditoría visual (locales, no se versionan)
+auditoria-visual-*/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

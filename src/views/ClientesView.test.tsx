@@ -121,7 +121,9 @@ describe('ClientesView — armado del DTO al guardar', () => {
         await user.click(screen.getByRole('button', { name: /nuevo cliente/i }));
         const modal = screen.getByText('Nuevo Cliente').closest('.modal-panel') as HTMLElement;
 
-        await user.selectOptions(screen.getByRole('combobox'), 'Persona natural');
+        // Tipo de cliente ahora es un CreatableSelect (combobox buscable), no un <select> nativo.
+        await user.click(screen.getByPlaceholderText('Selecciona un tipo'));
+        await user.click(await screen.findByRole('button', { name: 'Persona natural' }));
         await user.type(screen.getByPlaceholderText('Juan'), 'Ana');
         await user.type(screen.getByPlaceholderText('juan@ejemplo.com'), 'ana@correo.com');
         await user.type(screen.getByPlaceholderText('+591 70000000'), '70000003');
