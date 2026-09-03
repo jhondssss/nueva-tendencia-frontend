@@ -6,6 +6,7 @@ import { Loader2, CheckCircle2, PartyPopper } from 'lucide-react';
 import type { Resolver } from 'react-hook-form';
 import Modal from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
+import TipoCueroSelect from '@/components/shared/TipoCueroSelect';
 import TallaInfoBox, { CATEGORIA_INFO } from '@/components/pedidos/TallaInfoBox';
 import type { SolicitudPedido, AprobarSolicitudDto, Insumo } from '@/types';
 
@@ -113,19 +114,10 @@ export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, soli
                         </div>
                     </div>
 
-                    <div>
-                        <label className="label">Tipo de Cuero</label>
-                        <select className="select"
-                                value={watch('cuero_insumo_id') ?? ''}
-                                onChange={e => setValue('cuero_insumo_id', e.target.value ? Number(e.target.value) : undefined, { shouldValidate: true })}>
-                            <option value="">Sin especificar</option>
-                            {insumos.filter(i => i.categoria.nombre === 'cuero').map(i => (
-                                <option key={i.id_insumo} value={i.id_insumo}>
-                                    {i.nombre}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <TipoCueroSelect
+                        insumos={insumos}
+                        value={watch('cuero_insumo_id')}
+                        onChange={id => setValue('cuero_insumo_id', id, { shouldValidate: true })} />
 
                     <div className="flex justify-end gap-2 pt-2 border-t border-border">
                         <Button type="button" variant="outline" onClick={handleClose}>Cancelar</Button>

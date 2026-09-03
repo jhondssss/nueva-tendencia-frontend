@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeftRight, ArrowDownCircle, ArrowUpCircle, SlidersHorizontal, X, ExternalLink } from 'lucide-react';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
+import SearchableSelect from '@/components/shared/SearchableSelect';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -76,7 +77,7 @@ export default function KardexView() {
     const [page,     setPage]     = useState(1);
     const [pageSize, setPageSize] = useState<PageSize>(readPageSize);
 
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+    const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema) as Resolver<FormValues>,
         defaultValues: { insumoId: 0, tipo: 'entrada', cantidad: 1, motivo: '' },
     });
@@ -204,14 +205,12 @@ export default function KardexView() {
                             {/* Insumo */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-xs font-medium text-muted-foreground">Insumo</label>
-                                <select {...register('insumoId')} className="select">
-                                    <option value={0}>Selecciona un insumo</option>
-                                    {insumos.map(i => (
-                                        <option key={i.id_insumo} value={i.id_insumo}>
-                                            {i.nombre} — {i.categoria.nombre}
-                                        </option>
-                                    ))}
-                                </select>
+                                <SearchableSelect
+                                    className={errors.insumoId ? 'input-error' : ''}
+                                    value={watch('insumoId') || undefined}
+                                    onChange={id => setValue('insumoId', id ?? 0, { shouldValidate: true })}
+                                    options={insumos.map(i => ({ id: i.id_insumo, label: `${i.nombre} — ${i.categoria.nombre}` }))}
+                                    placeholder="Buscar insumo..." />
                                 {errors.insumoId && (
                                     <span className="text-destructive text-xs">{errors.insumoId.message}</span>
                                 )}

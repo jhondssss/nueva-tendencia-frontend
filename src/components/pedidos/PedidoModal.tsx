@@ -8,6 +8,8 @@ import type { Resolver } from 'react-hook-form';
 import Modal from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
 import StarRating from '@/components/shared/StarRating';
+import SearchableSelect from '@/components/shared/SearchableSelect';
+import TipoCueroSelect from '@/components/shared/TipoCueroSelect';
 import TallaInfoBox, { defaultTallas } from './TallaInfoBox';
 import type { TallaItem } from './TallaInfoBox';
 import type { Pedido, Cliente, Producto, Insumo, CategoriaCalzado, UnidadPedido, CreatePedidoDto } from '@/types';
@@ -156,47 +158,30 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
 
                 <div>
                     <label className="label">Cliente *</label>
-                    <select className={`select ${errors.cliente_id ? 'input-error' : ''}`}
-                            value={watch('cliente_id') ?? ''}
-                            onChange={e => setValue('cliente_id', Number(e.target.value), { shouldValidate: true })}>
-                        <option value="" disabled>Selecciona un cliente</option>
-                        {clientes.map(c => (
-                            <option key={c.id_cliente} value={c.id_cliente}>
-                                {c.nombre} {c.apellido}
-                            </option>
-                        ))}
-                    </select>
+                    <SearchableSelect
+                        className={errors.cliente_id ? 'input-error' : ''}
+                        value={watch('cliente_id') || undefined}
+                        onChange={id => setValue('cliente_id', id ?? 0, { shouldValidate: true })}
+                        options={clientes.map(c => ({ id: c.id_cliente, label: `${c.nombre} ${c.apellido}` }))}
+                        placeholder="Buscar cliente..." />
                     {errors.cliente_id && <p className="text-destructive text-xs mt-1">{errors.cliente_id.message}</p>}
                 </div>
 
                 <div>
                     <label className="label">Producto *</label>
-                    <select className={`select ${errors.producto_id ? 'input-error' : ''}`}
-                            value={watch('producto_id') ?? ''}
-                            onChange={e => setValue('producto_id', Number(e.target.value), { shouldValidate: true })}>
-                        <option value="" disabled>Selecciona un producto</option>
-                        {productos.map(p => (
-                            <option key={p.id_producto} value={p.id_producto}>
-                                {p.nombre_modelo} — {p.marca}
-                            </option>
-                        ))}
-                    </select>
+                    <SearchableSelect
+                        className={errors.producto_id ? 'input-error' : ''}
+                        value={watch('producto_id') || undefined}
+                        onChange={id => setValue('producto_id', id ?? 0, { shouldValidate: true })}
+                        options={productos.map(p => ({ id: p.id_producto, label: `${p.nombre_modelo} — ${p.marca}` }))}
+                        placeholder="Buscar producto..." />
                     {errors.producto_id && <p className="text-destructive text-xs mt-1">{errors.producto_id.message}</p>}
                 </div>
 
-                <div>
-                    <label className="label">Tipo de Cuero</label>
-                    <select className="select"
-                            value={watch('cuero_insumo_id') ?? ''}
-                            onChange={e => setValue('cuero_insumo_id', e.target.value ? Number(e.target.value) : undefined, { shouldValidate: true })}>
-                        <option value="">Sin especificar</option>
-                        {insumos.filter(i => i.categoria.nombre === 'cuero').map(i => (
-                            <option key={i.id_insumo} value={i.id_insumo}>
-                                {i.nombre}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <TipoCueroSelect
+                    insumos={insumos}
+                    value={watch('cuero_insumo_id')}
+                    onChange={id => setValue('cuero_insumo_id', id, { shouldValidate: true })} />
 
                 <div>
                     <label className="label">Categoría de tallas</label>
