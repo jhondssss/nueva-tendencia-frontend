@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Check, X, Loader2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, X, Loader2, ChevronDown } from 'lucide-react';
 
 export interface CreatableOption {
     id:     number;
@@ -26,27 +26,48 @@ interface CreatableSelectProps {
     disabled?:     boolean;
 }
 
-const NEW_VALUE = '__new__';
-
+/** Combobox con búsqueda client-side + creación inline de opciones nuevas. */
 export default function CreatableSelect({
     value, onChange, options, onCreate,
     placeholder, newLabel,
     nullOption, canCreateNew = true, error, disabled,
 }: CreatableSelectProps) {
+    const [open, setOpen]     = useState(false);
+    const [query, setQuery]   = useState('');
     const [adding, setAdding] = useState(false);
     const [nombre, setNombre] = useState('');
     const [saving, setSaving] = useState(false);
+    const containerRef        = useRef<HTMLDivElement>(null);
 
-    const selectValue = adding ? NEW_VALUE : (value == null ? '' : String(value));
+    const activeOptions = options.filter(o => o.activo);
+    const selected = value == null ? null : activeOptions.find(o => o.id === value);
 
-    const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const v = e.target.value;
-        if (v === NEW_VALUE) {
-            setNombre('');
-            setAdding(true);
-            return;
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setOpen(false);
+                setQuery('');
+            }
         }
-        onChange(v === '' ? null : Number(v));
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const filtered = query.trim()
+        ? activeOptions.filter(o => o.nombre.toLowerCase().includes(query.trim().toLowerCase()))
+        : activeOptions;
+
+    const handleSelect = (id: number | null) => {
+        onChange(id);
+        setOpen(false);
+        setQuery('');
+    };
+
+    const handleStartCreate = () => {
+        setNombre(query.trim());
+        setAdding(true);
+        setOpen(false);
+        setQuery('');
     };
 
     const handleCreate = async () => {
@@ -68,23 +89,59 @@ export default function CreatableSelect({
         setNombre('');
     };
 
+    const displayValue = open
+        ? query
+        : (selected ? selected.nombre : (value == null && nullOption ? nullOption.label : ''));
+
     return (
-        <div>
-            <select
-                value={selectValue}
-                onChange={handleSelectChange}
+        <div ref={containerRef} className="relative">
+            <input
+                type="text"
+                value={displayValue}
+                onChange={e => { setQuery(e.target.value); if (!open) setOpen(true); }}
+                onFocus={() => setOpen(true)}
+                placeholder={placeholder}
                 disabled={disabled || adding}
-                className={`select ${error ? 'input-error' : ''}`}
-            >
-                {nullOption
-                    ? <option value="">{nullOption.label}</option>
-                    : <option value="" disabled>{placeholder}</option>}
-                {options.filter(o => o.activo).map(o => (
-                    <option key={o.id} value={o.id}>{o.nombre}</option>
-                ))}
-                {canCreateNew && <option value={NEW_VALUE}>{newLabel}</option>}
-            </select>
+                className={`input pr-8 w-full ${error ? 'input-error' : ''}`}
+            />
+            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             {error && <p className="text-destructive text-xs mt-1">{error}</p>}
+
+            {open && !adding && (
+                <div className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-md border border-surface-border bg-white shadow-md">
+                    {nullOption && (
+                        <button
+                            type="button"
+                            onClick={() => handleSelect(null)}
+                            className={`w-full text-left px-3 py-1.5 text-sm hover:bg-crema transition-colors
+                                        ${value == null ? 'bg-dorado-100/40 text-cafe-900 font-medium' : 'text-cafe-800'}`}>
+                            {nullOption.label}
+                        </button>
+                    )}
+                    {filtered.length === 0 && !canCreateNew && (
+                        <p className="px-3 py-2 text-sm text-muted-foreground">Sin resultados</p>
+                    )}
+                    {filtered.map(o => (
+                        <button
+                            key={o.id}
+                            type="button"
+                            onClick={() => handleSelect(o.id)}
+                            className={`w-full text-left px-3 py-1.5 text-sm hover:bg-crema transition-colors
+                                        ${o.id === value ? 'bg-dorado-100/40 text-cafe-900 font-medium' : 'text-cafe-800'}`}>
+                            {o.nombre}
+                        </button>
+                    ))}
+                    {canCreateNew && (
+                        <button
+                            type="button"
+                            onClick={handleStartCreate}
+                            className="w-full text-left px-3 py-1.5 text-sm text-secondary hover:bg-secondary/10
+                                       transition-colors border-t border-surface-border">
+                            {query.trim() ? `${newLabel} "${query.trim()}"` : newLabel}
+                        </button>
+                    )}
+                </div>
+            )}
 
             {adding && (
                 <div className="flex items-center gap-2 mt-2">
