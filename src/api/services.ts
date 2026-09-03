@@ -14,7 +14,7 @@ import type {
     KardexMovimiento, CreateKardexDto,
     AuditoriaLog,
     ReporteDiarioResponse,
-    ReporteFiltrosPedidos, CategoriaCalzado,
+    ReporteFiltrosPedidos, ReporteFiltrosKardex, CategoriaCalzado,
     UsuarioAdmin, CreateUsuarioDto, UpdateUsuarioDto,
     PaginatedResponse,
     SearchResult,
@@ -189,6 +189,10 @@ export const reportesApi = {
     getDiario:     () => api.get<ReporteDiarioResponse>('/reportes/diario'),
     getPdfDiario:  () => api.get<Blob>('/reportes/pdf/diario',   { responseType: 'blob' }),
     getExcelDiario:() => api.get<Blob>('/reportes/excel/diario', { responseType: 'blob' }),
+    getPdfKardex:   (filtros?: ReporteFiltrosKardex) =>
+        api.get<Blob>('/reportes/pdf/kardex', { responseType: 'blob', params: filtros }),
+    getExcelKardex: (filtros?: ReporteFiltrosKardex) =>
+        api.get<Blob>('/reportes/excel/kardex', { responseType: 'blob', params: filtros }),
 };
 
 // ─── Auditoría ────────────────────────────────────────────────────────────────

@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { FileSpreadsheet, Users, Package, Loader2 } from 'lucide-react';
+import { FileSpreadsheet, Users, Package, ArrowLeftRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRole } from '@/hooks/useRole';
 import { reportesApi } from '@/api/services';
-import type { ReporteFiltrosPedidos, CategoriaCalzado } from '@/types';
+import type { ReporteFiltrosPedidos, ReporteFiltrosKardex, CategoriaCalzado } from '@/types';
 import FiltrosPedidosReporte from './FiltrosPedidosReporte';
 import FiltroCategoria from './FiltroCategoria';
-import { limpiarFiltrosPedidos } from './reporteFiltrosUtils';
+import FiltrosKardexReporte from './FiltrosKardexReporte';
+import { limpiarFiltrosPedidos, limpiarFiltrosKardex } from './reporteFiltrosUtils';
 
 interface ExcelCard {
     key:      string;
@@ -29,6 +30,7 @@ export default function ReportesExcel({ onDescargar, loading }: Props) {
 
     const [filtrosPedidos, setFiltrosPedidos] = useState<ReporteFiltrosPedidos>({});
     const [categoriaStock, setCategoriaStock] = useState<CategoriaCalzado | undefined>(undefined);
+    const [filtrosKardex, setFiltrosKardex]   = useState<ReporteFiltrosKardex>({});
 
     const CARDS: ExcelCard[] = [
         {
@@ -56,6 +58,15 @@ export default function ReportesExcel({ onDescargar, loading }: Props) {
             fetcher:  () => reportesApi.getExcelStock(categoriaStock),
             filename: 'stock.xlsx',
             extra: <FiltroCategoria value={categoriaStock} onChange={setCategoriaStock} />,
+        },
+        {
+            key:      'excel-kardex',
+            icon:     ArrowLeftRight,
+            title:    'Kardex',
+            desc:     'Exportación de movimientos de insumos con detalle',
+            fetcher:  () => reportesApi.getExcelKardex(limpiarFiltrosKardex(filtrosKardex)),
+            filename: 'kardex.xlsx',
+            extra: <FiltrosKardexReporte value={filtrosKardex} onChange={setFiltrosKardex} />,
         },
     ];
 
