@@ -132,6 +132,15 @@ export interface ReporteFiltrosPedidos {
     hasta?:     string;
 }
 
+export interface ReporteFiltrosKardex {
+    desde?:               string;
+    hasta?:               string;
+    insumo_id?:           number;
+    tipo?:                TipoMovimiento;
+    origen?:              OrigenMovimiento;
+    categoria_insumo_id?: number;
+}
+
 export interface TallaDetalle {
     id_talla?:      number;
     categoria:      CategoriaCalzado;

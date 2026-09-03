@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { TrendingUp, ClipboardList, AlertTriangle, Loader2, Download, Eye } from 'lucide-react';
+import { TrendingUp, ClipboardList, AlertTriangle, ArrowLeftRight, Loader2, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRole } from '@/hooks/useRole';
 import { reportesApi } from '@/api/services';
-import type { ReporteFiltrosPedidos, CategoriaCalzado } from '@/types';
+import type { ReporteFiltrosPedidos, ReporteFiltrosKardex, CategoriaCalzado } from '@/types';
 import FiltrosPedidosReporte from './FiltrosPedidosReporte';
 import FiltroCategoria from './FiltroCategoria';
-import { limpiarFiltrosPedidos } from './reporteFiltrosUtils';
+import FiltrosKardexReporte from './FiltrosKardexReporte';
+import { limpiarFiltrosPedidos, limpiarFiltrosKardex } from './reporteFiltrosUtils';
 
 interface PdfCard {
     key:      string;
@@ -33,6 +34,7 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
 
     const [filtrosPedidos, setFiltrosPedidos] = useState<ReporteFiltrosPedidos>({});
     const [categoriaStock, setCategoriaStock] = useState<CategoriaCalzado | undefined>(undefined);
+    const [filtrosKardex, setFiltrosKardex]   = useState<ReporteFiltrosKardex>({});
 
     const cards: PdfCard[] = [
         ...(isAdmin ? [{
@@ -65,6 +67,15 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
             fetcher:  () => reportesApi.getPdfStockCritico(categoriaStock),
             filename: () => 'stock-critico.pdf',
             extra: <FiltroCategoria value={categoriaStock} onChange={setCategoriaStock} />,
+        },
+        {
+            key:      'pdf-kardex',
+            icon:     ArrowLeftRight,
+            title:    'Kardex',
+            desc:     'Movimientos de insumos: entradas, salidas y ajustes',
+            fetcher:  () => reportesApi.getPdfKardex(limpiarFiltrosKardex(filtrosKardex)),
+            filename: () => 'kardex.pdf',
+            extra: <FiltrosKardexReporte value={filtrosKardex} onChange={setFiltrosKardex} />,
         },
     ];
 
