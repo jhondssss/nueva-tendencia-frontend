@@ -10,6 +10,7 @@ import { clsx } from 'clsx';
 import type { Producto } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
+import ProductImageZoom from '@/components/shared/ProductImageZoom';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
@@ -179,11 +180,11 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
                     onClick={() => setLightboxUrl(null)}>
-                    <img
+                    <ProductImageZoom
                         src={lightboxUrl}
                         alt="Vista previa"
-                        className="max-w-[90vw] max-h-[90vh] rounded-xl shadow-2xl object-contain"
-                        onClick={e => e.stopPropagation()}
+                        fit="contain"
+                        className="w-[92vw] max-w-xl h-[70vh] rounded-xl shadow-2xl bg-card"
                     />
                 </div>
             )}

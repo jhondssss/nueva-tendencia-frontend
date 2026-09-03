@@ -8,6 +8,7 @@ import { getImagenEstandarizada } from '@/utils/cloudinary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import LeatherSeal from '@/components/shared/LeatherSeal';
+import ProductImageZoom from '@/components/shared/ProductImageZoom';
 import StatusBadge from '@/components/shared/StatusBadge';
 import PedidoStepper from '@/components/shared/PedidoStepper';
 
@@ -153,10 +154,11 @@ export default function SeguimientoView() {
                         {/* Producto */}
                         <Card className="border-border/50 bg-card/50 backdrop-blur overflow-hidden">
                             {pedido.imagen ? (
-                                <img
+                                <ProductImageZoom
                                     src={getImagenEstandarizada(pedido.imagen, 600)!}
                                     alt={pedido.producto}
-                                    className="w-full h-48 object-contain bg-muted"
+                                    fit="contain"
+                                    className="w-full h-48 bg-muted"
                                 />
                             ) : (
                                 <div className="w-full h-48 bg-gradient-to-br from-muted to-accent flex flex-col items-center justify-center gap-3">

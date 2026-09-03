@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
 import Modal from '@/components/shared/Modal';
-import ZoomImage from '@/components/shared/ZoomImage';
+import ProductImageZoom from '@/components/shared/ProductImageZoom';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
 import TallaInfoBox, { defaultTallas } from '@/components/pedidos/TallaInfoBox';
@@ -205,7 +205,17 @@ export default function CatalogoView() {
             <Modal isOpen={!!selected} onClose={handleClose} title={selected?.nombre ?? ''} size="lg">
                 {selected && (
                     <div className="space-y-4">
-                        <ZoomImage src={selected.imagen} alt={selected.nombre} />
+                        {selected.imagen ? (
+                            <ProductImageZoom
+                                src={getImagenEstandarizada(selected.imagen, 800)!}
+                                alt={selected.nombre}
+                                className="h-72 w-full rounded-lg bg-muted"
+                            />
+                        ) : (
+                            <div className="h-72 w-full rounded-lg bg-muted flex items-center justify-center">
+                                <ShoppingBag className="w-12 h-12 text-muted-foreground" />
+                            </div>
+                        )}
                         <div className="flex items-center justify-between">
                             <span className={disponibilidadBadgeClass(selected.disponible)}>
                                 {selected.disponible ? 'Disponible' : 'Sin stock'}
