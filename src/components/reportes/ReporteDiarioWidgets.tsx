@@ -252,8 +252,9 @@ export function AlertasList({ items, label }: { items: (ReporteDiarioProductoRef
                 const esProducto = 'id_producto' in item;
                 const key      = esProducto ? item.id_producto : item.id_insumo;
                 const nombre   = esProducto ? item.nombre_modelo : item.nombre;
-                const stock    = item.stock;
-                const minimo   = item.nivel_minimo;
+                // Insumo.stock/nivel_minimo son `decimal` en el backend y llegan como string
+                const stock    = Number(item.stock);
+                const minimo   = Number(item.nivel_minimo);
                 const critico  = stock <= minimo;
                 return (
                 <li
