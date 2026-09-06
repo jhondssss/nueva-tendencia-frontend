@@ -38,7 +38,7 @@ export default function InsumosView() {
     const [editPreview, setEditPreview] = useState<string | null>(null);
     const editFileRef = useRef<HTMLInputElement>(null);
 
-    const { insumos, alertas, categorias, isLoading, fetchAll, fetchAlertas, fetchCategorias, fetchUnidadesMedida, create, update, uploadImagen, remove } = useInsumoStore();
+    const { insumos, alertas, categorias, isLoading, error, fetchAll, fetchAlertas, fetchCategorias, fetchUnidadesMedida, create, update, uploadImagen, remove } = useInsumoStore();
     const { canCreate, canEdit, canDelete } = useRole();
 
     useEffect(() => { fetchAll(); fetchAlertas(); fetchCategorias(); fetchUnidadesMedida(); }, [fetchAll, fetchAlertas, fetchCategorias, fetchUnidadesMedida]);
@@ -194,6 +194,8 @@ export default function InsumosView() {
                 <InsumosTable
                     insumos={pagination.pageData}
                     isLoading={isLoading}
+                    error={error}
+                    onRetry={() => fetchAll()}
                     canEdit={canEdit}
                     canDelete={canDelete}
                     onImageClick={setLightboxUrl}

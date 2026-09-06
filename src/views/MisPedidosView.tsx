@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, ChevronRight, Calendar, X } from 'lucide-react';
+import { Package, ChevronRight, Calendar, X, AlertTriangle } from 'lucide-react';
 import { useMisPedidosStore } from '@/stores/index';
 import { formatFechaLarga } from '@/utils/dates';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
@@ -33,6 +33,7 @@ export default function MisPedidosView() {
 
     const pedidos   = useMisPedidosStore(s => s.pedidos);
     const isLoading = useMisPedidosStore(s => s.isLoading);
+    const error     = useMisPedidosStore(s => s.error);
     const fetchAll  = useMisPedidosStore(s => s.fetchAll);
 
     const [desde, setDesde]   = useState('');
@@ -43,13 +44,16 @@ export default function MisPedidosView() {
 
     const hayFiltros = !!desde || !!hasta || estado !== 'todos';
 
+    const refetch = () => fetchAll({
+        desde:  desde || undefined,
+        hasta:  hasta || undefined,
+        estado: estado === 'todos' ? undefined : estado,
+    });
+
     useEffect(() => {
-        fetchAll({
-            desde:  desde || undefined,
-            hasta:  hasta || undefined,
-            estado: estado === 'todos' ? undefined : estado,
-        });
+        refetch();
         setPage(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchAll, desde, hasta, estado]);
 
     const limpiarFiltros = () => { setDesde(''); setHasta(''); setEstado('todos'); };
@@ -111,7 +115,17 @@ export default function MisPedidosView() {
                 </div>
             )}
 
-            {!isLoading && pedidos.length === 0 && hayFiltros && (
+            {!isLoading && pedidos.length === 0 && error && (
+                <EmptyState
+                    icon={AlertTriangle}
+                    title="No se pudo cargar la información"
+                    description="Ocurrió un error al obtener tus pedidos. Intentá de nuevo."
+                    actionLabel="Reintentar"
+                    onAction={refetch}
+                />
+            )}
+
+            {!isLoading && pedidos.length === 0 && !error && hayFiltros && (
                 <EmptyState
                     icon={Package}
                     title="Sin resultados"
@@ -119,7 +133,7 @@ export default function MisPedidosView() {
                 />
             )}
 
-            {!isLoading && pedidos.length === 0 && !hayFiltros && (
+            {!isLoading && pedidos.length === 0 && !error && !hayFiltros && (
                 <EmptyState
                     icon={Package}
                     title="Aún no tienes pedidos"

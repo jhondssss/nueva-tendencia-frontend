@@ -4,7 +4,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Legend,
 } from 'recharts';
 import { isToday, isThisWeek, isThisMonth } from 'date-fns';
-import { Clock, Scissors, Hammer, Layers, Package, CheckCircle, PieChart as PieChartIcon, GitBranch, Inbox } from 'lucide-react';
+import { Clock, Scissors, Hammer, Layers, Package, CheckCircle, PieChart as PieChartIcon, GitBranch, Inbox, AlertTriangle } from 'lucide-react';
 import { useDashboardStore, usePedidoStore, useInsumoStore } from '@/stores/index';
 import { useRole } from '@/hooks/useRole';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -143,7 +143,7 @@ function filtrarPorRango<T extends { fecha: string }>(items: T[], filtro: Filtro
 
 export default function DashboardView() {
     const { kpis, ordersStatus, productionFunnel: produccionPorEtapa, recentActivity,
-            topProductos, ventasPorMes, prediccionStock, proximosAEntregar, isLoading, fetchAll } = useDashboardStore();
+            topProductos, ventasPorMes, prediccionStock, proximosAEntregar, isLoading, error, fetchAll } = useDashboardStore();
 
     const { isAdmin, isOperario } = useRole();
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -203,6 +203,16 @@ export default function DashboardView() {
                     Sistema activo
                 </div>
             </div>
+
+            {error && !isLoading && (
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                        <AlertTriangle size={16} className="flex-shrink-0" />
+                        <span>No se pudo cargar la información del dashboard. Intentá de nuevo.</span>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => fetchAll()}>Reintentar</Button>
+                </div>
+            )}
 
             <KpiCards kpis={kpis} isLoading={isLoading} />
 

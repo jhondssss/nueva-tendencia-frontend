@@ -1,4 +1,4 @@
-import { FlaskConical, Trash2, Edit2 } from 'lucide-react';
+import { FlaskConical, Trash2, Edit2, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { TableSkeleton } from '@/components/shared/Skeleton';
 import EmptyState from '@/components/shared/EmptyState';
@@ -12,10 +12,12 @@ import {
 import { getImagenEstandarizada } from '@/utils/cloudinary';
 
 export function InsumosTable({
-    insumos, isLoading, canEdit, canDelete, onImageClick, onEdit, onDelete,
+    insumos, isLoading, error, onRetry, canEdit, canDelete, onImageClick, onEdit, onDelete,
 }: {
     insumos: Insumo[];
     isLoading: boolean;
+    error?: string | null;
+    onRetry?: () => void;
     canEdit: boolean;
     canDelete: boolean;
     onImageClick: (url: string | null) => void;
@@ -42,6 +44,18 @@ export function InsumosTable({
                 {isLoading ? (
                     <TableRow className="hover:bg-transparent">
                         <TableCell colSpan={10}><TableSkeleton rows={5} /></TableCell>
+                    </TableRow>
+                ) : error && insumos.length === 0 ? (
+                    <TableRow className="hover:bg-transparent">
+                        <TableCell colSpan={10}>
+                            <EmptyState
+                                icon={AlertTriangle}
+                                title="No se pudo cargar la información"
+                                description="Ocurrió un error al obtener los insumos. Intentá de nuevo."
+                                actionLabel={onRetry ? 'Reintentar' : undefined}
+                                onAction={onRetry}
+                            />
+                        </TableCell>
                     </TableRow>
                 ) : insumos.length === 0 ? (
                     <TableRow className="hover:bg-transparent">

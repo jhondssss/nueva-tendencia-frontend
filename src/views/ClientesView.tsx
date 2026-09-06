@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { isAxiosError } from 'axios';
 import toast from 'react-hot-toast';
-import { Plus, Search, Loader2, Trash2, Edit2, User, Building2, Users, KeyRound, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, Loader2, Trash2, Edit2, User, Building2, Users, KeyRound, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useClienteStore } from '@/stores/index';
 import { clienteApi } from '@/api/services';
 import Modal from '@/components/shared/Modal';
@@ -59,7 +59,7 @@ export default function ClientesView() {
     const [search, setSearch]             = useState('');
 
     const {
-        clientes, tiposCliente, isLoading,
+        clientes, tiposCliente, isLoading, error,
         fetchAll, fetchTiposCliente, createTipoCliente, create, update, remove,
     } = useClienteStore();
     const { canCreate, canEdit, canDelete } = useRole();
@@ -178,6 +178,16 @@ export default function ClientesView() {
                         {isLoading ? (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell colSpan={8}><TableSkeleton rows={5} /></TableCell>
+                            </TableRow>
+                        ) : error && pagination.pageData.length === 0 ? (
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={8}>
+                                    <EmptyState icon={AlertTriangle}
+                                                title="No se pudo cargar la información"
+                                                description="Ocurrió un error al obtener los clientes. Intentá de nuevo."
+                                                actionLabel="Reintentar"
+                                                onAction={() => fetchAll()} />
+                                </TableCell>
                             </TableRow>
                         ) : pagination.pageData.length === 0 ? (
                             <TableRow className="hover:bg-transparent">

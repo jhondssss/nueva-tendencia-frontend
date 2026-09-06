@@ -17,7 +17,7 @@ export default function ProductosView() {
     const [showAlertas, setShowAlertas]   = useState(false);
     const [filterActivo, setFilterActivo] = useState<'todos' | 'activos' | 'inactivos'>('todos');
 
-    const { productos, alertas, isLoading, fetchAll, fetchAlertas, fetchCategoriasProducto, create, update, remove } = useProductoStore();
+    const { productos, alertas, isLoading, error, fetchAll, fetchAlertas, fetchCategoriasProducto, create, update, remove } = useProductoStore();
     const { canCreate, canEdit, canDelete } = useRole();
 
     useEffect(() => { fetchAll(); fetchAlertas(); fetchCategoriasProducto(); }, [fetchAll, fetchAlertas, fetchCategoriasProducto]);
@@ -106,6 +106,8 @@ export default function ProductosView() {
                 canEdit={canEdit}
                 canDelete={canDelete}
                 isLoading={isLoading}
+                error={error}
+                onRetry={() => fetchAll()}
                 pagination={pagination}
                 total={filtered.length}
             />

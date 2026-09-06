@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Star, X } from 'lucide-react';
+import { Star, X, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { calificacionApi } from '@/api/services';
 import type { CalificacionAdmin } from '@/types';
@@ -31,6 +31,7 @@ function formatFecha(iso: string): string {
 export default function CalificacionesView() {
     const [calificaciones, setCalificaciones] = useState<CalificacionAdmin[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
 
     const [puntuacion, setPuntuacion] = useState<string>('todas');
     const [desde, setDesde] = useState('');
@@ -42,16 +43,22 @@ export default function CalificacionesView() {
 
     useEffect(() => { document.title = 'Calificaciones | NT'; }, []);
 
-    useEffect(() => {
+    const loadCalificaciones = () => {
         setLoading(true);
+        setLoadError(false);
         calificacionApi.getAll({
             puntuacion: puntuacion === 'todas' ? undefined : Number(puntuacion),
             desde: desde || undefined,
             hasta: hasta || undefined,
         })
             .then(res => setCalificaciones(res.data))
-            .catch(() => toast.error('Error al cargar las calificaciones'))
+            .catch(() => { toast.error('Error al cargar las calificaciones'); setLoadError(true); })
             .finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        loadCalificaciones();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [puntuacion, desde, hasta]);
 
     const totalPages = Math.max(1, Math.ceil(calificaciones.length / pageSize));
@@ -147,6 +154,18 @@ export default function CalificacionesView() {
                             {loading ? (
                                 <TableRow className="hover:bg-transparent">
                                     <TableCell colSpan={5}><TableSkeleton rows={8} /></TableCell>
+                                </TableRow>
+                            ) : loadError && paginated.length === 0 ? (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={5}>
+                                        <EmptyState
+                                            icon={AlertTriangle}
+                                            title="No se pudo cargar la información"
+                                            description="Ocurrió un error al obtener las calificaciones. Intentá de nuevo."
+                                            actionLabel="Reintentar"
+                                            onAction={loadCalificaciones}
+                                        />
+                                    </TableCell>
                                 </TableRow>
                             ) : paginated.length === 0 ? (
                                 <TableRow className="hover:bg-transparent">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, Loader2 } from 'lucide-react';
+import { ShoppingBag, Loader2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCatalogoStore, useMisSolicitudesStore } from '@/stores/index';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,6 +44,7 @@ export default function CatalogoView() {
 
     const productos  = useCatalogoStore(s => s.productos);
     const isLoading  = useCatalogoStore(s => s.isLoading);
+    const error      = useCatalogoStore(s => s.error);
     const fetchAll   = useCatalogoStore(s => s.fetchAll);
     const crearSolicitud = useMisSolicitudesStore(s => s.create);
 
@@ -135,7 +136,17 @@ export default function CatalogoView() {
                 </div>
             )}
 
-            {!isLoading && productos.length === 0 && (
+            {!isLoading && productos.length === 0 && error && (
+                <EmptyState
+                    icon={AlertTriangle}
+                    title="No se pudo cargar la información"
+                    description="Ocurrió un error al obtener el catálogo. Intentá de nuevo."
+                    actionLabel="Reintentar"
+                    onAction={() => fetchAll()}
+                />
+            )}
+
+            {!isLoading && productos.length === 0 && !error && (
                 <EmptyState
                     icon={ShoppingBag}
                     title="Aún no hay productos en el catálogo"

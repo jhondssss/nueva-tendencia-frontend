@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, Package, Calendar, XCircle, ArrowRight } from 'lucide-react';
+import { ClipboardList, Package, Calendar, XCircle, ArrowRight, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useMisSolicitudesStore } from '@/stores/index';
 import { Card, CardContent } from '@/components/ui/card';
@@ -98,6 +98,7 @@ function SolicitudCard({ solicitud }: { solicitud: SolicitudPedido }) {
 export default function MisSolicitudesView() {
     const solicitudes = useMisSolicitudesStore(s => s.solicitudes);
     const isLoading    = useMisSolicitudesStore(s => s.isLoading);
+    const error        = useMisSolicitudesStore(s => s.error);
     const fetchAll     = useMisSolicitudesStore(s => s.fetchAll);
 
     const [page, setPage]         = useState(1);
@@ -136,7 +137,17 @@ export default function MisSolicitudesView() {
                 </div>
             )}
 
-            {!isLoading && solicitudes.length === 0 && (
+            {!isLoading && solicitudes.length === 0 && error && (
+                <EmptyState
+                    icon={AlertTriangle}
+                    title="No se pudo cargar la información"
+                    description="Ocurrió un error al obtener tus solicitudes. Intentá de nuevo."
+                    actionLabel="Reintentar"
+                    onAction={() => fetchAll()}
+                />
+            )}
+
+            {!isLoading && solicitudes.length === 0 && !error && (
                 <EmptyState
                     icon={ClipboardList}
                     title="Aún no tienes solicitudes"

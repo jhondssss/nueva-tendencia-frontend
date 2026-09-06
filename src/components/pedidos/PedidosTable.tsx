@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Edit2, Trash2, ClipboardList, ChevronDown, Link2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Edit2, Trash2, ClipboardList, ChevronDown, Link2, ArrowRight, CheckCircle2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StatusBadge from '@/components/shared/StatusBadge';
 import Pagination from '@/components/shared/Pagination';
@@ -73,6 +73,8 @@ interface Props {
     canDelete:   boolean;
     hideTotals?: boolean;
     isLoading:   boolean;
+    error?:      string | null;
+    onRetry?:    () => void;
     pagination:  PaginationResult<Pedido>;
     total:       number;
 }
@@ -85,7 +87,7 @@ function copiarLink(token: string) {
         .catch(() => toast.error('No se pudo copiar el link'));
 }
 
-export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDelete, hideTotals = false, isLoading, pagination, total }: Props) {
+export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDelete, hideTotals = false, isLoading, error, onRetry, pagination, total }: Props) {
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
     return (
@@ -103,6 +105,16 @@ export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDe
                     {isLoading ? (
                         <TableRow className="hover:bg-transparent">
                             <TableCell colSpan={hideTotals ? 9 : 10}><PageLoader /></TableCell>
+                        </TableRow>
+                    ) : error && pagination.pageData.length === 0 ? (
+                        <TableRow className="hover:bg-transparent">
+                            <TableCell colSpan={hideTotals ? 9 : 10}>
+                                <EmptyState icon={AlertTriangle}
+                                            title="No se pudo cargar la información"
+                                            description="Ocurrió un error al obtener los pedidos. Intentá de nuevo."
+                                            actionLabel={onRetry ? 'Reintentar' : undefined}
+                                            onAction={onRetry} />
+                            </TableCell>
                         </TableRow>
                     ) : pagination.pageData.length === 0 ? (
                         <TableRow className="hover:bg-transparent">

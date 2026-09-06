@@ -16,7 +16,7 @@ import {
 
 export default function ReporteDiarioView() {
     const { isAdmin } = useRole();
-    const { data, loading, cargar, loadingPdf, loadingXls, descargarPdf, descargarExcel } = useReporteDiario();
+    const { data, loading, error, cargar, loadingPdf, loadingXls, descargarPdf, descargarExcel } = useReporteDiario();
     const [tabPedidos, setTabPedidos] = useState<'creados' | 'movidos'>('creados');
 
     useEffect(() => {
@@ -48,6 +48,20 @@ export default function ReporteDiarioView() {
                 </div>
                 <TableSkeleton rows={6} />
                 <TableSkeleton rows={4} />
+            </div>
+        );
+    }
+
+    if (error && !data) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <EmptyState
+                    icon={AlertTriangle}
+                    title="No se pudo cargar la información"
+                    description="Ocurrió un error al obtener el reporte diario. Intentá de nuevo."
+                    actionLabel="Reintentar"
+                    onAction={() => void cargar()}
+                />
             </div>
         );
     }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeftRight, ArrowDownCircle, ArrowUpCircle, SlidersHorizontal, X, ExternalLink } from 'lucide-react';
+import { ArrowLeftRight, ArrowDownCircle, ArrowUpCircle, SlidersHorizontal, X, ExternalLink, AlertTriangle } from 'lucide-react';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
 import SearchableSelect from '@/components/shared/SearchableSelect';
@@ -63,6 +63,7 @@ export default function KardexView() {
     const [movimientos, setMovimientos] = useState<KardexMovimiento[]>([]);
     const [insumos,     setInsumos]     = useState<Insumo[]>([]);
     const [loadingData, setLoadingData] = useState(true);
+    const [loadError,   setLoadError]   = useState(false);
     const [submitting,  setSubmitting]  = useState(false);
 
     // text filter
@@ -84,6 +85,7 @@ export default function KardexView() {
 
     const loadAll = async () => {
         setLoadingData(true);
+        setLoadError(false);
         try {
             const [movFirst, insRes] = await Promise.all([
                 kardexApi.getAll(1),
@@ -103,6 +105,7 @@ export default function KardexView() {
             setInsumos(insRes.data);
         } catch {
             toast.error('Error al cargar datos');
+            setLoadError(true);
         } finally {
             setLoadingData(false);
         }
@@ -367,6 +370,18 @@ export default function KardexView() {
                             {loadingData ? (
                                 <TableRow className="hover:bg-transparent">
                                     <TableCell colSpan={7}><TableSkeleton rows={6} /></TableCell>
+                                </TableRow>
+                            ) : loadError && paginated.length === 0 ? (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={7}>
+                                        <EmptyState
+                                            icon={AlertTriangle}
+                                            title="No se pudo cargar la información"
+                                            description="Ocurrió un error al obtener el kardex. Intentá de nuevo."
+                                            actionLabel="Reintentar"
+                                            onAction={() => void loadAll()}
+                                        />
+                                    </TableCell>
                                 </TableRow>
                             ) : paginated.length === 0 ? (
                                 <TableRow className="hover:bg-transparent">

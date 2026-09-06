@@ -42,11 +42,13 @@ interface Props {
     canEdit:    boolean;
     canDelete:  boolean;
     isLoading:  boolean;
+    error?:     string | null;
+    onRetry?:   () => void;
     pagination: PaginationResult<Producto>;
     total:      number;
 }
 
-export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, isLoading, pagination, total }: Props) {
+export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, isLoading, error, onRetry, pagination, total }: Props) {
     const [hoverImg, setHoverImg]     = useState<{ url: string; top: number; left: number } | null>(null);
     const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
@@ -66,6 +68,16 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                         {isLoading ? (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell colSpan={10}><TableSkeleton rows={5} /></TableCell>
+                            </TableRow>
+                        ) : error && pagination.pageData.length === 0 ? (
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={10}>
+                                    <EmptyState icon={AlertTriangle}
+                                                title="No se pudo cargar la información"
+                                                description="Ocurrió un error al obtener los productos. Intentá de nuevo."
+                                                actionLabel={onRetry ? 'Reintentar' : undefined}
+                                                onAction={onRetry} />
+                                </TableCell>
                             </TableRow>
                         ) : pagination.pageData.length === 0 ? (
                             <TableRow className="hover:bg-transparent">

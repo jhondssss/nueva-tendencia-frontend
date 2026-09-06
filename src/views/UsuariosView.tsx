@@ -6,7 +6,7 @@ import { isAxiosError } from 'axios';
 import {
     Plus, Search, Loader2, Trash2, Edit2, Users,
     Eye, EyeOff, ShieldCheck, User as UserIcon,
-    ToggleLeft, ToggleRight,
+    ToggleLeft, ToggleRight, AlertTriangle,
 } from 'lucide-react';
 import Modal from '@/components/shared/Modal';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
@@ -36,6 +36,7 @@ export default function UsuariosView() {
 
     const [usuarios, setUsuarios]         = useState<UsuarioAdmin[]>([]);
     const [isLoading, setIsLoading]       = useState(true);
+    const [loadError, setLoadError]       = useState(false);
     const [modalOpen, setModalOpen]       = useState(false);
     const [editTarget, setEditTarget]     = useState<UsuarioAdmin | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<UsuarioAdmin | null>(null);
@@ -50,10 +51,12 @@ export default function UsuariosView() {
     const load = async () => {
         try {
             setIsLoading(true);
+            setLoadError(false);
             const res = await usuariosApi.getAll();
             setUsuarios(res.data.data);
         } catch {
             toast.error('Error al cargar usuarios');
+            setLoadError(true);
         } finally {
             setIsLoading(false);
         }
@@ -211,6 +214,16 @@ export default function UsuariosView() {
                         {isLoading ? (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell colSpan={5}><TableSkeleton rows={5} /></TableCell>
+                            </TableRow>
+                        ) : loadError && pagination.pageData.length === 0 ? (
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={5}>
+                                    <EmptyState icon={AlertTriangle}
+                                                title="No se pudo cargar la información"
+                                                description="Ocurrió un error al obtener los usuarios. Intentá de nuevo."
+                                                actionLabel="Reintentar"
+                                                onAction={load} />
+                                </TableCell>
                             </TableRow>
                         ) : pagination.pageData.length === 0 ? (
                             <TableRow className="hover:bg-transparent">

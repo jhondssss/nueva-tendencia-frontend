@@ -46,7 +46,7 @@ export default function PedidosView() {
     const [filterMesPedido,  setFilterMesPedido]  = useState<number>(0);
     const [filterCategoria,  setFilterCategoria]  = useState('');
 
-    const { pedidos, isLoading, fetchAll, create, update, mover, remove } = usePedidoStore();
+    const { pedidos, isLoading, error, fetchAll, create, update, mover, remove } = usePedidoStore();
     const { canCreate, canEdit, canDelete, isOperario, isAdmin } = useRole();
     const { clientes, fetchAll: fetchClientes }   = useClienteStore();
     const { productos, fetchAll: fetchProductos } = useProductoStore();
@@ -267,6 +267,8 @@ export default function PedidosView() {
                 canDelete={canDelete}
                 hideTotals={isOperario}
                 isLoading={isLoading}
+                error={error}
+                onRetry={() => fetchAll()}
                 pagination={pagination}
                 total={filtered.length}
             />

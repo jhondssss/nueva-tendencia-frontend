@@ -22,11 +22,12 @@ function today(): string {
 export function useReporteDiario() {
     const [data, setData]           = useState<ReporteDiario | null>(null);
     const [loading, setLoading]     = useState(true);
+    const [error, setError]         = useState(false);
     const [loadingPdf, setLoadingPdf] = useState(false);
     const [loadingXls, setLoadingXls] = useState(false);
 
     const cargar = useCallback(async (silencioso = false) => {
-        if (!silencioso) setLoading(true);
+        if (!silencioso) { setLoading(true); setError(false); }
         try {
             const res = await reportesApi.getDiario();
             const d = res.data; // backend devuelve las entidades crudas, sin objeto "resumen" anidado
@@ -54,7 +55,7 @@ export function useReporteDiario() {
                 actividad: d.accionesAuditoria ?? [],
             });
         } catch {
-            if (!silencioso) toast.error('Error al cargar el reporte diario');
+            if (!silencioso) { toast.error('Error al cargar el reporte diario'); setError(true); }
         } finally {
             if (!silencioso) setLoading(false);
         }
@@ -92,5 +93,5 @@ export function useReporteDiario() {
         }
     };
 
-    return { data, loading, cargar, loadingPdf, loadingXls, descargarPdf, descargarExcel };
+    return { data, loading, error, cargar, loadingPdf, loadingXls, descargarPdf, descargarExcel };
 }

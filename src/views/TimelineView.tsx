@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CalendarX, Check, Workflow } from 'lucide-react';
+import { AlertTriangle, CalendarX, Check, Workflow } from 'lucide-react';
 import { usePedidoStore } from '@/stores/index';
 import EmptyState from '@/components/shared/EmptyState';
 import { TimelineCardSkeleton } from '@/components/shared/Skeleton';
@@ -109,46 +109,48 @@ function PedidoCard({ p }: { p: Pedido }) {
              * — Línea de fondo: left-[10%] right-[10%]   (de centro col-0 a col-4)
              * — Línea progreso: left-[10%] width=(idx*20)%
              */}
-            <div className="relative pt-1">
-                {/* Línea de fondo */}
-                <div className="absolute top-[14px] left-[10%] right-[10%] h-px bg-border" />
+            <div className="pt-1 -mx-1 px-1 overflow-x-auto sm:overflow-visible">
+                <div className="relative min-w-[440px] sm:min-w-0">
+                    {/* Línea de fondo */}
+                    <div className="absolute top-[14px] left-[10%] right-[10%] h-px bg-border" />
 
-                {/* Línea de progreso */}
-                {currentIdx > 0 && (
-                    <div
-                        className="absolute top-[14px] left-[10%] h-px bg-muted-foreground/30 transition-all duration-500"
-                        style={{ width: `${(currentIdx / (ESTADOS.length - 1)) * 80}%` }}
-                    />
-                )}
+                    {/* Línea de progreso */}
+                    {currentIdx > 0 && (
+                        <div
+                            className="absolute top-[14px] left-[10%] h-px bg-muted-foreground/30 transition-all duration-500"
+                            style={{ width: `${(currentIdx / (ESTADOS.length - 1)) * 80}%` }}
+                        />
+                    )}
 
-                {/* Pasos */}
-                <div className="grid grid-cols-6 relative z-10">
-                    {ESTADOS.map((estado, i) => {
-                        const done   = i < currentIdx;
-                        const active = i === currentIdx;
-                        const color  = ESTADO_COLOR[estado];
-                        return (
-                            <div key={estado} className="flex flex-col items-center gap-1.5">
-                                <div className={clsx(
-                                    'rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200',
-                                    done   && 'w-5 h-5 bg-transparent border-2 border-muted-foreground/50',
-                                    active && clsx('w-7 h-7 text-white', color.dot),
-                                    !done && !active && 'w-5 h-5 bg-muted border-2 border-border',
-                                )}>
-                                    {done && <Check size={12} strokeWidth={3} className="text-muted-foreground" />}
-                                    {active && <span className="w-2 h-2 rounded-full bg-white" />}
+                    {/* Pasos */}
+                    <div className="grid grid-cols-6 relative z-10">
+                        {ESTADOS.map((estado, i) => {
+                            const done   = i < currentIdx;
+                            const active = i === currentIdx;
+                            const color  = ESTADO_COLOR[estado];
+                            return (
+                                <div key={estado} className="flex flex-col items-center gap-1.5">
+                                    <div className={clsx(
+                                        'rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200',
+                                        done   && 'w-5 h-5 bg-transparent border-2 border-muted-foreground/50',
+                                        active && clsx('w-7 h-7 text-white', color.dot),
+                                        !done && !active && 'w-5 h-5 bg-muted border-2 border-border',
+                                    )}>
+                                        {done && <Check size={12} strokeWidth={3} className="text-muted-foreground" />}
+                                        {active && <span className="w-2 h-2 rounded-full bg-white" />}
+                                    </div>
+                                    <span className={clsx(
+                                        'text-2xs text-center leading-tight',
+                                        done            && 'text-muted-foreground/70',
+                                        active          && clsx('font-semibold', color.text),
+                                        !done && !active && 'text-muted-foreground/50',
+                                    )}>
+                                        {estado}
+                                    </span>
                                 </div>
-                                <span className={clsx(
-                                    'text-2xs text-center leading-tight',
-                                    done            && 'text-muted-foreground/70',
-                                    active          && clsx('font-semibold', color.text),
-                                    !done && !active && 'text-muted-foreground/50',
-                                )}>
-                                    {estado}
-                                </span>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </div>
@@ -161,7 +163,7 @@ export default function TimelineView() {
     const [filterEstado, setFilterEstado] = useState<EstadoPedido | ''>('');
     const [filterAnioTimeline, setFilterAnioTimeline] = useState<number>(0);
     const [filterMesTimeline,  setFilterMesTimeline]  = useState<number>(0);
-    const { pedidos, isLoading, fetchAll } = usePedidoStore();
+    const { pedidos, isLoading, error, fetchAll } = usePedidoStore();
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
     useEffect(() => { document.title = 'Timeline | NT'; }, []);
@@ -255,6 +257,16 @@ export default function TimelineView() {
             {isLoading ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {Array.from({ length: 6 }).map((_, i) => <TimelineCardSkeleton key={i} />)}
+                </div>
+            ) : error && filtered.length === 0 ? (
+                <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur">
+                    <EmptyState
+                        icon={AlertTriangle}
+                        title="No se pudo cargar la información"
+                        description="Ocurrió un error al obtener los pedidos. Intentá de nuevo."
+                        actionLabel="Reintentar"
+                        onAction={() => fetchAll()}
+                    />
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur">

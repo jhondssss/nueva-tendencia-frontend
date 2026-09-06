@@ -136,6 +136,7 @@ export default function AuditoriaView() {
 
     const [logs,     setLogs]     = useState<AuditoriaLog[]>([]);
     const [loading,  setLoading]  = useState(true);
+    const [loadError, setLoadError] = useState(false);
     const [modulo,   setModulo]   = useState<ModuloFilter>('todos');
     const [search,   setSearch]   = useState('');
     const [page,     setPage]     = useState(1);
@@ -156,16 +157,22 @@ export default function AuditoriaView() {
         document.title = 'Auditoría | NT';
     }, []);
 
-    useEffect(() => {
-        if (!isAdmin) return;
+    const loadLogs = () => {
         setLoading(true);
+        setLoadError(false);
         const call = modulo === 'todos'
             ? auditoriaApi.getAll()
             : auditoriaApi.getByModulo(modulo);
         call
             .then(res => setLogs(res.data))
-            .catch(() => toast.error('Error al cargar el log de auditoría'))
+            .catch(() => { toast.error('Error al cargar el log de auditoría'); setLoadError(true); })
             .finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        if (!isAdmin) return;
+        loadLogs();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAdmin, modulo]);
 
     // Years present in data
@@ -429,6 +436,18 @@ export default function AuditoriaView() {
                             {loading ? (
                                 <TableRow className="hover:bg-transparent">
                                     <TableCell colSpan={5}><TableSkeleton rows={8} /></TableCell>
+                                </TableRow>
+                            ) : loadError && paginated.length === 0 ? (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={5}>
+                                        <EmptyState
+                                            icon={AlertTriangle}
+                                            title="No se pudo cargar la información"
+                                            description="Ocurrió un error al obtener el log de auditoría. Intentá de nuevo."
+                                            actionLabel="Reintentar"
+                                            onAction={loadLogs}
+                                        />
+                                    </TableCell>
                                 </TableRow>
                             ) : paginated.length === 0 ? (
                                 <TableRow className="hover:bg-transparent">

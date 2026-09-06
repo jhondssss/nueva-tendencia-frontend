@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ClipboardList, CheckCircle2, XCircle } from 'lucide-react';
+import { ClipboardList, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSolicitudesAdminStore, useInsumoStore } from '@/stores/index';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ const ESTADO_CONFIG: Record<EstadoSolicitud, string> = {
 export default function SolicitudesView() {
     const solicitudes = useSolicitudesAdminStore(s => s.solicitudes);
     const isLoading    = useSolicitudesAdminStore(s => s.isLoading);
+    const error        = useSolicitudesAdminStore(s => s.error);
     const fetchAll     = useSolicitudesAdminStore(s => s.fetchAll);
     const aprobar      = useSolicitudesAdminStore(s => s.aprobar);
     const rechazar     = useSolicitudesAdminStore(s => s.rechazar);
@@ -39,8 +40,10 @@ export default function SolicitudesView() {
     const [aAprobar, setAAprobar]   = useState<SolicitudPedido | null>(null);
     const [aRechazar, setARechazar] = useState<SolicitudPedido | null>(null);
 
+    const refetch = () => fetchAll(estado === 'todos' ? undefined : estado);
+
     useEffect(() => { document.title = 'Solicitudes | NT'; }, []);
-    useEffect(() => { fetchAll(estado === 'todos' ? undefined : estado); }, [fetchAll, estado]);
+    useEffect(() => { refetch(); }, [fetchAll, estado]); // eslint-disable-line react-hooks/exhaustive-deps
     useEffect(() => { fetchInsumos(); }, [fetchInsumos]);
 
     const handleAprobar = async (id: number, dto: AprobarSolicitudDto) => {
@@ -84,6 +87,18 @@ export default function SolicitudesView() {
                         {isLoading ? (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell colSpan={7}><TableSkeleton rows={6} /></TableCell>
+                            </TableRow>
+                        ) : error && solicitudes.length === 0 ? (
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={7}>
+                                    <EmptyState
+                                        icon={AlertTriangle}
+                                        title="No se pudo cargar la información"
+                                        description="Ocurrió un error al obtener las solicitudes. Intentá de nuevo."
+                                        actionLabel="Reintentar"
+                                        onAction={refetch}
+                                    />
+                                </TableCell>
                             </TableRow>
                         ) : solicitudes.length === 0 ? (
                             <TableRow className="hover:bg-transparent">

@@ -26,6 +26,7 @@ function errorMessage(err: unknown, fallback: string): string {
 // ─── Clientes ─────────────────────────────────────────────────────────────────
 interface ClienteState {
     clientes: Cliente[]; tiposCliente: TipoCliente[]; isLoading: boolean;
+    error: string | null;
     fetchAll: () => Promise<void>;
     fetchTiposCliente: () => Promise<void>;
     createTipoCliente: (nombre: string) => Promise<TipoCliente>;
@@ -35,10 +36,10 @@ interface ClienteState {
 }
 
 export const useClienteStore = create<ClienteState>((set, get) => ({
-    clientes: [], tiposCliente: [], isLoading: false,
+    clientes: [], tiposCliente: [], isLoading: false, error: null,
 
     fetchAll: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
             const first = await clienteApi.getAll(1);
             let all = first.data.data;
@@ -53,6 +54,7 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
             }
             set({ clientes: all });
         }
+        catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información. Intentá de nuevo.') }); }
         finally { set({ isLoading: false }); }
     },
     fetchTiposCliente: async () => {
@@ -91,6 +93,7 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
 // ─── Productos ────────────────────────────────────────────────────────────────
 interface ProductoState {
     productos: Producto[]; alertas: Producto[]; categoriasProducto: CategoriaProducto[]; isLoading: boolean;
+    error: string | null;
     fetchAll:     () => Promise<void>;
     fetchAlertas: () => Promise<void>;
     fetchCategoriasProducto: () => Promise<void>;
@@ -101,11 +104,12 @@ interface ProductoState {
 }
 
 export const useProductoStore = create<ProductoState>((set, get) => ({
-    productos: [], alertas: [], categoriasProducto: [], isLoading: false,
+    productos: [], alertas: [], categoriasProducto: [], isLoading: false, error: null,
 
     fetchAll: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try { const { data } = await productoApi.getAll(); set({ productos: data }); }
+        catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información. Intentá de nuevo.') }); }
         finally { set({ isLoading: false }); }
     },
     fetchAlertas: async () => {
@@ -147,6 +151,7 @@ export const useProductoStore = create<ProductoState>((set, get) => ({
 // ─── Pedidos ──────────────────────────────────────────────────────────────────
 interface PedidoState {
     pedidos: Pedido[]; isLoading: boolean;
+    error: string | null;
     fetchAll: (cliente?: string, producto?: string) => Promise<void>;
     create:   (dto: CreatePedidoDto) => Promise<void>;
     update:   (id: number, dto: UpdatePedidoDto) => Promise<void>;
@@ -155,10 +160,10 @@ interface PedidoState {
 }
 
 export const usePedidoStore = create<PedidoState>((set, get) => ({
-    pedidos: [], isLoading: false,
+    pedidos: [], isLoading: false, error: null,
 
     fetchAll: async (cliente, producto) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
             const first = await pedidoApi.getAll(cliente, producto, 1);
             let all = first.data.data;
@@ -173,6 +178,7 @@ export const usePedidoStore = create<PedidoState>((set, get) => ({
             }
             set({ pedidos: all.sort((a, b) => a.id_pedido - b.id_pedido) });
         }
+        catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información. Intentá de nuevo.') }); }
         finally { set({ isLoading: false }); }
     },
     create: async (dto) => {
@@ -209,6 +215,7 @@ interface InsumoState {
     categorias:     CategoriaInsumo[];
     unidadesMedida: UnidadMedida[];
     isLoading:      boolean;
+    error:          string | null;
     fetchAll:            () => Promise<void>;
     fetchAlertas:        () => Promise<void>;
     fetchCategorias:     () => Promise<void>;
@@ -222,14 +229,15 @@ interface InsumoState {
 }
 
 export const useInsumoStore = create<InsumoState>((set, get) => ({
-    insumos: [], alertas: [], categorias: [], unidadesMedida: [], isLoading: false,
+    insumos: [], alertas: [], categorias: [], unidadesMedida: [], isLoading: false, error: null,
 
     fetchAll: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
             const { data } = await insumoApi.getAll();
             set({ insumos: [...data].sort((a, b) => a.id_insumo - b.id_insumo) });
         }
+        catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información. Intentá de nuevo.') }); }
         finally { set({ isLoading: false }); }
     },
     fetchAlertas: async () => {
@@ -292,20 +300,23 @@ export const useInsumoStore = create<InsumoState>((set, get) => ({
 interface MisPedidosState {
     pedidos:   Pedido[];
     isLoading: boolean;
+    error:     string | null;
     fetchAll:  (filtros?: MisPedidosFiltros) => Promise<void>;
     fetchOne:  (id: number) => Promise<Pedido>;
     calificar: (id: number, dto: CalificarPedidoDto) => Promise<CalificacionPedido>;
 }
 
 export const useMisPedidosStore = create<MisPedidosState>((set, get) => ({
-    pedidos: [], isLoading: false,
+    pedidos: [], isLoading: false, error: null,
 
     fetchAll: async (filtros) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
             const { data } = await pedidoApi.misPedidos(filtros);
             set({ pedidos: [...data.data].sort((a, b) => b.id_pedido - a.id_pedido) });
-        } finally { set({ isLoading: false }); }
+        }
+        catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información. Intentá de nuevo.') }); }
+        finally { set({ isLoading: false }); }
     },
     fetchOne: async (id) => {
         const { data } = await pedidoApi.misPedidoDetalle(id);
@@ -330,15 +341,17 @@ export const useMisPedidosStore = create<MisPedidosState>((set, get) => ({
 interface CatalogoState {
     productos: ProductoCatalogo[];
     isLoading: boolean;
+    error:     string | null;
     fetchAll:  () => Promise<void>;
 }
 
 export const useCatalogoStore = create<CatalogoState>((set) => ({
-    productos: [], isLoading: false,
+    productos: [], isLoading: false, error: null,
 
     fetchAll: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try { const { data } = await productoApi.catalogo(); set({ productos: data.data }); }
+        catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información. Intentá de nuevo.') }); }
         finally { set({ isLoading: false }); }
     },
 }));
@@ -347,19 +360,22 @@ export const useCatalogoStore = create<CatalogoState>((set) => ({
 interface MisSolicitudesState {
     solicitudes: SolicitudPedido[];
     isLoading:   boolean;
+    error:       string | null;
     fetchAll:    () => Promise<void>;
     create:      (dto: CreateSolicitudPedidoDto) => Promise<SolicitudPedido>;
 }
 
 export const useMisSolicitudesStore = create<MisSolicitudesState>((set, get) => ({
-    solicitudes: [], isLoading: false,
+    solicitudes: [], isLoading: false, error: null,
 
     fetchAll: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
             const { data } = await solicitudPedidoApi.misSolicitudes();
             set({ solicitudes: [...data.data].sort((a, b) => b.id_solicitud - a.id_solicitud) });
-        } finally { set({ isLoading: false }); }
+        }
+        catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información. Intentá de nuevo.') }); }
+        finally { set({ isLoading: false }); }
     },
     create: async (dto) => {
         const { data } = await solicitudPedidoApi.create(dto);
@@ -373,20 +389,23 @@ export const useMisSolicitudesStore = create<MisSolicitudesState>((set, get) => 
 interface SolicitudesAdminState {
     solicitudes: SolicitudPedido[];
     isLoading:   boolean;
+    error:       string | null;
     fetchAll:    (estado?: string) => Promise<void>;
     aprobar:     (id: number, dto: AprobarSolicitudDto) => Promise<SolicitudPedido>;
     rechazar:    (id: number, dto: RechazarSolicitudDto) => Promise<SolicitudPedido>;
 }
 
 export const useSolicitudesAdminStore = create<SolicitudesAdminState>((set, get) => ({
-    solicitudes: [], isLoading: false,
+    solicitudes: [], isLoading: false, error: null,
 
     fetchAll: async (estado) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
             const { data } = await solicitudPedidoApi.getAll(estado);
             set({ solicitudes: [...data.data].sort((a, b) => b.id_solicitud - a.id_solicitud) });
-        } finally { set({ isLoading: false }); }
+        }
+        catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información. Intentá de nuevo.') }); }
+        finally { set({ isLoading: false }); }
     },
     aprobar: async (id, dto) => {
         const { data } = await solicitudPedidoApi.aprobar(id, dto);
@@ -424,15 +443,16 @@ interface DashboardState {
     prediccionStock: PrediccionStock[];
     proximosAEntregar: ProximoPedido[];
     isLoading: boolean;
+    error: string | null;
     fetchAll: () => Promise<void>;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
     kpis: null, ordersStatus: [], productionFunnel: [], recentActivity: [],
-    topProductos: [], ventasPorMes: [], prediccionStock: [], proximosAEntregar: [], isLoading: false,
+    topProductos: [], ventasPorMes: [], prediccionStock: [], proximosAEntregar: [], isLoading: false, error: null,
 
     fetchAll: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
             const [kpis, orders, funnel, activity, top, ventas, stock, proximos] = await Promise.all([
                 dashboardApi.getKpis(),
@@ -454,6 +474,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
                 prediccionStock:   toArray<PrediccionStock>(stock.data),
                 proximosAEntregar: toArray<ProximoPedido>(proximos.data),
             });
-        } finally { set({ isLoading: false }); }
+        } catch (err) { set({ error: errorMessage(err, 'No se pudo cargar la información del dashboard. Intentá de nuevo.') }); }
+        finally { set({ isLoading: false }); }
     },
 }));
