@@ -37,12 +37,16 @@ export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, soli
     });
     const [pedidoGenerado, setPedidoGenerado] = useState<number | null>(null);
 
+    const precioUnitario = solicitud?.producto?.precio_venta;
+    const totalSugerido = precioUnitario != null && solicitud
+        ? Number((precioUnitario * solicitud.cantidad_pares).toFixed(2))
+        : undefined;
+
     useEffect(() => {
         if (!isOpen) return;
-        reset();
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- resetea el estado de éxito al reabrir el modal
+        reset({ total: totalSugerido, fecha_entrega: solicitud?.fecha_entrega_deseada ?? undefined });
         setPedidoGenerado(null);
-    }, [isOpen, reset]);
+    }, [isOpen, reset, solicitud, totalSugerido]);
 
     if (!solicitud) return null;
 
@@ -103,7 +107,13 @@ export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, soli
                                    {...register('total', { valueAsNumber: true })}
                                    placeholder="0.00"
                                    className={`input ${errors.total ? 'input-error' : ''}`} />
-                            {errors.total && <p className="text-destructive text-xs mt-1">{errors.total.message}</p>}
+                            {errors.total ? (
+                                <p className="text-destructive text-xs mt-1">{errors.total.message}</p>
+                            ) : precioUnitario != null && (
+                                <p className="text-2xs text-muted-foreground mt-1">
+                                    Calculado con el precio actual del producto (Bs. {precioUnitario.toFixed(2)} c/u). Ajustalo si corresponde.
+                                </p>
+                            )}
                         </div>
                         <div>
                             <label className="label">Fecha de entrega *</label>
