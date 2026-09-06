@@ -50,8 +50,10 @@ export default function TallaInfoBox({ categoria, editable = false, value, onCha
     const info       = CATEGORIA_INFO[categoria];
     const accentText = CATEGORIA_ACCENT_TEXT[categoria];
     const tallas     = value ?? defaultTallas(categoria);
-    const total  = tallas.reduce((s, t) => s + t.cantidad_pares, 0);
-    const ok     = total === 12;
+    const total      = tallas.reduce((s, t) => s + t.cantidad_pares, 0);
+    const totalFinal = total * cantidad;
+    const esMultiploDeDocena = totalFinal > 0 && totalFinal % 12 === 0;
+    const docenas    = totalFinal / 12;
 
     const handleChange = (talla: number, raw: string) => {
         const v = Math.max(0, Math.min(20, parseInt(raw) || 0));
@@ -97,13 +99,13 @@ export default function TallaInfoBox({ categoria, editable = false, value, onCha
                     </div>
                 ))}
             </div>
-            {ok ? (
+            {esMultiploDeDocena ? (
                 <p className="flex items-center gap-1.5 text-xs text-chart-2 font-medium">
-                    <CheckCircle2 size={13} /> Total: {total * cantidad} pares
+                    <CheckCircle2 size={13} /> Total: {totalFinal} pares ({docenas} {docenas === 1 ? 'docena' : 'docenas'})
                 </p>
             ) : (
                 <p className="flex items-center gap-1.5 text-xs text-chart-3 font-medium">
-                    <AlertTriangle size={13} /> Total: {total * cantidad} pares (esperado: {cantidad * 12})
+                    <AlertTriangle size={13} /> Total: {totalFinal} pares (no es múltiplo de una docena)
                 </p>
             )}
         </div>
