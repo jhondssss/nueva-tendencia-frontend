@@ -37,7 +37,11 @@ export default function AprobarSolicitudModal({ isOpen, onClose, onConfirm, soli
     });
     const [pedidoGenerado, setPedidoGenerado] = useState<number | null>(null);
 
-    const precioUnitario = solicitud?.producto?.precio_venta;
+    // precio_venta es una columna `decimal` en el backend y llega como string
+    // vía el driver de pg (ver ProductosTable.tsx / ProductoModal.tsx para el mismo patrón)
+    const precioUnitario = solicitud?.producto?.precio_venta != null
+        ? Number(solicitud.producto.precio_venta)
+        : undefined;
     const totalSugerido = precioUnitario != null && solicitud
         ? Number((precioUnitario * solicitud.cantidad_pares).toFixed(2))
         : undefined;
