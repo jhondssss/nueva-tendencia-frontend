@@ -24,7 +24,7 @@ function readPageSize(): PageSize {
     const saved = localStorage.getItem(LS_KEY);
     return (PAGE_SIZES as readonly number[]).includes(Number(saved))
         ? (Number(saved) as PageSize)
-        : 10;
+        : 25;
 }
 
 function formatPrecio(precio: string) {
