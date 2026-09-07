@@ -16,9 +16,10 @@ import TallaInfoBox, { defaultTallas } from '@/components/pedidos/TallaInfoBox';
 import type { TallaItem } from '@/components/pedidos/TallaInfoBox';
 import type { ProductoCatalogo } from '@/types';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
+import { todayLocalDateString } from '@/utils/dates';
 
 const LS_KEY = 'catalogo-page-size';
-const hoy = new Date().toISOString().split('T')[0];
+const hoy = todayLocalDateString();
 
 function readPageSize(): PageSize {
     const saved = localStorage.getItem(LS_KEY);

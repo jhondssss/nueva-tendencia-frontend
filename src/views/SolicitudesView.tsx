@@ -12,10 +12,18 @@ import EmptyState from '@/components/shared/EmptyState';
 import AprobarSolicitudModal from '@/components/solicitudes/AprobarSolicitudModal';
 import RechazarSolicitudModal from '@/components/solicitudes/RechazarSolicitudModal';
 import { CATEGORIA_INFO } from '@/components/pedidos/TallaInfoBox';
+import { parseLocalDate } from '@/utils/dates';
 import type { AprobarSolicitudDto, EstadoSolicitud, SolicitudPedido } from '@/types';
 
 function formatFecha(iso: string): string {
     return new Date(iso).toLocaleDateString('es-BO', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// fecha_entrega_deseada es una columna `date` sin hora (viene "YYYY-MM-DD") — hay que
+// parsearla como fecha local, si no new Date() la interpreta como medianoche UTC y
+// se corre un día al mostrarla en un huso detrás de UTC (ver formatFecha arriba).
+function formatFechaDeseada(dateStr: string): string {
+    return parseLocalDate(dateStr).toLocaleDateString('es-BO', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 const ESTADOS: EstadoSolicitud[] = ['Pendiente', 'Aprobada', 'Rechazada'];
@@ -126,7 +134,7 @@ export default function SolicitudesView() {
                                         {s.tallas.map(t => `T${t.talla}×${t.cantidad_pares}`).join(', ')}
                                     </TableCell>
                                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                                        {s.fecha_entrega_deseada ? formatFecha(s.fecha_entrega_deseada) : '—'}
+                                        {s.fecha_entrega_deseada ? formatFechaDeseada(s.fecha_entrega_deseada) : '—'}
                                     </TableCell>
                                     <TableCell>
                                         <span className={clsx('inline-flex items-center px-2 py-0.5 rounded-md text-2xs font-medium uppercase tracking-wider', ESTADO_CONFIG[s.estado])}>
