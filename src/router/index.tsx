@@ -2,7 +2,6 @@ import { lazy, Suspense, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth.store';
-import { decodeToken, isTokenValid } from '@/utils/jwt';
 import AppLayout from '@/components/layout/AppLayout';
 import ClienteLayout from '@/components/layout/ClienteLayout';
 import LeatherSeal from '@/components/shared/LeatherSeal';
@@ -42,37 +41,36 @@ function Lazy({ children }: { children: ReactNode }) {
     return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 }
 
+/** Verifica la sesión (cookie httpOnly) una sola vez al cargar la app, antes de resolver cualquier ruta. */
+function RootAuthGate() {
+    const isInitialized = useAuthStore(s => s.isInitialized);
+    const checkSession  = useAuthStore(s => s.checkSession);
+
+    useEffect(() => { checkSession(); }, [checkSession]);
+
+    if (!isInitialized) return <PageLoader />;
+    return <Outlet />;
+}
+
 function PrivateRoute() {
     const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-    const token           = useAuthStore(s => s.token);
-    const clearAuth       = useAuthStore(s => s.clearAuth);
-
-    const tokenValid = isTokenValid(token);
-
-    useEffect(() => {
-        if (isAuthenticated && !tokenValid) clearAuth();
-    }, [isAuthenticated, tokenValid, clearAuth]);
-
-    if (!isAuthenticated || !tokenValid) return <Navigate to="/login" replace />;
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
     return <Outlet />;
 }
 
 function PublicRoute() {
     const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-    const token           = useAuthStore(s => s.token);
     const role            = useAuthStore(s => s.user?.role);
-    const valid = isAuthenticated && isTokenValid(token);
-    if (!valid) return <Outlet />;
+    if (!isAuthenticated) return <Outlet />;
     return <Navigate to={role === 'cliente' ? '/mis-pedidos' : '/dashboard'} replace />;
 }
 
-/** Bloquea toda la app hasta completar /auth/cambiar-password-inicial cuando el JWT trae ese flag. */
+/** Bloquea toda la app hasta completar /auth/cambiar-password-inicial cuando el perfil de sesión trae ese flag. */
 function RequireCambioPassword() {
-    const token           = useAuthStore(s => s.token);
-    const passwordChanged = useAuthStore(s => s.passwordChanged);
+    const requiereCambioPassword = useAuthStore(s => s.user?.requiereCambioPassword);
+    const passwordChanged        = useAuthStore(s => s.passwordChanged);
 
-    const payload = decodeToken(token);
-    if (payload?.requiereCambioPassword && !passwordChanged) {
+    if (requiereCambioPassword && !passwordChanged) {
         return <Lazy><CambiarPasswordView /></Lazy>;
     }
     return <Outlet />;
@@ -94,8 +92,62 @@ function StaffRoute() {
 
 export const router = createBrowserRouter([
     {
-        element: <PublicRoute />,
-        children: [{ path: '/login', element: <Lazy><LoginView /></Lazy> }],
+        // Solo las rutas que dependen de saber si hay sesión esperan a checkSession().
+        element: <RootAuthGate />,
+        children: [
+            {
+                element: <PublicRoute />,
+                children: [{ path: '/login', element: <Lazy><LoginView /></Lazy> }],
+            },
+            {
+                element: <PrivateRoute />,
+                children: [
+                    {
+                        element: <RequireCambioPassword />,
+                        children: [
+                            {
+                                element: <ClienteRoute />,
+                                children: [
+                                    {
+                                        element: <ClienteLayout />,
+                                        children: [
+                                            { path: '/mis-pedidos',      element: <Lazy><MisPedidosView /></Lazy> },
+                                            { path: '/mis-pedidos/:id',  element: <Lazy><MisPedidoDetalleView /></Lazy> },
+                                            { path: '/catalogo',         element: <Lazy><CatalogoView /></Lazy> },
+                                            { path: '/mis-solicitudes',  element: <Lazy><MisSolicitudesView /></Lazy> },
+                                        ],
+                                    },
+                                ],
+                            },
+                            {
+                                element: <StaffRoute />,
+                                children: [
+                                    {
+                                        element: <AppLayout />,
+                                        children: [
+                                            { index: true,               element: <Navigate to="/dashboard" replace /> },
+                                            { path: '/dashboard',        element: <Lazy><DashboardView /></Lazy> },
+                                            { path: '/pedidos',          element: <Lazy><PedidosView /></Lazy> },
+                                            { path: '/productos',        element: <Lazy><ProductosView /></Lazy> },
+                                            { path: '/clientes',         element: <Lazy><ClientesView /></Lazy> },
+                                            { path: '/timeline',         element: <Lazy><TimelineView /></Lazy> },
+                                            { path: '/reportes',         element: <Lazy><ReportesView /></Lazy> },
+                                            { path: '/calificaciones',   element: <Lazy><CalificacionesView /></Lazy> },
+                                            { path: '/solicitudes',      element: <Lazy><SolicitudesView /></Lazy> },
+                                            { path: '/kardex',           element: <Lazy><KardexView /></Lazy> },
+                                            { path: '/auditoria',        element: <Lazy><AuditoriaView /></Lazy> },
+                                            { path: '/insumos',          element: <Lazy><InsumosView /></Lazy> },
+                                            { path: '/reporte-diario',   element: <Lazy><ReporteDiarioView /></Lazy> },
+                                            { path: '/usuarios',         element: <Lazy><UsuariosView /></Lazy> },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
     },
     {
         path: '/seguimiento/:id',
@@ -108,54 +160,6 @@ export const router = createBrowserRouter([
     {
         path: '/reset-password',
         element: <Lazy><ResetPasswordView /></Lazy>,
-    },
-    {
-        element: <PrivateRoute />,
-        children: [
-            {
-                element: <RequireCambioPassword />,
-                children: [
-                    {
-                        element: <ClienteRoute />,
-                        children: [
-                            {
-                                element: <ClienteLayout />,
-                                children: [
-                                    { path: '/mis-pedidos',      element: <Lazy><MisPedidosView /></Lazy> },
-                                    { path: '/mis-pedidos/:id',  element: <Lazy><MisPedidoDetalleView /></Lazy> },
-                                    { path: '/catalogo',         element: <Lazy><CatalogoView /></Lazy> },
-                                    { path: '/mis-solicitudes',  element: <Lazy><MisSolicitudesView /></Lazy> },
-                                ],
-                            },
-                        ],
-                    },
-                    {
-                        element: <StaffRoute />,
-                        children: [
-                            {
-                                element: <AppLayout />,
-                                children: [
-                                    { index: true,               element: <Navigate to="/dashboard" replace /> },
-                                    { path: '/dashboard',        element: <Lazy><DashboardView /></Lazy> },
-                                    { path: '/pedidos',          element: <Lazy><PedidosView /></Lazy> },
-                                    { path: '/productos',        element: <Lazy><ProductosView /></Lazy> },
-                                    { path: '/clientes',         element: <Lazy><ClientesView /></Lazy> },
-                                    { path: '/timeline',         element: <Lazy><TimelineView /></Lazy> },
-                                    { path: '/reportes',         element: <Lazy><ReportesView /></Lazy> },
-                                    { path: '/calificaciones',   element: <Lazy><CalificacionesView /></Lazy> },
-                                    { path: '/solicitudes',      element: <Lazy><SolicitudesView /></Lazy> },
-                                    { path: '/kardex',           element: <Lazy><KardexView /></Lazy> },
-                                    { path: '/auditoria',        element: <Lazy><AuditoriaView /></Lazy> },
-                                    { path: '/insumos',          element: <Lazy><InsumosView /></Lazy> },
-                                    { path: '/reporte-diario',   element: <Lazy><ReporteDiarioView /></Lazy> },
-                                    { path: '/usuarios',         element: <Lazy><UsuariosView /></Lazy> },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
     },
     { path: '*', element: <Lazy><NotFoundView /></Lazy> },
 ]);

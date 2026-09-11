@@ -1,17 +1,22 @@
 import axios, { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/stores/auth.store';
+
+const MUTATING_METHODS = new Set(['post', 'put', 'patch', 'delete']);
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     timeout: 60_000,
     headers: { 'Content-Type': 'application/json' },
+    withCredentials: true,
 });
 
-// ─── Inyecta JWT en cada request ──────────────────────────────────────────────
+// ─── CSRF: header requerido por el backend en toda mutación autenticada por cookie ───
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('access_token');
-        if (token) config.headers.Authorization = `Bearer ${token}`;
+        if (config.method && MUTATING_METHODS.has(config.method.toLowerCase())) {
+            config.headers['X-Requested-With'] = 'XMLHttpRequest';
+        }
         return config;
     },
     (error) => Promise.reject(error),
@@ -23,18 +28,18 @@ api.interceptors.response.use(
     (error: AxiosError<{ message: string; statusCode: number }>) => {
         const status  = error.response?.status;
         const message = error.response?.data?.message ?? 'Error de conexión';
+        const silent  = !!error.config?.headers?.['x-silent'];
 
-        // 401 siempre redirige, independientemente del flag silent
         if (status === 401) {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('nt-auth');
+            useAuthStore.getState().clearAuth();
+            if (silent) return Promise.reject(error);
             toast.error('Sesión expirada. Ingresa nuevamente.');
             window.location.href = '/login';
             return Promise.reject(error);
         }
 
         // Si la request es silenciosa, el caller maneja su propio feedback
-        if (error.config?.headers?.['x-silent']) return Promise.reject(error);
+        if (silent) return Promise.reject(error);
 
         switch (status) {
             case 403: toast.error('Sin permisos para esta acción.'); break;

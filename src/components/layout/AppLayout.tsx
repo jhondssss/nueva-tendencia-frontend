@@ -79,7 +79,7 @@ export default function AppLayout() {
     const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
     const shortcutLabel = isMac ? '⌘K' : 'Ctrl K';
 
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const handleLogout = async () => { await logout(); navigate('/login'); };
     const userRole = isAdmin ? 'admin' : isOperario ? 'operario' : '';
 
     return (

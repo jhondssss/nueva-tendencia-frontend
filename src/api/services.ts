@@ -1,7 +1,7 @@
 import api from './axios';
 import type { AxiosRequestConfig } from 'axios';
 import type {
-    LoginDto, AuthResponse,
+    LoginDto, AuthResponse, User,
     Cliente, CreateClienteDto, UpdateClienteDto, TipoCliente,
     Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
@@ -23,6 +23,8 @@ import type {
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const authApi = {
     login:                  (dto: LoginDto)                    => api.post<AuthResponse>('/auth/login', dto),
+    me:                     ()                                  => api.get<User>('/auth/me', { headers: { 'x-silent': 'true' } }),
+    logout:                 ()                                  => api.post<{ message: string }>('/auth/logout'),
     register:               (dto: LoginDto)                    => api.post<AuthResponse>('/auth/register', dto),
     forgotPassword:         (email: string)                    => api.post('/auth/forgot-password', { email }),
     resetPassword:          (token: string, password: string)  => api.post('/auth/reset-password', { token, password }),

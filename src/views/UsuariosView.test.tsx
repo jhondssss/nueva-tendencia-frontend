@@ -30,7 +30,6 @@ const USUARIOS: UsuarioAdmin[] = [
 function setRole(role: string | null) {
     useAuthStore.setState({
         user:            role ? { id: 99, email: 'sesion@nuevatendencia.com', role } : null,
-        token:           role ? 'token-fake' : null,
         isAuthenticated: !!role,
         isLoading:       false,
         passwordChanged: false,

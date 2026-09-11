@@ -6,12 +6,12 @@ import toast from 'react-hot-toast';
 import LoginView from './LoginView';
 import CambiarPasswordView from './CambiarPasswordView';
 import { useAuthStore } from '@/stores/auth.store';
-import { decodeToken, isTokenValid } from '@/utils/jwt';
 import { authApi } from '@/api/services';
 
 vi.mock('@/api/services', () => ({
     authApi: {
         login: vi.fn(),
+        me: vi.fn(),
         forgotPassword: vi.fn(),
     },
 }));
@@ -24,18 +24,12 @@ const EMAIL_PLACEHOLDER    = 'admin@nuevatendencia.com';
 const PASSWORD_PLACEHOLDER = '••••••••';
 const SUBMIT_NAME          = /ingresar al sistema/i;
 
-function makeToken(payload: Record<string, unknown>) {
-    const encode = (obj: Record<string, unknown>) => btoa(JSON.stringify(obj));
-    return `${encode({ alg: 'none' })}.${encode(payload)}.signature`;
-}
-
 function resetAuthStore() {
-    localStorage.clear();
     useAuthStore.setState({
         user:            null,
-        token:           null,
         isAuthenticated: false,
         isLoading:       false,
+        isInitialized:   true,
         passwordChanged: false,
     });
 }
@@ -49,16 +43,14 @@ beforeEach(() => {
  *  para verificar el redirect post-login sin arrastrar el lazy-loading de todas las vistas del router. */
 function PublicRouteStub() {
     const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-    const token           = useAuthStore(s => s.token);
-    if (isAuthenticated && isTokenValid(token)) return <Navigate to="/privado" replace />;
+    if (isAuthenticated) return <Navigate to="/privado" replace />;
     return <Outlet />;
 }
 
 function PrivateAreaStub() {
-    const token           = useAuthStore(s => s.token);
-    const passwordChanged = useAuthStore(s => s.passwordChanged);
-    const payload = decodeToken(token);
-    if (payload?.requiereCambioPassword && !passwordChanged) return <CambiarPasswordView />;
+    const requiereCambioPassword = useAuthStore(s => s.user?.requiereCambioPassword);
+    const passwordChanged        = useAuthStore(s => s.passwordChanged);
+    if (requiereCambioPassword && !passwordChanged) return <CambiarPasswordView />;
     return <div>Área privada: Mis pedidos</div>;
 }
 
@@ -121,13 +113,12 @@ describe('LoginView', () => {
 });
 
 describe('Login → flujo de cambio de contraseña obligatorio', () => {
-    it('redirige a CambiarPasswordView cuando el JWT trae requiereCambioPassword', async () => {
-        const token = makeToken({
-            sub: 1, role: 'cliente', requiereCambioPassword: true,
-            exp: Math.floor(Date.now() / 1000) + 3600,
-        });
+    it('redirige a CambiarPasswordView cuando /auth/me trae requiereCambioPassword', async () => {
         vi.mocked(authApi.login).mockResolvedValueOnce({
-            data: { access_token: token, user: { id: 1, email: 'cliente@correo.com', role: 'cliente' } },
+            data: { access_token: 'irrelevante', user: { id: 1, email: 'cliente@correo.com', role: 'cliente' } },
+        } as never);
+        vi.mocked(authApi.me).mockResolvedValueOnce({
+            data: { id: 1, email: 'cliente@correo.com', role: 'cliente', requiereCambioPassword: true },
         } as never);
 
         const user = userEvent.setup();
@@ -141,13 +132,12 @@ describe('Login → flujo de cambio de contraseña obligatorio', () => {
         expect(screen.queryByText('Área privada: Mis pedidos')).not.toBeInTheDocument();
     });
 
-    it('NO redirige a cambio de contraseña cuando el JWT no lo requiere', async () => {
-        const token = makeToken({
-            sub: 2, role: 'cliente', requiereCambioPassword: false,
-            exp: Math.floor(Date.now() / 1000) + 3600,
-        });
+    it('NO redirige a cambio de contraseña cuando /auth/me no lo requiere', async () => {
         vi.mocked(authApi.login).mockResolvedValueOnce({
-            data: { access_token: token, user: { id: 2, email: 'cliente2@correo.com', role: 'cliente' } },
+            data: { access_token: 'irrelevante', user: { id: 2, email: 'cliente2@correo.com', role: 'cliente' } },
+        } as never);
+        vi.mocked(authApi.me).mockResolvedValueOnce({
+            data: { id: 2, email: 'cliente2@correo.com', role: 'cliente', requiereCambioPassword: false },
         } as never);
 
         const user = userEvent.setup();

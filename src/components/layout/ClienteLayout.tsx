@@ -28,7 +28,7 @@ export default function ClienteLayout() {
         ? [cliente.nombre, cliente.apellido].filter(Boolean).join(' ')
         : user?.email;
 
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const handleLogout = async () => { await logout(); navigate('/login'); };
 
     return (
         <div className="min-h-screen bg-background flex flex-col">

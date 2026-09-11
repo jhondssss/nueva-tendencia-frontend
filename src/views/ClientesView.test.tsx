@@ -64,7 +64,6 @@ function direccionInput(container: HTMLElement, name: string): HTMLInputElement 
 function setAdmin() {
     useAuthStore.setState({
         user:            { id: 1, email: 'admin@nuevatendencia.com', role: 'admin' },
-        token:           'token-fake',
         isAuthenticated: true,
         isLoading:       false,
         passwordChanged: false,

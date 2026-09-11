@@ -43,7 +43,7 @@ export default function CambiarPasswordView() {
         }
     };
 
-    const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
+    const handleLogout = async () => { await logout(); navigate('/login', { replace: true }); };
 
     return (
         <div className="min-h-screen bg-cafe-gradient flex items-center justify-center p-4 relative overflow-hidden">

@@ -13,7 +13,17 @@ export interface RegisterDto { email: string; password: string; role?: string; }
 export interface AuthResponse { access_token: string; user: User; }
 
 // ─── User ─────────────────────────────────────────────────────────────────────
-export interface User { id: number; email: string; role: string; }
+/** Forma completa que devuelve GET /auth/me (perfil de la sesión actual). */
+export interface User {
+    id:                      number;
+    email:                   string;
+    role:                    string;
+    nombre?:                 string;
+    apellido?:               string;
+    activo?:                 boolean;
+    clienteId?:              number | null;
+    requiereCambioPassword?: boolean;
+}
 
 // ─── Usuario (gestión admin) ───────────────────────────────────────────────────
 export type RolUsuario = 'admin' | 'operario' | 'cliente';
