@@ -206,7 +206,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {FIELDS.map(({ name, label, placeholder }) => (
                         <div key={name}>
                             <label className="label">{label} *</label>
@@ -246,7 +246,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                     </p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label className="label">Precio venta (Bs.) *</label>
                         <input type="number" step="0.01" min="0.01"
@@ -273,7 +273,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label className="label">Nivel mínimo</label>
                         <input type="number" min="0"
@@ -321,7 +321,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                     {FORMULA_ETAPAS.map(etapa => (
                         <div key={etapa.titulo} className="rounded-lg border border-border p-3 space-y-2">
                             <label className="label">{etapa.titulo}</label>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 {etapa.campos.map(({ name, label, unidad }) => (
                                     <div key={name}>
                                         <label className="label text-2xs">{label} ({unidad})</label>
