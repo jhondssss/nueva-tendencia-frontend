@@ -168,7 +168,7 @@ export default function PedidosView() {
                         <option value="">Todas</option>
                         <option value="adulto">Adulto</option>
                         <option value="juvenil">Juvenil</option>
-                        <option value="niño">Niño</option>
+                        <option value="nino">Niño</option>
                     </select>
                 </div>
 

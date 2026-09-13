@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PedidosView from './PedidosView';
@@ -119,6 +119,24 @@ describe('PedidosView — filtro por estado', () => {
 
         await user.click(screen.getByRole('button', { name: /Terminado/ }));
         expect(screen.getByText('Filtrar por fecha de entrega:')).toBeInTheDocument();
+    });
+});
+
+describe('PedidosView — filtro por categoría', () => {
+    it('filtra por categoría "Niño" comparando contra el valor interno sin tilde', async () => {
+        vi.mocked(pedidoApi.getAll).mockResolvedValue(pedidosResponse([
+            makePedido({ id_pedido: 1, categoria: 'nino' }),
+            makePedido({ id_pedido: 2, categoria: 'adulto' }),
+        ]));
+        const user = userEvent.setup();
+        renderView();
+        await screen.findByText('#1');
+
+        const categoriaSelect = screen.getAllByRole('combobox').find(el => within(el).queryByText('Niño'))!;
+        await user.selectOptions(categoriaSelect, 'Niño');
+
+        expect(screen.getByText('#1')).toBeInTheDocument();
+        expect(screen.queryByText('#2')).not.toBeInTheDocument();
     });
 });
 
