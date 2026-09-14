@@ -1,17 +1,86 @@
 import { useState, useRef, useEffect } from 'react';
-import type { KeyboardEvent } from 'react';
-import { Bot, X, Send, Loader2 } from 'lucide-react';
+import type { KeyboardEvent, PointerEvent as ReactPointerEvent, CSSProperties } from 'react';
+import { Bot, X, Minus, Send, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
 
+const DESKTOP_QUERY = '(min-width: 640px)';
+
 export default function NTAssistant() {
     const [open, setOpen] = useState(false);
+    const [isDesktop, setIsDesktop] = useState(
+        () => typeof window !== 'undefined' && window.matchMedia(DESKTOP_QUERY).matches,
+    );
+
+    // Posición del panel cuando el usuario lo arrastra (null = posición flotante por defecto)
+    const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+    const dragOrigin = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
 
     const bottomRef = useRef<HTMLDivElement>(null);
     const inputRef  = useRef<HTMLTextAreaElement>(null);
+    const panelRef  = useRef<HTMLDivElement>(null);
 
     const { messages, isLoading, input, setInput, sendMessage, sendQuick } = useNTAssistant();
+
+    // Detecta cambios entre mobile/desktop para habilitar el drag solo en desktop
+    useEffect(() => {
+        const mq = window.matchMedia(DESKTOP_QUERY);
+        const handleChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+        mq.addEventListener('change', handleChange);
+        return () => mq.removeEventListener('change', handleChange);
+    }, []);
+
+    // Si la ventana cambia de tamaño, reajusta una posición arrastrada para que no quede fuera de pantalla
+    useEffect(() => {
+        const handleResize = () => {
+            setPos(prev => {
+                if (!prev || !panelRef.current) return prev;
+                const { offsetWidth: w, offsetHeight: h } = panelRef.current;
+                return {
+                    x: Math.min(Math.max(prev.x, 0), Math.max(0, window.innerWidth - w)),
+                    y: Math.min(Math.max(prev.y, 0), Math.max(0, window.innerHeight - h)),
+                };
+            });
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const handleDragPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+        if (!isDesktop || e.button !== 0) return;
+        if ((e.target as HTMLElement).closest('button')) return; // no arrastrar al hacer click en los botones del header
+        const panel = panelRef.current;
+        if (!panel) return;
+
+        const rect = panel.getBoundingClientRect();
+        dragOrigin.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+        e.currentTarget.setPointerCapture(e.pointerId);
+    };
+
+    const handleDragPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+        const origin = dragOrigin.current;
+        const panel = panelRef.current;
+        if (!origin || !panel) return;
+
+        const { offsetWidth: w, offsetHeight: h } = panel;
+        const nextX = origin.origX + (e.clientX - origin.startX);
+        const nextY = origin.origY + (e.clientY - origin.startY);
+
+        setPos({
+            x: Math.min(Math.max(nextX, 0), Math.max(0, window.innerWidth - w)),
+            y: Math.min(Math.max(nextY, 0), Math.max(0, window.innerHeight - h)),
+        });
+    };
+
+    const handleDragPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+        if (dragOrigin.current) e.currentTarget.releasePointerCapture(e.pointerId);
+        dragOrigin.current = null;
+    };
+
+    const panelStyle: CSSProperties | undefined = (pos && isDesktop)
+        ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' }
+        : undefined;
 
     const SUGERENCIAS = [
         '¿Cuántos pedidos pendientes?',
@@ -42,28 +111,50 @@ export default function NTAssistant() {
             {/* ── Panel de chat ─────────────────────────────────────────── */}
             {open && (
                 <div
-                    className="fixed z-50 bottom-24 right-6 flex flex-col animate-slide-up
-                               w-[350px] max-w-[calc(100vw-3rem)]
-                               max-h-[min(600px,calc(100vh-7rem))]
-                               rounded-xl border border-border/50
+                    ref={panelRef}
+                    style={panelStyle}
+                    className="fixed z-50 flex flex-col animate-slide-up
+                               inset-3 sm:inset-auto sm:bottom-24 sm:right-6
+                               sm:w-[440px] sm:max-w-[calc(100vw-3rem)]
+                               sm:h-[min(700px,calc(100vh-6rem))]
+                               rounded-2xl border border-border/50
                                bg-card/95 backdrop-blur-md shadow-modal overflow-hidden"
                 >
-                    {/* Header */}
-                    <div className="flex items-center gap-2.5 px-4 py-3 bg-sidebar border-b border-sidebar-border flex-shrink-0">
-                        <div className="w-7 h-7 rounded-lg bg-cafe-gradient flex items-center justify-center flex-shrink-0 shadow-glow-sm">
-                            <Bot size={14} className="text-white" />
+                    {/* Header — arrastrable en desktop */}
+                    <div
+                        onPointerDown={handleDragPointerDown}
+                        onPointerMove={handleDragPointerMove}
+                        onPointerUp={handleDragPointerUp}
+                        onPointerCancel={handleDragPointerUp}
+                        className={clsx(
+                            'flex items-center gap-2.5 px-4 py-3.5 bg-sidebar border-b border-sidebar-border flex-shrink-0',
+                            isDesktop && 'cursor-grab active:cursor-grabbing touch-none select-none',
+                        )}
+                    >
+                        <div className="w-9 h-9 rounded-lg bg-cafe-gradient flex items-center justify-center flex-shrink-0 shadow-glow-sm">
+                            <Bot size={17} className="text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="font-display font-semibold text-sidebar-foreground text-sm leading-tight">NT Assistant</p>
-                            <p className="text-2xs text-sidebar-foreground/60">Asistente de Nueva Tendencia</p>
+                            <p className="font-display font-semibold text-sidebar-foreground text-base leading-tight">NT Assistant</p>
+                            <p className="text-xs text-sidebar-foreground/60">Asistente de Nueva Tendencia</p>
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => setOpen(false)}
-                            className="h-7 w-7 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                            title="Minimizar"
+                            className="h-8 w-8 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                         >
-                            <X size={15} />
+                            <Minus size={17} />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setOpen(false)}
+                            title="Cerrar"
+                            className="h-8 w-8 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                        >
+                            <X size={17} />
                         </Button>
                     </div>
 
@@ -160,22 +251,30 @@ export default function NTAssistant() {
             )}
 
             {/* ── Botón flotante ───────────────────────────────────────── */}
-            <button
-                onClick={() => setOpen(v => !v)}
-                className={clsx(
-                    'fixed z-50 bottom-6 right-6 w-12 h-12 rounded-full',
-                    'bg-cafe-gradient shadow-glow-cafe',
-                    'flex items-center justify-center',
-                    'hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-200',
-                    open && 'rotate-12',
+            <div className="fixed z-50 bottom-6 right-6 w-16 h-16">
+                {!open && (
+                    <span
+                        aria-hidden
+                        className="absolute inset-0 rounded-full bg-cafe-400/50 animate-ping [animation-duration:2.5s] pointer-events-none"
+                    />
                 )}
-                title="NT Assistant"
-            >
-                {open
-                    ? <X size={20} className="text-white" />
-                    : <Bot size={20} className="text-white" />
-                }
-            </button>
+                <button
+                    onClick={() => setOpen(v => !v)}
+                    className={clsx(
+                        'relative w-16 h-16 rounded-full',
+                        'bg-cafe-gradient shadow-glow-cafe',
+                        'flex items-center justify-center',
+                        'hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-200',
+                        open && 'rotate-12',
+                    )}
+                    title="NT Assistant"
+                >
+                    {open
+                        ? <X size={26} className="text-white" />
+                        : <Bot size={26} className="text-white" />
+                    }
+                </button>
+            </div>
         </>
     );
 }
