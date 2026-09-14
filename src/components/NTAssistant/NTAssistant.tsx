@@ -6,6 +6,11 @@ import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
 
 const DESKTOP_QUERY = '(min-width: 640px)';
+const PANEL_WIDTH = 440;
+const PANEL_MARGIN = 96; // 6rem — deja espacio respecto al borde inferior de la ventana
+const BUBBLE_SIZE = 64;
+const BUBBLE_ANCHOR_GAP = 12;
+const DRAG_THRESHOLD = 5; // px — por debajo de esto, se considera clic y no arrastre
 
 export default function NTAssistant() {
     const [open, setOpen] = useState(false);
@@ -17,9 +22,15 @@ export default function NTAssistant() {
     const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
     const dragOrigin = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
 
+    // Posición de la burbuja cuando el usuario la arrastra (null = esquina inferior derecha por defecto)
+    const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null);
+    const bubbleDragOrigin = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+    const bubbleDraggedRef = useRef(false); // true si el gesto actual superó el umbral de arrastre
+
     const bottomRef = useRef<HTMLDivElement>(null);
     const inputRef  = useRef<HTMLTextAreaElement>(null);
     const panelRef  = useRef<HTMLDivElement>(null);
+    const bubbleRef = useRef<HTMLDivElement>(null);
 
     const { messages, isLoading, input, setInput, sendMessage, sendQuick } = useNTAssistant();
 
@@ -40,6 +51,13 @@ export default function NTAssistant() {
                 return {
                     x: Math.min(Math.max(prev.x, 0), Math.max(0, window.innerWidth - w)),
                     y: Math.min(Math.max(prev.y, 0), Math.max(0, window.innerHeight - h)),
+                };
+            });
+            setBubblePos(prev => {
+                if (!prev) return prev;
+                return {
+                    x: Math.min(Math.max(prev.x, 0), Math.max(0, window.innerWidth - BUBBLE_SIZE)),
+                    y: Math.min(Math.max(prev.y, 0), Math.max(0, window.innerHeight - BUBBLE_SIZE)),
                 };
             });
         };
@@ -80,6 +98,68 @@ export default function NTAssistant() {
 
     const panelStyle: CSSProperties | undefined = (pos && isDesktop)
         ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' }
+        : undefined;
+
+    // Calcula una posición para el panel cerca de la burbuja (cuando esta fue movida), clampeada a la ventana
+    const computePanelPosFromBubble = (bp: { x: number; y: number }) => {
+        const panelH = Math.min(700, window.innerHeight - PANEL_MARGIN);
+        const rawX = bp.x + BUBBLE_SIZE - PANEL_WIDTH;
+        const rawY = bp.y - panelH - BUBBLE_ANCHOR_GAP;
+        return {
+            x: Math.min(Math.max(rawX, 0), Math.max(0, window.innerWidth - PANEL_WIDTH)),
+            y: Math.min(Math.max(rawY, 0), Math.max(0, window.innerHeight - panelH)),
+        };
+    };
+
+    const handleBubblePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+        if (!isDesktop || e.button !== 0) return;
+        const bubble = bubbleRef.current;
+        if (!bubble) return;
+
+        const rect = bubble.getBoundingClientRect();
+        bubbleDragOrigin.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+        bubbleDraggedRef.current = false;
+        e.currentTarget.setPointerCapture(e.pointerId);
+    };
+
+    const handleBubblePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+        const origin = bubbleDragOrigin.current;
+        if (!origin) return;
+
+        const dx = e.clientX - origin.startX;
+        const dy = e.clientY - origin.startY;
+        if (Math.hypot(dx, dy) > DRAG_THRESHOLD) bubbleDraggedRef.current = true;
+
+        const nextX = origin.origX + dx;
+        const nextY = origin.origY + dy;
+
+        setBubblePos({
+            x: Math.min(Math.max(nextX, 0), Math.max(0, window.innerWidth - BUBBLE_SIZE)),
+            y: Math.min(Math.max(nextY, 0), Math.max(0, window.innerHeight - BUBBLE_SIZE)),
+        });
+    };
+
+    const handleBubblePointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+        if (bubbleDragOrigin.current) e.currentTarget.releasePointerCapture(e.pointerId);
+        bubbleDragOrigin.current = null;
+        // Si hubo un arrastre real (y el panel no está abierto ahora mismo), olvida la
+        // posición fija del panel para que el próximo clic lo reubique junto a la burbuja
+        if (bubbleDraggedRef.current && !open) setPos(null);
+    };
+
+    const handleBubbleClick = () => {
+        if (bubbleDraggedRef.current) {
+            bubbleDraggedRef.current = false;
+            return; // fue un arrastre, no un clic: no abrir el chat
+        }
+        if (!open && isDesktop && bubblePos && !pos) {
+            setPos(computePanelPosFromBubble(bubblePos));
+        }
+        setOpen(v => !v);
+    };
+
+    const bubbleStyle: CSSProperties | undefined = (bubblePos && isDesktop)
+        ? { left: bubblePos.x, top: bubblePos.y, right: 'auto', bottom: 'auto' }
         : undefined;
 
     const SUGERENCIAS = [
@@ -251,7 +331,18 @@ export default function NTAssistant() {
             )}
 
             {/* ── Botón flotante ───────────────────────────────────────── */}
-            <div className="fixed z-50 bottom-6 right-6 w-16 h-16">
+            <div
+                ref={bubbleRef}
+                style={bubbleStyle}
+                onPointerDown={handleBubblePointerDown}
+                onPointerMove={handleBubblePointerMove}
+                onPointerUp={handleBubblePointerUp}
+                onPointerCancel={handleBubblePointerUp}
+                className={clsx(
+                    'fixed z-50 bottom-6 right-6 w-16 h-16',
+                    isDesktop && 'touch-none select-none',
+                )}
+            >
                 {!open && (
                     <span
                         aria-hidden
@@ -259,12 +350,13 @@ export default function NTAssistant() {
                     />
                 )}
                 <button
-                    onClick={() => setOpen(v => !v)}
+                    onClick={handleBubbleClick}
                     className={clsx(
                         'relative w-16 h-16 rounded-full',
                         'bg-cafe-gradient shadow-glow-cafe',
                         'flex items-center justify-center',
                         'hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-200',
+                        isDesktop && 'cursor-grab active:cursor-grabbing',
                         open && 'rotate-12',
                     )}
                     title="NT Assistant"
