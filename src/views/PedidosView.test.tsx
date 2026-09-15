@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PedidosView from './PedidosView';
 import { useAuthStore } from '@/stores/auth.store';
@@ -66,8 +67,12 @@ beforeEach(() => {
     vi.mocked(insumoApi.getAll).mockResolvedValue({ data: [] } as never);
 });
 
-function renderView() {
-    return render(<PedidosView />);
+function renderView(initialEntries: string[] = ['/pedidos']) {
+    return render(
+        <MemoryRouter initialEntries={initialEntries}>
+            <PedidosView />
+        </MemoryRouter>,
+    );
 }
 
 describe('PedidosView — filtro de búsqueda', () => {
@@ -82,10 +87,37 @@ describe('PedidosView — filtro de búsqueda', () => {
         await screen.findByText('#1');
         expect(screen.getByText('#2')).toBeInTheDocument();
 
-        await user.type(screen.getByPlaceholderText('Buscar cliente o producto...'), 'Ana');
+        await user.type(screen.getByPlaceholderText('Buscar cliente, producto o #pedido...'), 'Ana');
 
         expect(screen.getByText('#1')).toBeInTheDocument();
         expect(screen.queryByText('#2')).not.toBeInTheDocument();
+    });
+
+    it('filtra por número de pedido', async () => {
+        vi.mocked(pedidoApi.getAll).mockResolvedValue(pedidosResponse([
+            makePedido({ id_pedido: 1 }),
+            makePedido({ id_pedido: 12 }),
+        ]));
+        const user = userEvent.setup();
+        renderView();
+
+        await screen.findByText('#1');
+        await user.type(screen.getByPlaceholderText('Buscar cliente, producto o #pedido...'), '12');
+
+        expect(screen.getByText('#12')).toBeInTheDocument();
+        expect(screen.queryByText('#1')).not.toBeInTheDocument();
+    });
+
+    it('preselecciona el pedido llegado por deep link (?pedido=) y limpia la URL', async () => {
+        vi.mocked(pedidoApi.getAll).mockResolvedValue(pedidosResponse([
+            makePedido({ id_pedido: 1 }),
+            makePedido({ id_pedido: 7 }),
+        ]));
+        renderView(['/pedidos?pedido=7']);
+
+        await screen.findByText('#7');
+        expect(screen.queryByText('#1')).not.toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Buscar cliente, producto o #pedido...')).toHaveValue('7');
     });
 });
 

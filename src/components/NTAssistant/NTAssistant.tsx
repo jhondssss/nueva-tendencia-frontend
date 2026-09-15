@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import type { KeyboardEvent, MouseEvent as ReactMouseEvent, CSSProperties } from 'react';
-import { Bot, X, Minus, Send, Loader2 } from 'lucide-react';
+import { Bot, X, Minus, Send } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
+import { useNTAssistantAlerts } from '@/hooks/useNTAssistantAlerts';
+import { useRole } from '@/hooks/useRole';
+import NTMessageContent from './NTMessageContent';
+import TypingIndicator from './TypingIndicator';
+import { getSugerencias } from './suggestions';
 
 const DESKTOP_QUERY = '(min-width: 640px)';
 const PANEL_WIDTH = 440;
@@ -37,6 +42,8 @@ export default function NTAssistant() {
     const bubbleRef = useRef<HTMLDivElement>(null);
 
     const { messages, isLoading, input, setInput, sendMessage, sendQuick } = useNTAssistant();
+    const { isCliente } = useRole();
+    const hasAlertaUrgente = useNTAssistantAlerts();
 
     // Detecta cambios entre mobile/desktop para habilitar el drag solo en desktop
     useEffect(() => {
@@ -185,12 +192,7 @@ export default function NTAssistant() {
         ? { left: bubblePos.x, top: bubblePos.y, right: 'auto', bottom: 'auto' }
         : undefined;
 
-    const SUGERENCIAS = [
-        '¿Cuántos pedidos pendientes?',
-        '¿Stock crítico?',
-        '¿Ventas del mes?',
-        '¿Pedidos por entregar hoy?',
-    ];
+    const SUGERENCIAS = getSugerencias(isCliente);
 
     // Auto-scroll al último mensaje
     useEffect(() => {
@@ -286,7 +288,9 @@ export default function NTAssistant() {
                                             : 'bg-card border border-border text-foreground rounded-bl-sm shadow-card',
                                     )}
                                 >
-                                    {msg.content}
+                                    {msg.role === 'assistant'
+                                        ? <NTMessageContent content={msg.content} />
+                                        : msg.content}
                                 </div>
                             </div>
                         ))}
@@ -294,7 +298,7 @@ export default function NTAssistant() {
                         {isLoading && (
                             <div className="flex justify-start">
                                 <div className="bg-card border border-border rounded-xl rounded-bl-sm px-3 py-2.5 shadow-card">
-                                    <Loader2 size={14} className="text-muted-foreground animate-spin" />
+                                    <TypingIndicator />
                                 </div>
                             </div>
                         )}
@@ -385,6 +389,12 @@ export default function NTAssistant() {
                         : <Bot size={26} className="text-white" />
                     }
                 </button>
+                {!open && hasAlertaUrgente && (
+                    <span
+                        aria-label="Hay alertas urgentes sin revisar"
+                        className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-crema pointer-events-none"
+                    />
+                )}
             </div>
         </>
     );

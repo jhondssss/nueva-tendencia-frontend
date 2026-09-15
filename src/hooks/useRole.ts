@@ -5,9 +5,10 @@ export function useRole() {
 
     const isAdmin    = role === 'admin';
     const isOperario = role === 'operario';
+    const isCliente  = role === 'cliente';
     const canCreate  = isAdmin;
     const canEdit    = isAdmin;
     const canDelete  = isAdmin;
 
-    return { isAdmin, isOperario, canCreate, canEdit, canDelete };
+    return { isAdmin, isOperario, isCliente, canCreate, canEdit, canDelete };
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, Plus } from 'lucide-react';
 import { usePedidoStore, useClienteStore, useProductoStore, useInsumoStore } from '@/stores/index';
 import { pedidoApi, kardexApi } from '@/api/services';
@@ -34,7 +35,8 @@ export default function PedidosView() {
     const [deleteTarget, setDeleteTarget] = useState<Pedido | null>(null);
     const [deleteTieneKardex, setDeleteTieneKardex] = useState(false);
     const deleteRequestIdRef = useRef<number | null>(null);
-    const [search, setSearch]             = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [search, setSearch]             = useState(() => searchParams.get('pedido') ?? '');
     const [filterEstado, setFilterEstado] = useState<EstadoPedido | ''>('');
 
     // Date filters — only apply when filterEstado === 'Terminado'
@@ -57,6 +59,12 @@ export default function PedidosView() {
     useEffect(() => { if (isAdmin) fetchInsumos(); }, [isAdmin, fetchInsumos]);
     useEffect(() => { document.title = 'Pedidos | NT'; }, []);
 
+    // Deep link desde el NT Assistant (ej. "#123" en una respuesta) — prefiltra por ese pedido y limpia la URL.
+    useEffect(() => {
+        if (!searchParams.get('pedido')) return;
+        setSearchParams(prev => { prev.delete('pedido'); return prev; }, { replace: true });
+    }, [searchParams, setSearchParams]);
+
     const handleEstadoChange = (estado: EstadoPedido | '') => {
         setFilterEstado(estado);
         // Reset date filters when leaving Terminado
@@ -68,6 +76,7 @@ export default function PedidosView() {
 
     const filtered = pedidos.filter(p => {
         const matchSearch = !search ||
+            String(p.id_pedido) === search.trim() ||
             p.cliente.nombre.toLowerCase().includes(search.toLowerCase()) ||
             (p.producto?.nombre_modelo ?? '').toLowerCase().includes(search.toLowerCase());
         if (!matchSearch) return false;
@@ -147,7 +156,7 @@ export default function PedidosView() {
                 <div className="relative">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input value={search} onChange={e => setSearch(e.target.value)}
-                           placeholder="Buscar cliente o producto..." className="input pl-9 w-64" />
+                           placeholder="Buscar cliente, producto o #pedido..." className="input pl-9 w-64" />
                 </div>
                 <select
                     value={filterEstado}
