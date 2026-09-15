@@ -66,6 +66,12 @@ export default function NTAssistant() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Libera la captura de puntero solo si sigue activa — evitar excepciones cuando
+    // el navegador ya la soltó por su cuenta (p.ej. pointercancel + pointerup seguidos).
+    const releasePointerSafely = (el: HTMLElement, pointerId: number) => {
+        if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
+    };
+
     const handleDragPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
         if (!isDesktop || e.button !== 0) return;
         if ((e.target as HTMLElement).closest('button')) return; // no arrastrar al hacer click en los botones del header
@@ -92,8 +98,17 @@ export default function NTAssistant() {
         });
     };
 
-    const handleDragPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
-        if (dragOrigin.current) e.currentTarget.releasePointerCapture(e.pointerId);
+    // Termina el gesto de arrastre del panel en cualquier camino de salida (pointerup o
+    // pointercancel): libera la captura explícitamente y limpia el origin.
+    const endPanelDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+        releasePointerSafely(e.currentTarget, e.pointerId);
+        dragOrigin.current = null;
+    };
+
+    // Red de seguridad: si el navegador libera la captura sin pasar por pointerup/pointercancel
+    // (p.ej. el usuario cambia de pestaña o de app a mitad del arrastre), igual hay que limpiar
+    // el origin — si no, un pointermove posterior sin captura real podría seguir moviendo el panel.
+    const handlePanelDragLostCapture = () => {
         dragOrigin.current = null;
     };
 
@@ -140,10 +155,12 @@ export default function NTAssistant() {
         });
     };
 
-    const handleBubblePointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // Termina el gesto de arrastre de la burbuja en cualquier camino de salida (pointerup o
+    // pointercancel): libera la captura explícitamente antes de decidir clic vs. arrastre.
+    const endBubbleDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
         const origin = bubbleDragOrigin.current;
+        releasePointerSafely(e.currentTarget, e.pointerId);
         if (origin) {
-            e.currentTarget.releasePointerCapture(e.pointerId);
             // Decisión final clic vs. arrastre: combina distancia recorrida y duración del gesto.
             // Un gesto corto o con poco desplazamiento neto se trata como clic aunque el umbral
             // de distancia se haya cruzado momentáneamente durante el move (jitter de mouse/trackpad).
@@ -156,6 +173,14 @@ export default function NTAssistant() {
         // Si hubo un arrastre real (y el panel no está abierto ahora mismo), olvida la
         // posición fija del panel para que el próximo clic lo reubique junto a la burbuja
         if (bubbleDraggedRef.current && !open) setPos(null);
+    };
+
+    // Red de seguridad: si el navegador libera la captura sin pasar por pointerup/pointercancel
+    // (p.ej. cambio de pestaña a mitad de un drag), resetea el estado para no dejar un origin
+    // "vivo" que un pointermove posterior (ya sin captura real) pueda seguir usando.
+    const handleBubbleLostPointerCapture = () => {
+        bubbleDragOrigin.current = null;
+        bubbleDraggedRef.current = false;
     };
 
     const handleBubbleClick = () => {
@@ -215,8 +240,9 @@ export default function NTAssistant() {
                     <div
                         onPointerDown={handleDragPointerDown}
                         onPointerMove={handleDragPointerMove}
-                        onPointerUp={handleDragPointerUp}
-                        onPointerCancel={handleDragPointerUp}
+                        onPointerUp={endPanelDrag}
+                        onPointerCancel={endPanelDrag}
+                        onLostPointerCapture={handlePanelDragLostCapture}
                         className={clsx(
                             'flex items-center gap-2.5 px-4 py-3.5 bg-sidebar border-b border-sidebar-border flex-shrink-0',
                             isDesktop && 'cursor-grab active:cursor-grabbing touch-none select-none',
@@ -347,8 +373,9 @@ export default function NTAssistant() {
                 style={bubbleStyle}
                 onPointerDown={handleBubblePointerDown}
                 onPointerMove={handleBubblePointerMove}
-                onPointerUp={handleBubblePointerUp}
-                onPointerCancel={handleBubblePointerUp}
+                onPointerUp={endBubbleDrag}
+                onPointerCancel={endBubbleDrag}
+                onLostPointerCapture={handleBubbleLostPointerCapture}
                 className={clsx(
                     'fixed z-50 bottom-6 right-6 w-16 h-16',
                     isDesktop && 'touch-none select-none',
