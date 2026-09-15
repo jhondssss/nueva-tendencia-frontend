@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import type { KeyboardEvent, PointerEvent as ReactPointerEvent, CSSProperties } from 'react';
+import type { KeyboardEvent, MouseEvent as ReactMouseEvent, CSSProperties } from 'react';
 import { Bot, X, Minus, Send, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
@@ -21,12 +21,15 @@ export default function NTAssistant() {
 
     // Posición del panel cuando el usuario lo arrastra (null = posición flotante por defecto)
     const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-    const dragOrigin = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
 
     // Posición de la burbuja cuando el usuario la arrastra (null = esquina inferior derecha por defecto)
     const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null);
-    const bubbleDragOrigin = useRef<{ startX: number; startY: number; origX: number; origY: number; startTime: number } | null>(null);
     const bubbleDraggedRef = useRef(false); // true si el gesto actual superó el umbral de arrastre
+
+    // Cleanup de los listeners de document/window del drag en curso (panel o burbuja),
+    // por si el componente se desmonta a mitad de un arrastre.
+    const dragCleanupRef = useRef<(() => void) | null>(null);
+    useEffect(() => () => dragCleanupRef.current?.(), []);
 
     const bottomRef = useRef<HTMLDivElement>(null);
     const inputRef  = useRef<HTMLTextAreaElement>(null);
@@ -66,50 +69,41 @@ export default function NTAssistant() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Libera la captura de puntero solo si sigue activa — evitar excepciones cuando
-    // el navegador ya la soltó por su cuenta (p.ej. pointercancel + pointerup seguidos).
-    const releasePointerSafely = (el: HTMLElement, pointerId: number) => {
-        if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
-    };
-
-    const handleDragPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // Patrón clásico de drag: en mousedown se agregan mousemove/mouseup al document,
+    // y se quitan en el mouseup. No depende de setPointerCapture (que se comportó de
+    // forma inconsistente entre navegadores en desktop).
+    const handleDragMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
         if (!isDesktop || e.button !== 0) return;
         if ((e.target as HTMLElement).closest('button')) return; // no arrastrar al hacer click en los botones del header
         const panel = panelRef.current;
         if (!panel) return;
+        e.preventDefault();
 
         const rect = panel.getBoundingClientRect();
-        dragOrigin.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
-        e.currentTarget.setPointerCapture(e.pointerId);
-    };
+        const origin = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
 
-    const handleDragPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-        const origin = dragOrigin.current;
-        const panel = panelRef.current;
-        if (!origin || !panel) return;
+        const handleMouseMove = (ev: MouseEvent) => {
+            const p = panelRef.current;
+            if (!p) return;
+            const { offsetWidth: w, offsetHeight: h } = p;
+            const nextX = origin.origX + (ev.clientX - origin.startX);
+            const nextY = origin.origY + (ev.clientY - origin.startY);
 
-        const { offsetWidth: w, offsetHeight: h } = panel;
-        const nextX = origin.origX + (e.clientX - origin.startX);
-        const nextY = origin.origY + (e.clientY - origin.startY);
+            setPos({
+                x: Math.min(Math.max(nextX, 0), Math.max(0, window.innerWidth - w)),
+                y: Math.min(Math.max(nextY, 0), Math.max(0, window.innerHeight - h)),
+            });
+        };
 
-        setPos({
-            x: Math.min(Math.max(nextX, 0), Math.max(0, window.innerWidth - w)),
-            y: Math.min(Math.max(nextY, 0), Math.max(0, window.innerHeight - h)),
-        });
-    };
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            dragCleanupRef.current = null;
+        };
 
-    // Termina el gesto de arrastre del panel en cualquier camino de salida (pointerup o
-    // pointercancel): libera la captura explícitamente y limpia el origin.
-    const endPanelDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
-        releasePointerSafely(e.currentTarget, e.pointerId);
-        dragOrigin.current = null;
-    };
-
-    // Red de seguridad: si el navegador libera la captura sin pasar por pointerup/pointercancel
-    // (p.ej. el usuario cambia de pestaña o de app a mitad del arrastre), igual hay que limpiar
-    // el origin — si no, un pointermove posterior sin captura real podría seguir moviendo el panel.
-    const handlePanelDragLostCapture = () => {
-        dragOrigin.current = null;
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        dragCleanupRef.current = handleMouseUp;
     };
 
     const panelStyle: CSSProperties | undefined = (pos && isDesktop)
@@ -127,60 +121,57 @@ export default function NTAssistant() {
         };
     };
 
-    const handleBubblePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // Mismo patrón clásico mousedown→document mousemove/mouseup que el panel, aplicado
+    // a la burbuja. Mantiene la distinción clic vs. arrastre por distancia + duración.
+    const handleBubbleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
         if (!isDesktop || e.button !== 0) return;
         const bubble = bubbleRef.current;
         if (!bubble) return;
+        e.preventDefault();
 
         const rect = bubble.getBoundingClientRect();
-        bubbleDragOrigin.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top, startTime: performance.now() };
+        const origin = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top, startTime: performance.now() };
         bubbleDraggedRef.current = false;
-        e.currentTarget.setPointerCapture(e.pointerId);
-    };
 
-    const handleBubblePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-        const origin = bubbleDragOrigin.current;
-        if (!origin) return;
+        const handleMouseMove = (ev: MouseEvent) => {
+            const dx = ev.clientX - origin.startX;
+            const dy = ev.clientY - origin.startY;
+            if (Math.hypot(dx, dy) > DRAG_THRESHOLD) bubbleDraggedRef.current = true;
 
-        const dx = e.clientX - origin.startX;
-        const dy = e.clientY - origin.startY;
-        if (Math.hypot(dx, dy) > DRAG_THRESHOLD) bubbleDraggedRef.current = true;
+            const nextX = origin.origX + dx;
+            const nextY = origin.origY + dy;
 
-        const nextX = origin.origX + dx;
-        const nextY = origin.origY + dy;
+            setBubblePos({
+                x: Math.min(Math.max(nextX, 0), Math.max(0, window.innerWidth - BUBBLE_SIZE)),
+                y: Math.min(Math.max(nextY, 0), Math.max(0, window.innerHeight - BUBBLE_SIZE)),
+            });
+        };
 
-        setBubblePos({
-            x: Math.min(Math.max(nextX, 0), Math.max(0, window.innerWidth - BUBBLE_SIZE)),
-            y: Math.min(Math.max(nextY, 0), Math.max(0, window.innerHeight - BUBBLE_SIZE)),
-        });
-    };
+        const handleMouseUp = (ev: MouseEvent) => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            dragCleanupRef.current = null;
 
-    // Termina el gesto de arrastre de la burbuja en cualquier camino de salida (pointerup o
-    // pointercancel): libera la captura explícitamente antes de decidir clic vs. arrastre.
-    const endBubbleDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
-        const origin = bubbleDragOrigin.current;
-        releasePointerSafely(e.currentTarget, e.pointerId);
-        if (origin) {
             // Decisión final clic vs. arrastre: combina distancia recorrida y duración del gesto.
             // Un gesto corto o con poco desplazamiento neto se trata como clic aunque el umbral
             // de distancia se haya cruzado momentáneamente durante el move (jitter de mouse/trackpad).
-            const distance = Math.hypot(e.clientX - origin.startX, e.clientY - origin.startY);
+            const distance = Math.hypot(ev.clientX - origin.startX, ev.clientY - origin.startY);
             const elapsed = performance.now() - origin.startTime;
             const wasClick = distance < DRAG_THRESHOLD || elapsed < CLICK_MAX_DURATION;
             bubbleDraggedRef.current = !wasClick;
-        }
-        bubbleDragOrigin.current = null;
-        // Si hubo un arrastre real (y el panel no está abierto ahora mismo), olvida la
-        // posición fija del panel para que el próximo clic lo reubique junto a la burbuja
-        if (bubbleDraggedRef.current && !open) setPos(null);
-    };
 
-    // Red de seguridad: si el navegador libera la captura sin pasar por pointerup/pointercancel
-    // (p.ej. cambio de pestaña a mitad de un drag), resetea el estado para no dejar un origin
-    // "vivo" que un pointermove posterior (ya sin captura real) pueda seguir usando.
-    const handleBubbleLostPointerCapture = () => {
-        bubbleDragOrigin.current = null;
-        bubbleDraggedRef.current = false;
+            // TEMPORAL: diagnóstico del bug de apertura en desktop — quitar una vez confirmado
+            // que la burbuja abre de forma consistente en Chrome/Brave reales.
+            console.log('[NTAssistant] bubble drag end', { distance, elapsed, dragged: bubbleDraggedRef.current });
+
+            // Si hubo un arrastre real (y el panel no está abierto ahora mismo), olvida la
+            // posición fija del panel para que el próximo clic lo reubique junto a la burbuja
+            if (bubbleDraggedRef.current && !open) setPos(null);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        dragCleanupRef.current = () => handleMouseUp({ clientX: origin.startX, clientY: origin.startY } as MouseEvent);
     };
 
     const handleBubbleClick = () => {
@@ -238,11 +229,7 @@ export default function NTAssistant() {
                 >
                     {/* Header — arrastrable en desktop */}
                     <div
-                        onPointerDown={handleDragPointerDown}
-                        onPointerMove={handleDragPointerMove}
-                        onPointerUp={endPanelDrag}
-                        onPointerCancel={endPanelDrag}
-                        onLostPointerCapture={handlePanelDragLostCapture}
+                        onMouseDown={handleDragMouseDown}
                         className={clsx(
                             'flex items-center gap-2.5 px-4 py-3.5 bg-sidebar border-b border-sidebar-border flex-shrink-0',
                             isDesktop && 'cursor-grab active:cursor-grabbing touch-none select-none',
@@ -371,11 +358,7 @@ export default function NTAssistant() {
             <div
                 ref={bubbleRef}
                 style={bubbleStyle}
-                onPointerDown={handleBubblePointerDown}
-                onPointerMove={handleBubblePointerMove}
-                onPointerUp={endBubbleDrag}
-                onPointerCancel={endBubbleDrag}
-                onLostPointerCapture={handleBubbleLostPointerCapture}
+                onMouseDown={handleBubbleMouseDown}
                 className={clsx(
                     'fixed z-50 bottom-6 right-6 w-16 h-16',
                     isDesktop && 'touch-none select-none',
