@@ -10,7 +10,8 @@ const PANEL_WIDTH = 440;
 const PANEL_MARGIN = 96; // 6rem — deja espacio respecto al borde inferior de la ventana
 const BUBBLE_SIZE = 64;
 const BUBBLE_ANCHOR_GAP = 12;
-const DRAG_THRESHOLD = 5; // px — por debajo de esto, se considera clic y no arrastre
+const DRAG_THRESHOLD = 10; // px — por debajo de esto, se considera clic y no arrastre
+const CLICK_MAX_DURATION = 200; // ms — gestos más cortos que esto se consideran clic aunque se haya movido el puntero
 
 export default function NTAssistant() {
     const [open, setOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function NTAssistant() {
 
     // Posición de la burbuja cuando el usuario la arrastra (null = esquina inferior derecha por defecto)
     const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null);
-    const bubbleDragOrigin = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+    const bubbleDragOrigin = useRef<{ startX: number; startY: number; origX: number; origY: number; startTime: number } | null>(null);
     const bubbleDraggedRef = useRef(false); // true si el gesto actual superó el umbral de arrastre
 
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -117,7 +118,7 @@ export default function NTAssistant() {
         if (!bubble) return;
 
         const rect = bubble.getBoundingClientRect();
-        bubbleDragOrigin.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+        bubbleDragOrigin.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top, startTime: performance.now() };
         bubbleDraggedRef.current = false;
         e.currentTarget.setPointerCapture(e.pointerId);
     };
@@ -140,7 +141,17 @@ export default function NTAssistant() {
     };
 
     const handleBubblePointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
-        if (bubbleDragOrigin.current) e.currentTarget.releasePointerCapture(e.pointerId);
+        const origin = bubbleDragOrigin.current;
+        if (origin) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+            // Decisión final clic vs. arrastre: combina distancia recorrida y duración del gesto.
+            // Un gesto corto o con poco desplazamiento neto se trata como clic aunque el umbral
+            // de distancia se haya cruzado momentáneamente durante el move (jitter de mouse/trackpad).
+            const distance = Math.hypot(e.clientX - origin.startX, e.clientY - origin.startY);
+            const elapsed = performance.now() - origin.startTime;
+            const wasClick = distance < DRAG_THRESHOLD || elapsed < CLICK_MAX_DURATION;
+            bubbleDraggedRef.current = !wasClick;
+        }
         bubbleDragOrigin.current = null;
         // Si hubo un arrastre real (y el panel no está abierto ahora mismo), olvida la
         // posición fija del panel para que el próximo clic lo reubique junto a la burbuja
