@@ -4,8 +4,10 @@ import { Bot, X, Minus, Send } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
+import { useRole } from '@/hooks/useRole';
 import NTMessageContent from './NTMessageContent';
 import TypingIndicator from './TypingIndicator';
+import { getSugerencias } from './suggestions';
 
 const DESKTOP_QUERY = '(min-width: 640px)';
 const PANEL_WIDTH = 440;
@@ -39,6 +41,7 @@ export default function NTAssistant() {
     const bubbleRef = useRef<HTMLDivElement>(null);
 
     const { messages, isLoading, input, setInput, sendMessage, sendQuick } = useNTAssistant();
+    const { isCliente } = useRole();
 
     // Detecta cambios entre mobile/desktop para habilitar el drag solo en desktop
     useEffect(() => {
@@ -187,12 +190,7 @@ export default function NTAssistant() {
         ? { left: bubblePos.x, top: bubblePos.y, right: 'auto', bottom: 'auto' }
         : undefined;
 
-    const SUGERENCIAS = [
-        '¿Cuántos pedidos pendientes?',
-        '¿Stock crítico?',
-        '¿Ventas del mes?',
-        '¿Pedidos por entregar hoy?',
-    ];
+    const SUGERENCIAS = getSugerencias(isCliente);
 
     // Auto-scroll al último mensaje
     useEffect(() => {
