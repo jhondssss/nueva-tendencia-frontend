@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import NTMessageContent from './NTMessageContent';
 
 function renderConRouter(content: string) {
@@ -54,5 +54,48 @@ describe('NTMessageContent', () => {
 
         expect(screen.getByRole('button', { name: '#12' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: '#45' })).toBeInTheDocument();
+    });
+
+    it('convierte una URL de reporte PDF en un botón de descarga', () => {
+        render(
+            <NTMessageContent
+                content="Aquí tienes tu reporte: https://api.nueva-tendencia.com/reportes/pdf/ventas?year=2026"
+            />,
+        );
+
+        const boton = screen.getByRole('button', { name: /Descargar: Reporte de ventas/ });
+        expect(boton).toBeInTheDocument();
+        expect(screen.queryByText(/https:\/\//)).not.toBeInTheDocument();
+    });
+
+    it('detecta URL de reporte Excel y no rompe la puntuación de la frase', () => {
+        render(
+            <NTMessageContent
+                content="Tu reporte de kardex está listo: https://api.nueva-tendencia.com/reportes/excel/kardex?desde=2026-09-01."
+            />,
+        );
+
+        expect(screen.getByRole('button', { name: /Descargar: Reporte de kardex/ })).toBeInTheDocument();
+    });
+
+    it('al hacer clic en el botón de reporte abre la URL en una pestaña nueva', async () => {
+        const user = userEvent.setup();
+        const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+
+        render(
+            <NTMessageContent
+                content="https://api.nueva-tendencia.com/reportes/pdf/stock"
+            />,
+        );
+
+        await user.click(screen.getByRole('button', { name: /Descargar: Reporte de stock/ }));
+
+        expect(openSpy).toHaveBeenCalledWith(
+            'https://api.nueva-tendencia.com/reportes/pdf/stock',
+            '_blank',
+            'noopener,noreferrer',
+        );
+
+        openSpy.mockRestore();
     });
 });
