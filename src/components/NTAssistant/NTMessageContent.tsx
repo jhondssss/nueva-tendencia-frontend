@@ -1,12 +1,23 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import NTPedidoLink from './NTPedidoLink';
 
 interface Props {
     content: string;
 }
 
-/** Renderiza el texto de una respuesta del asistente como markdown (negritas, listas, saltos de línea). */
+const PEDIDO_PREFIX = '#nt-pedido-';
+
+// Convierte "#123" (el patrón que usa el sistema para referenciar pedidos) en un link
+// markdown con un fragmento propio, para interceptarlo en el renderer de <a> y navegar
+// con react-router. Un href con esquema custom (ej. "nt-pedido:123") lo sanitiza
+// react-markdown a "" por seguridad; un fragmento "#..." sí pasa esa sanitización.
+function linkifyPedidos(text: string): string {
+    return text.replace(/#(\d+)\b/g, (match, id) => `[${match}](${PEDIDO_PREFIX}${id})`);
+}
+
+/** Renderiza el texto de una respuesta del asistente como markdown (negritas, listas, saltos de línea, #pedido). */
 export default function NTMessageContent({ content }: Props) {
     return (
         <div className="max-w-none break-words
@@ -16,8 +27,18 @@ export default function NTMessageContent({ content }: Props) {
                          [&_li]:mt-0.5
                          [&_strong]:font-semibold
                          [&_a]:text-primary [&_a]:underline">
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                {content}
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm, remarkBreaks]}
+                components={{
+                    a: ({ href, children }) => {
+                        if (href?.startsWith(PEDIDO_PREFIX)) {
+                            return <NTPedidoLink idPedido={href.slice(PEDIDO_PREFIX.length)} />;
+                        }
+                        return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+                    },
+                }}
+            >
+                {linkifyPedidos(content)}
             </ReactMarkdown>
         </div>
     );

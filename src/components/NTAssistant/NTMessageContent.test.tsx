@@ -1,6 +1,19 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import NTMessageContent from './NTMessageContent';
+
+function renderConRouter(content: string) {
+    return render(
+        <MemoryRouter initialEntries={['/dashboard']}>
+            <Routes>
+                <Route path="/dashboard" element={<NTMessageContent content={content} />} />
+                <Route path="/pedidos" element={<p>Vista de pedidos</p>} />
+            </Routes>
+        </MemoryRouter>,
+    );
+}
 
 describe('NTMessageContent', () => {
     it('renderiza negritas', () => {
@@ -24,5 +37,22 @@ describe('NTMessageContent', () => {
     it('renderiza texto plano sin markdown', () => {
         render(<NTMessageContent content="Todo en orden." />);
         expect(screen.getByText('Todo en orden.')).toBeInTheDocument();
+    });
+
+    it('convierte un #pedido en un botón clickeable que navega a /pedidos', async () => {
+        const user = userEvent.setup();
+        renderConRouter('El pedido #123 está en producción.');
+
+        const boton = screen.getByRole('button', { name: '#123' });
+        await user.click(boton);
+
+        expect(await screen.findByText('Vista de pedidos')).toBeInTheDocument();
+    });
+
+    it('detecta varios #pedido en el mismo mensaje', () => {
+        renderConRouter('Tenés atrasados el #12 y el #45.');
+
+        expect(screen.getByRole('button', { name: '#12' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: '#45' })).toBeInTheDocument();
     });
 });
