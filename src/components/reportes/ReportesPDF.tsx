@@ -9,6 +9,7 @@ import FiltrosPedidosReporte from './FiltrosPedidosReporte';
 import FiltroCategoria from './FiltroCategoria';
 import FiltrosKardexReporte from './FiltrosKardexReporte';
 import { limpiarFiltrosPedidos, limpiarFiltrosKardex } from './reporteFiltrosUtils';
+import { MESES } from './SelectorMesAnio';
 
 interface PdfCard {
     key:      string;
@@ -29,7 +30,8 @@ interface Props {
 export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Props) {
     const { isAdmin } = useRole();
     const currentYear = new Date().getFullYear();
-    const [yearVentas, setYearVentas] = useState(currentYear);
+    const [yearVentas, setYearVentas] = useState<number | undefined>(undefined);
+    const [monthVentas, setMonthVentas] = useState<number | undefined>(undefined);
     const years = [currentYear - 2, currentYear - 1, currentYear];
 
     const [filtrosPedidos, setFiltrosPedidos] = useState<ReporteFiltrosPedidos>({});
@@ -42,12 +44,27 @@ export default function ReportesPDF({ onDescargar, onVistaPrevia, loading }: Pro
             icon:     TrendingUp,
             title:    'Ventas por Mes',
             desc:     'Tendencia mensual de ingresos por año',
-            fetcher:  () => reportesApi.getPdfVentas(yearVentas),
-            filename: () => `ventas-${yearVentas}.pdf`,
+            fetcher:  () => reportesApi.getPdfVentas(yearVentas, monthVentas),
+            filename: () => {
+                const partes = [monthVentas && MESES.find(m => m.value === monthVentas)?.label, yearVentas]
+                    .filter(Boolean);
+                return partes.length ? `ventas-${partes.join('-')}.pdf` : 'ventas.pdf';
+            },
             extra: (
-                <select value={yearVentas} onChange={e => setYearVentas(Number(e.target.value))} className="select text-sm">
-                    {years.map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
+                <div className="flex gap-2">
+                    <select value={monthVentas ?? ''}
+                            onChange={e => setMonthVentas(e.target.value ? Number(e.target.value) : undefined)}
+                            className="select text-sm">
+                        <option value="">Todos los meses</option>
+                        {MESES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                    </select>
+                    <select value={yearVentas ?? ''}
+                            onChange={e => setYearVentas(e.target.value ? Number(e.target.value) : undefined)}
+                            className="select text-sm">
+                        <option value="">Todos los años</option>
+                        {years.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                </div>
             ),
         }] : []),
         {

@@ -168,8 +168,8 @@ export const kardexApi = {
 
 // ─── Reportes ─────────────────────────────────────────────────────────────────
 export const reportesApi = {
-    getPdfVentas:              (year: number) =>
-        api.get<Blob>(`/reportes/pdf/ventas?year=${year}`, { responseType: 'blob' }),
+    getPdfVentas:              (year?: number, month?: number) =>
+        api.get<Blob>('/reportes/pdf/ventas', { responseType: 'blob', params: { year, month } }),
     getPdfPedidos:             (filtros?: ReporteFiltrosPedidos) =>
         api.get<Blob>('/reportes/pdf/pedidos', { responseType: 'blob', params: filtros }),
     getPdfStockCritico:        (categoria?: CategoriaCalzado) =>
