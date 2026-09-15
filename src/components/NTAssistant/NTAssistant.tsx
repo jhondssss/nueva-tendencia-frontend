@@ -160,10 +160,6 @@ export default function NTAssistant() {
             const wasClick = distance < DRAG_THRESHOLD || elapsed < CLICK_MAX_DURATION;
             bubbleDraggedRef.current = !wasClick;
 
-            // TEMPORAL: diagnóstico del bug de apertura en desktop — quitar una vez confirmado
-            // que la burbuja abre de forma consistente en Chrome/Brave reales.
-            console.log('[NTAssistant] bubble drag end', { distance, elapsed, dragged: bubbleDraggedRef.current });
-
             // Si hubo un arrastre real (y el panel no está abierto ahora mismo), olvida la
             // posición fija del panel para que el próximo clic lo reubique junto a la burbuja
             if (bubbleDraggedRef.current && !open) setPos(null);
@@ -377,7 +373,9 @@ export default function NTAssistant() {
                         'bg-cafe-gradient shadow-glow-cafe',
                         'flex items-center justify-center',
                         'hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-200',
-                        isDesktop && 'cursor-grab active:cursor-grabbing',
+                        // cursor-pointer en reposo (es clicable); :active cubre exactamente la
+                        // ventana mousedown→mouseup, que es cuando puede haber arrastre real.
+                        isDesktop && 'cursor-pointer active:cursor-grabbing',
                         open && 'rotate-12',
                     )}
                     title="NT Assistant"
