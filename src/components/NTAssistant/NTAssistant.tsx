@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import type { KeyboardEvent, MouseEvent as ReactMouseEvent, CSSProperties } from 'react';
-import { Bot, X, Minus, Send, Loader2 } from 'lucide-react';
+import { Bot, X, Minus, Send } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
 import NTMessageContent from './NTMessageContent';
+import TypingIndicator from './TypingIndicator';
 
 const DESKTOP_QUERY = '(min-width: 640px)';
 const PANEL_WIDTH = 440;
@@ -297,7 +298,7 @@ export default function NTAssistant() {
                         {isLoading && (
                             <div className="flex justify-start">
                                 <div className="bg-card border border-border rounded-xl rounded-bl-sm px-3 py-2.5 shadow-card">
-                                    <Loader2 size={14} className="text-muted-foreground animate-spin" />
+                                    <TypingIndicator />
                                 </div>
                             </div>
                         )}
