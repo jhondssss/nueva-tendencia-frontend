@@ -1,9 +1,14 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import PedidosTable from './PedidosTable';
+import { reportesApi } from '@/api/services';
 import type { Pedido } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
+
+vi.mock('@/api/services', () => ({
+    reportesApi: { getPdfComprobante: vi.fn() },
+}));
 
 function makePedido(overrides: Partial<Pedido> = {}): Pedido {
     return {
@@ -106,5 +111,20 @@ describe('PedidosTable — transición de estado ("Siguiente etapa")', () => {
         await user.click(screen.getByRole('button', { name: /aparado/i }));
 
         expect(onMover).toHaveBeenCalledWith(12, 'Aparado');
+    });
+});
+
+describe('PedidosTable — descarga de comprobante', () => {
+    it('click en el ícono de descarga pide el PDF del comprobante para ese pedido', async () => {
+        vi.mocked(reportesApi.getPdfComprobante).mockResolvedValue({ data: new Blob(['pdf']) } as never);
+        vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock');
+        vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+        const user = userEvent.setup();
+
+        renderTable([makePedido({ id_pedido: 42 })]);
+
+        await user.click(screen.getByTitle('Descargar comprobante'));
+
+        await waitFor(() => expect(reportesApi.getPdfComprobante).toHaveBeenCalledWith(42));
     });
 });

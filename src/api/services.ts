@@ -172,6 +172,8 @@ export const reportesApi = {
         api.get<Blob>('/reportes/pdf/ventas', { responseType: 'blob', params: { year, month } }),
     getPdfPedidos:             (filtros?: ReporteFiltrosPedidos) =>
         api.get<Blob>('/reportes/pdf/pedidos', { responseType: 'blob', params: filtros }),
+    getPdfComprobante:         (pedidoId: number) =>
+        api.get<Blob>(`/reportes/pdf/comprobante/${pedidoId}`, { responseType: 'blob' }),
     getPdfStockCritico:        (categoria?: CategoriaCalzado) =>
         api.get<Blob>('/reportes/pdf/stock-critico', { responseType: 'blob', params: { categoria } }),
     getExcelPedidos:           (filtros?: ReporteFiltrosPedidos) =>

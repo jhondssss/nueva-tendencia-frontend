@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Edit2, Trash2, ClipboardList, ChevronDown, Link2, ArrowRight, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Edit2, Trash2, ClipboardList, ChevronDown, Link2, ArrowRight, CheckCircle2, AlertTriangle, Download, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StatusBadge from '@/components/shared/StatusBadge';
 import Pagination from '@/components/shared/Pagination';
@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { clsx } from 'clsx';
+import { reportesApi } from '@/api/services';
 import type { Pedido, EstadoPedido, CategoriaCalzado, UnidadPedido } from '@/types';
 import type { PaginationResult } from '@/hooks/usePagination';
 import { TALLAS_POR_CATEGORIA, CATEGORIA_INFO, CATEGORIA_ACCENT_TEXT, CATEGORIA_ACCENT_BADGE, defaultTallas } from './TallaInfoBox';
 import { parseLocalDate } from '@/utils/dates';
+import { triggerDownload } from '@/utils/download';
 
 const ESTADOS: EstadoPedido[] = ['Pendiente', 'Cortado', 'Aparado', 'Solado', 'Empaque', 'Terminado'];
 
@@ -89,6 +91,19 @@ function copiarLink(token: string) {
 
 export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDelete, hideTotals = false, isLoading, error, onRetry, pagination, total }: Props) {
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
+    const [descargando, setDescargando] = useState<Record<number, boolean>>({});
+
+    async function descargarComprobante(p: Pedido) {
+        setDescargando(prev => ({ ...prev, [p.id_pedido]: true }));
+        try {
+            const res = await reportesApi.getPdfComprobante(p.id_pedido);
+            triggerDownload(res.data, `comprobante-pedido-${p.id_pedido}.pdf`);
+        } catch {
+            toast.error('Error al descargar el comprobante');
+        } finally {
+            setDescargando(prev => ({ ...prev, [p.id_pedido]: false }));
+        }
+    }
 
     return (
         <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden
@@ -220,6 +235,16 @@ export default function PedidosTable({ onEdit, onDelete, onMover, canEdit, canDe
                                                     <Link2 size={13} />
                                                 </Button>
                                             )}
+                                            <Button
+                                                variant="ghost" size="icon"
+                                                onClick={() => void descargarComprobante(p)}
+                                                disabled={!!descargando[p.id_pedido]}
+                                                title="Descargar comprobante"
+                                                className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                                {descargando[p.id_pedido]
+                                                    ? <Loader2 size={13} className="animate-spin" />
+                                                    : <Download size={13} />}
+                                            </Button>
                                         </div>
                                     </TableCell>
                                 </TableRow>,
