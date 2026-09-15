@@ -4,6 +4,7 @@ import { Bot, X, Minus, Send, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
+import NTMessageContent from './NTMessageContent';
 
 const DESKTOP_QUERY = '(min-width: 640px)';
 const PANEL_WIDTH = 440;
@@ -286,7 +287,9 @@ export default function NTAssistant() {
                                             : 'bg-card border border-border text-foreground rounded-bl-sm shadow-card',
                                     )}
                                 >
-                                    {msg.content}
+                                    {msg.role === 'assistant'
+                                        ? <NTMessageContent content={msg.content} />
+                                        : msg.content}
                                 </div>
                             </div>
                         ))}
