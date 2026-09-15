@@ -206,7 +206,7 @@ export const auditoriaApi = {
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export const dashboardApi = {
-    getKpis:             () => api.get<DashboardKpis>('/dashboard/kpis'),
+    getKpis:             (config?: AxiosRequestConfig) => api.get<DashboardKpis>('/dashboard/kpis', config),
     getOrdersStatus:     () => api.get<OrdersStatus[]>('/dashboard/orders-status'),
     getProductionFunnel: () => api.get<ProductionFunnel[]>('/dashboard/production-funnel'),
     getRecentActivity:   () => api.get<RecentActivity[]>('/dashboard/recent-activity'),
@@ -217,7 +217,7 @@ export const dashboardApi = {
         demanda_mensual: number; semanas_restantes: number | null;
         alerta: boolean; critico: boolean;
     }[]>('/dashboard/prediccion-stock'),
-    proximosAEntregar:   () => api.get<ProximoPedido[]>('/dashboard/proximos-a-entregar'),
+    proximosAEntregar:   (config?: AxiosRequestConfig) => api.get<ProximoPedido[]>('/dashboard/proximos-a-entregar', config),
 };
 
 // ─── Búsqueda global ──────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import { Bot, X, Minus, Send } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { useNTAssistant } from '@/hooks/useNTAssistant';
+import { useNTAssistantAlerts } from '@/hooks/useNTAssistantAlerts';
 import { useRole } from '@/hooks/useRole';
 import NTMessageContent from './NTMessageContent';
 import TypingIndicator from './TypingIndicator';
@@ -42,6 +43,7 @@ export default function NTAssistant() {
 
     const { messages, isLoading, input, setInput, sendMessage, sendQuick } = useNTAssistant();
     const { isCliente } = useRole();
+    const hasAlertaUrgente = useNTAssistantAlerts();
 
     // Detecta cambios entre mobile/desktop para habilitar el drag solo en desktop
     useEffect(() => {
@@ -387,6 +389,12 @@ export default function NTAssistant() {
                         : <Bot size={26} className="text-white" />
                     }
                 </button>
+                {!open && hasAlertaUrgente && (
+                    <span
+                        aria-label="Hay alertas urgentes sin revisar"
+                        className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-crema pointer-events-none"
+                    />
+                )}
             </div>
         </>
     );
