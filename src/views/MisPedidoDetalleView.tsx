@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Package, Calendar, Ruler, Loader2, Star } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Package, Calendar, Ruler, Loader2, Star, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useMisPedidosStore } from '@/stores/index';
+import { reportesApi } from '@/api/services';
+import { triggerDownload } from '@/utils/download';
 import { formatFechaLarga } from '@/utils/dates';
 import { getImagenEstandarizada } from '@/utils/cloudinary';
 import { Button } from '@/components/ui/button';
@@ -67,8 +69,9 @@ export default function MisPedidoDetalleView() {
     const [pedido, setPedido]   = useState<Pedido | null>(
         () => pedidosCargados.find(p => p.id_pedido === Number(id)) ?? null,
     );
-    const [loading, setLoading] = useState(true);
-    const [error, setError]     = useState<string | null>(null);
+    const [loading, setLoading]         = useState(true);
+    const [error, setError]             = useState<string | null>(null);
+    const [descargando, setDescargando] = useState(false);
 
     useEffect(() => {
         if (!id) { setError('Pedido inválido.'); setLoading(false); return; }
@@ -83,6 +86,19 @@ export default function MisPedidoDetalleView() {
             })
             .finally(() => setLoading(false));
     }, [id, fetchOne]);
+
+    const handleDescargarComprobante = async () => {
+        if (!pedido) return;
+        setDescargando(true);
+        try {
+            const res = await reportesApi.getPdfComprobante(pedido.id_pedido);
+            triggerDownload(res.data, `comprobante-pedido-${pedido.id_pedido}.pdf`);
+        } catch {
+            toast.error('No pudimos descargar el comprobante. Intenta nuevamente.');
+        } finally {
+            setDescargando(false);
+        }
+    };
 
     const handleCalificar = async (puntuacion: number, comentario: string) => {
         if (!pedido) return;
@@ -135,7 +151,19 @@ export default function MisPedidoDetalleView() {
                                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-0.5">Pedido</p>
                                 <p className="text-2xl font-bold text-foreground">#{pedido.id_pedido}</p>
                             </div>
-                            <StatusBadge estado={pedido.estado} />
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <StatusBadge estado={pedido.estado} />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => void handleDescargarComprobante()}
+                                    disabled={descargando}
+                                >
+                                    {descargando
+                                        ? <><Loader2 size={14} className="animate-spin" /> Descargando...</>
+                                        : <><Download size={14} /> Descargar comprobante</>}
+                                </Button>
+                            </div>
                         </CardContent>
                     </Card>
 

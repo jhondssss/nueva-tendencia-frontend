@@ -5,11 +5,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import toast from 'react-hot-toast';
 import MisPedidoDetalleView from './MisPedidoDetalleView';
 import { useMisPedidosStore } from '@/stores/index';
-import { pedidoApi } from '@/api/services';
+import { pedidoApi, reportesApi } from '@/api/services';
 import type { Pedido } from '@/types';
 
 vi.mock('@/api/services', () => ({
     pedidoApi: { misPedidoDetalle: vi.fn(), calificar: vi.fn() },
+    reportesApi: { getPdfComprobante: vi.fn() },
+}));
+
+vi.mock('@/utils/download', () => ({
+    triggerDownload: vi.fn(),
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -179,6 +184,38 @@ describe('MisPedidoDetalleView — error del backend', () => {
 
         // El formulario sigue visible — no se marcó como ya calificado
         expect(screen.getByRole('button', { name: 'Enviar calificación' })).toBeInTheDocument();
+    });
+});
+
+describe('MisPedidoDetalleView — descargar comprobante', () => {
+    it('descarga el PDF del comprobante al hacer click', async () => {
+        vi.mocked(reportesApi.getPdfComprobante).mockResolvedValueOnce({
+            data: new Blob(['pdf']),
+        } as never);
+
+        const user = userEvent.setup();
+        renderView(makePedido());
+        await screen.findByText('#1');
+
+        await user.click(screen.getByRole('button', { name: /Descargar comprobante/ }));
+
+        await waitFor(() => expect(reportesApi.getPdfComprobante).toHaveBeenCalledWith(1));
+        const { triggerDownload } = await import('@/utils/download');
+        await waitFor(() => expect(triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'comprobante-pedido-1.pdf'));
+    });
+
+    it('muestra un error si falla la descarga', async () => {
+        vi.mocked(reportesApi.getPdfComprobante).mockRejectedValueOnce(new Error('500'));
+
+        const user = userEvent.setup();
+        renderView(makePedido());
+        await screen.findByText('#1');
+
+        await user.click(screen.getByRole('button', { name: /Descargar comprobante/ }));
+
+        await waitFor(() => expect(toast.error).toHaveBeenCalledWith(
+            'No pudimos descargar el comprobante. Intenta nuevamente.',
+        ));
     });
 });
 
