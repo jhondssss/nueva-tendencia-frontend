@@ -161,6 +161,56 @@ describe('PedidoModal — cálculo de tallas por docena', () => {
         ));
         expect(onSubmit).not.toHaveBeenCalled();
     });
+
+    it('marca la distribución como inválida (no en verde) si la suma cruda de tallas es 24 en vez de 12, aunque cantidad=2 haga que el total final sea múltiplo de 12', async () => {
+        const user = userEvent.setup();
+        renderModal();
+        await user.selectOptions(screen.getByDisplayValue('Sin categoría'), 'adulto');
+
+        // Duplicar cada talla (2 -> 4): la suma cruda por docena pasa de 12 a 24
+        const tallaInputs = screen.getAllByRole('spinbutton').slice(0, 6);
+        for (const input of tallaInputs) {
+            await user.clear(input);
+            await user.type(input, '4');
+        }
+
+        // cantidad = 2 docenas → total final = 24 × 2 = 48, que SÍ es múltiplo de 12.
+        // El check debe seguir en rojo porque la distribución de UNA docena está mal.
+        const cantidadInput = screen.getByPlaceholderText('1');
+        await user.clear(cantidadInput);
+        await user.type(cantidadInput, '2');
+
+        expect(screen.getByText(/La distribución debe sumar 12 pares por docena \(actual: 24\)/)).toBeInTheDocument();
+        expect(screen.queryByText(/Total: 48 pares \(4 docenas\)/)).not.toBeInTheDocument();
+    });
+
+    it('no dispara toast.error repetido si se hace clic varias veces en "Crear pedido" con una distribución inválida', async () => {
+        const user = userEvent.setup();
+        const { onSubmit } = renderModal();
+        await seleccionarClienteYProducto(user);
+        await user.selectOptions(screen.getByDisplayValue('Sin categoría'), 'adulto');
+
+        const tallaInputs = screen.getAllByRole('spinbutton').slice(0, 6);
+        for (const input of tallaInputs) {
+            await user.clear(input);
+            await user.type(input, '4');
+        }
+        const cantidadInput = screen.getByPlaceholderText('1');
+        await user.clear(cantidadInput);
+        await user.type(cantidadInput, '2');
+
+        await user.type(screen.getByPlaceholderText('0.00'), '3000');
+        fireEvent.change(document.querySelector('input[type="date"]')!, { target: { value: fechaFutura() } });
+
+        const submitBtn = screen.getByRole('button', { name: /crear pedido/i });
+        fireEvent.click(submitBtn);
+        fireEvent.click(submitBtn);
+        fireEvent.click(submitBtn);
+
+        await waitFor(() => expect(toast.error).toHaveBeenCalled());
+        expect(toast.error).toHaveBeenCalledTimes(1);
+        expect(onSubmit).not.toHaveBeenCalled();
+    });
 });
 
 describe('PedidoModal — validación', () => {

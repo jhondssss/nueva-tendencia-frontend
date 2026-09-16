@@ -89,6 +89,11 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
         () => buildInitialTallas(pedido)
     );
 
+    // isSubmitting de RHF solo se activa una vez que onFormSubmit hace `await`;
+    // el camino de validación de tallas retorna antes de eso, así que clics
+    // repetidos no quedaban bloqueados. isBusy cubre todo el ciclo del submit.
+    const [isBusy, setIsBusy] = useState(false);
+
     // Cuando el mismo pedido se edita dos veces (misma key, sin remount),
     // isOpen pasa de false→true y necesitamos restaurar sus valores.
     useEffect(() => {
@@ -108,25 +113,31 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
     const handleClose = () => { onClose(); reset(DEFAULT_VALUES); setTallasPersonalizadas(null); };
 
     const onFormSubmit = async (data: PedidoFormData) => {
-        if (tallasPersonalizadas && data.categoria) {
-            const sumTallas = tallasPersonalizadas.reduce((s, t) => s + t.cantidad_pares, 0);
-            if (sumTallas !== 12) {
-                toast.error(`La suma de tallas debe ser 12 pares por docena (actual: ${sumTallas})`);
-                return;
+        if (isBusy) return;
+        setIsBusy(true);
+        try {
+            if (tallasPersonalizadas && data.categoria) {
+                const sumTallas = tallasPersonalizadas.reduce((s, t) => s + t.cantidad_pares, 0);
+                if (sumTallas !== 12) {
+                    toast.error(`La suma de tallas debe ser 12 pares por docena (actual: ${sumTallas})`);
+                    return;
+                }
             }
+            const dto: CreatePedidoDto = { ...data, cuero_insumo_id: data.cuero_insumo_id ?? null } as CreatePedidoDto;
+            // Incluir tallas personalizadas solo si difieren del estándar
+            if (tallasPersonalizadas && data.categoria) {
+                const std = defaultTallas(data.categoria);
+                const difiere = tallasPersonalizadas.some(t => {
+                    const s = std.find(d => d.talla === t.talla);
+                    return !s || s.cantidad_pares !== t.cantidad_pares;
+                });
+                if (difiere) dto.tallas_personalizadas = tallasPersonalizadas;
+            }
+            await onSubmit(dto);
+            handleClose();
+        } finally {
+            setIsBusy(false);
         }
-        const dto: CreatePedidoDto = { ...data, cuero_insumo_id: data.cuero_insumo_id ?? null } as CreatePedidoDto;
-        // Incluir tallas personalizadas solo si difieren del estándar
-        if (tallasPersonalizadas && data.categoria) {
-            const std = defaultTallas(data.categoria);
-            const difiere = tallasPersonalizadas.some(t => {
-                const s = std.find(d => d.talla === t.talla);
-                return !s || s.cantidad_pares !== t.cantidad_pares;
-            });
-            if (difiere) dto.tallas_personalizadas = tallasPersonalizadas;
-        }
-        await onSubmit(dto);
-        handleClose();
     };
 
     return (
@@ -248,8 +259,8 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
 
                 <div className="flex justify-end gap-2 pt-2 border-t border-border">
                     <Button type="button" variant="outline" onClick={handleClose}>Cancelar</Button>
-                    <Button type="submit" disabled={isSubmitting} className="hover:scale-[1.02] transition-transform">
-                        {isSubmitting
+                    <Button type="submit" disabled={isSubmitting || isBusy} className="hover:scale-[1.02] transition-transform">
+                        {isSubmitting || isBusy
                             ? <><Loader2 size={14} className="animate-spin" /> {isEditing ? 'Guardando...' : 'Creando...'}</>
                             : isEditing ? 'Guardar cambios' : 'Crear pedido'}
                     </Button>

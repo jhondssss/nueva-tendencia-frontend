@@ -52,7 +52,9 @@ export default function TallaInfoBox({ categoria, editable = false, value, onCha
     const tallas     = value ?? defaultTallas(categoria);
     const total      = tallas.reduce((s, t) => s + t.cantidad_pares, 0);
     const totalFinal = total * cantidad;
-    const esMultiploDeDocena = totalFinal > 0 && totalFinal % 12 === 0;
+    // La distribución es de UNA docena: debe sumar exactamente 12 pares crudos,
+    // sin multiplicar por cantidad (eso solo afecta el total mostrado del pedido).
+    const distribucionValida = total === 12;
     const docenas    = totalFinal / 12;
 
     const handleChange = (talla: number, raw: string) => {
@@ -99,13 +101,13 @@ export default function TallaInfoBox({ categoria, editable = false, value, onCha
                     </div>
                 ))}
             </div>
-            {esMultiploDeDocena ? (
+            {distribucionValida ? (
                 <p className="flex items-center gap-1.5 text-xs text-chart-2 font-medium">
                     <CheckCircle2 size={13} /> Total: {totalFinal} pares ({docenas} {docenas === 1 ? 'docena' : 'docenas'})
                 </p>
             ) : (
                 <p className="flex items-center gap-1.5 text-xs text-chart-3 font-medium">
-                    <AlertTriangle size={13} /> Total: {totalFinal} pares (no es múltiplo de una docena)
+                    <AlertTriangle size={13} /> La distribución debe sumar 12 pares por docena (actual: {total})
                 </p>
             )}
         </div>
