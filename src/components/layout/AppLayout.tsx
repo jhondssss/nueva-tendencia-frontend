@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Star, Search } from 'lucide-react';
+import { Outlet, NavLink, useNavigate, useLocation, matchPath } from 'react-router-dom';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Star, Search, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCommandPaletteStore } from '@/stores/commandPalette.store';
 import { useRole } from '@/hooks/useRole';
@@ -69,12 +69,37 @@ const NAV_GROUPS = [
     },
 ];
 
+const SIDEBAR_SECTIONS_STORAGE_KEY = 'nt-sidebar-collapsed-sections';
+
+function loadCollapsedSections(): Record<string, boolean> {
+    try {
+        const raw = localStorage.getItem(SIDEBAR_SECTIONS_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+}
+
 export default function AppLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
+    const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(loadCollapsedSections);
     const { user, logout } = useAuthStore();
     const { isAdmin, isOperario } = useRole();
     const navigate = useNavigate();
+    const location = useLocation();
     const setSearchOpen = useCommandPaletteStore(s => s.setOpen);
+
+    const toggleSection = (label: string) => {
+        setCollapsedSections(prev => {
+            const next = { ...prev, [label]: !prev[label] };
+            try {
+                localStorage.setItem(SIDEBAR_SECTIONS_STORAGE_KEY, JSON.stringify(next));
+            } catch {
+                // localStorage no disponible (modo privado, etc.) — la preferencia simplemente no persiste
+            }
+            return next;
+        });
+    };
 
     const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
     const shortcutLabel = isMac ? '⌘K' : 'Ctrl K';
@@ -120,15 +145,36 @@ export default function AppLayout() {
                         {NAV_GROUPS.map(({ label, items }) => {
                             const visible = items.filter(item => item.roles.includes(userRole));
                             if (visible.length === 0) return null;
+                            const isCollapsed = !!collapsedSections[label];
+                            const isGroupActive = visible.some(item => matchPath({ path: item.to, end: false }, location.pathname));
+                            const showItems = !sidebarOpen || !isCollapsed;
                             return (
                                 <div key={label}>
                                     {sidebarOpen && (
-                                        <p className="text-2xs text-sidebar-foreground/40 uppercase tracking-widest px-3 pt-3 pb-1 select-none">
-                                            {label}
-                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSection(label)}
+                                            className={clsx(
+                                                'w-full flex items-center justify-between gap-2 px-3 pt-3 pb-1 select-none',
+                                                'text-2xs uppercase tracking-widest transition-colors',
+                                                isGroupActive ? 'text-sidebar-foreground/60' : 'text-sidebar-foreground/40 hover:text-sidebar-foreground/60',
+                                            )}
+                                        >
+                                            <span className="flex items-center gap-1.5">
+                                                {label}
+                                                {isGroupActive && isCollapsed && (
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-sidebar-primary" />
+                                                )}
+                                            </span>
+                                            <ChevronDown
+                                                size={12}
+                                                className={clsx('flex-shrink-0 transition-transform duration-200', isCollapsed && '-rotate-90')}
+                                            />
+                                        </button>
                                     )}
                                     {!sidebarOpen && <Separator className="my-1 bg-sidebar-border/60" />}
-                                    <div className="space-y-0.5">
+                                    {showItems && (
+                                        <div className="space-y-0.5">
                                         {visible.map(({ to, icon: Icon, label: itemLabel, desc }) => {
                                             const link = (
                                                 <NavLink
@@ -166,7 +212,8 @@ export default function AppLayout() {
                                                 </Tooltip>
                                             );
                                         })}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
