@@ -56,10 +56,15 @@ export default function SolicitudesView() {
 
     const handleAprobar = async (id: number, dto: AprobarSolicitudDto) => {
         const actualizada = await aprobar(id, dto);
+        // El store reemplaza el item in-place, pero la lista viene filtrada por
+        // estado desde el backend (ver refetch arriba) — hay que refrescarla para
+        // que la solicitud aprobada salga del filtro "Pendiente" sin esperar un reload manual.
+        refetch();
         return actualizada;
     };
     const handleRechazar = async (id: number, motivo: string) => {
         await rechazar(id, { motivo_rechazo: motivo });
+        refetch();
     };
 
     return (

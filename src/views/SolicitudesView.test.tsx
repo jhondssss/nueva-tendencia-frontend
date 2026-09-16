@@ -112,6 +112,30 @@ describe('SolicitudesView — aprobar (prellenado de precio)', () => {
         expect(await screen.findByText('Se generó el pedido #90')).toBeInTheDocument();
     });
 
+    it('refresca la lista tras aprobar para que la solicitud salga del filtro "Pendiente" sin recargar la página', async () => {
+        mockSolicitudes([makeSolicitud({ cantidad_pares: 12 })]);
+        vi.mocked(solicitudPedidoApi.aprobar).mockResolvedValue({
+            data: { ...makeSolicitud(), estado: 'Aprobada', pedido_creado: { id_pedido: 90 } },
+        } as never);
+
+        const user = userEvent.setup();
+        render(<SolicitudesView />);
+        await screen.findByText('Carlos Rojas');
+
+        // Tras aprobar, el filtro "Pendiente" sigue activo — el backend ya no
+        // devolvería esta solicitud en un refetch con ese filtro.
+        mockSolicitudes([]);
+
+        await user.click(screen.getByRole('button', { name: /aprobar/i }));
+        await screen.findByText('Aprobar solicitud');
+        fireEvent.change(document.querySelector('input[type="date"]')!, { target: { value: '2026-12-01' } });
+        await user.click(screen.getByRole('button', { name: /aprobar y generar pedido/i }));
+
+        await waitFor(() => expect(solicitudPedidoApi.getAll).toHaveBeenCalledTimes(2));
+        await user.click(screen.getByRole('button', { name: 'Cerrar' }));
+        await waitFor(() => expect(screen.queryByText('Carlos Rojas')).not.toBeInTheDocument());
+    });
+
     it('permite ajustar el total sugerido antes de confirmar', async () => {
         mockSolicitudes([makeSolicitud({ cantidad_pares: 12 })]);
         vi.mocked(solicitudPedidoApi.aprobar).mockResolvedValue({
@@ -165,5 +189,26 @@ describe('SolicitudesView — rechazar', () => {
 
         await waitFor(() => expect(solicitudPedidoApi.rechazar).toHaveBeenCalledWith(1, { motivo_rechazo: 'Sin stock del talle' }));
         await waitFor(() => expect(screen.queryByRole('heading', { name: 'Rechazar solicitud' })).not.toBeInTheDocument());
+    });
+
+    it('refresca la lista tras rechazar para que la solicitud salga del filtro "Pendiente" sin recargar la página', async () => {
+        mockSolicitudes([makeSolicitud()]);
+        vi.mocked(solicitudPedidoApi.rechazar).mockResolvedValue({
+            data: { ...makeSolicitud(), estado: 'Rechazada', motivo_rechazo: 'Sin stock del talle' },
+        } as never);
+
+        const user = userEvent.setup();
+        render(<SolicitudesView />);
+        await screen.findByText('Carlos Rojas');
+
+        mockSolicitudes([]);
+
+        await user.click(screen.getByRole('button', { name: /rechazar/i }));
+        await screen.findByRole('heading', { name: 'Rechazar solicitud' });
+        await user.type(screen.getByPlaceholderText('Explica por qué se rechaza esta solicitud...'), 'Sin stock del talle');
+        await user.click(screen.getByRole('button', { name: /rechazar solicitud/i }));
+
+        await waitFor(() => expect(solicitudPedidoApi.getAll).toHaveBeenCalledTimes(2));
+        await waitFor(() => expect(screen.queryByText('Carlos Rojas')).not.toBeInTheDocument());
     });
 });
