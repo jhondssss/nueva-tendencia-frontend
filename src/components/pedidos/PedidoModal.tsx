@@ -23,7 +23,7 @@ const schema = z.object({
     producto_id:   z.number({ error: 'Selecciona un producto' }).min(1, 'Selecciona un producto'),
     cantidad:      z.number({ error: 'Ingresa una cantidad' }).int('Debe ser un número entero').min(1, 'Mínimo 1'),
     unidad:        z.enum(['docena', 'media_docena', 'par']),
-    total:         z.number().positive('Debe ser mayor a 0'),
+    total:         z.number({ error: 'Ingresá un monto válido' }).positive('Debe ser mayor a 0'),
     fecha_entrega: z.string()
                     .min(1, 'Selecciona una fecha')
                     .refine(
@@ -58,6 +58,12 @@ function buildInitialTallas(pedido: Pedido | null | undefined): TallaItem[] | nu
 }
 
 const PARES: Record<UnidadPedido, number> = { docena: 12, media_docena: 6, par: 1 };
+
+const CANTIDAD_LABELS: Record<UnidadPedido, string> = {
+    docena:       'Cantidad de Docenas',
+    media_docena: 'Cantidad de Medias Docenas',
+    par:          'Cantidad de Pares',
+};
 
 interface Props {
     isOpen:    boolean;
@@ -218,7 +224,7 @@ export default function PedidoModal({ isOpen, onClose, onSubmit, pedido, cliente
 
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="label">Cantidad *</label>
+                        <label className="label">{CANTIDAD_LABELS[unidad]} *</label>
                         <input type="number" min={1}
                                {...register('cantidad', { valueAsNumber: true })}
                                placeholder="1"
