@@ -187,6 +187,59 @@ describe('ProductoModal — editar producto (coerción de tipos del backend)', (
         await user.click(screen.getByRole('tab', { name: /fórmula de producción/i }));
         expect(fieldFor('Cuero (pies)')).toHaveValue(2.5);
     });
+
+    // Regresión: cuero_pies/etc. son columnas `decimal` en Postgres y llegan como string
+    // (no como number, a pesar del tipo declarado). Sin coerción, z.number() rechazaba el
+    // valor y handleSubmit nunca llamaba a onSubmit — en silencio, porque el mensaje de
+    // error vive en la pestaña "Fórmula de producción", que no está montada si el usuario
+    // se queda en "Datos generales" y clickea "Actualizar" directo, como en el bug real.
+    it('permite actualizar un producto con fórmula cargada como string (decimal de TypeORM) sin bloquear el submit', async () => {
+        const onSubmit = vi.fn().mockResolvedValue(undefined);
+        const user = userEvent.setup();
+        const producto = { ...PRODUCTO_EDITANDO, cuero_pies: '3.00' as unknown as number };
+        render(<ProductoModal isOpen onClose={vi.fn()} onSubmit={onSubmit} producto={producto} />);
+
+        await user.click(screen.getByRole('button', { name: /actualizar/i }));
+
+        await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+        const [dto] = onSubmit.mock.calls[0];
+        expect(dto.cuero_pies).toBe(3);
+    });
+});
+
+describe('ProductoModal — transición Editar → Nuevo sin desmontar', () => {
+    // Regresión: el modal no se desmonta entre "Editar" y "Nuevo producto" (ProductosView
+    // reusa la misma instancia). Antes del fix, el useEffect de reset solo cubría
+    // `isOpen && producto` (cargar) y `!isOpen` (limpiar al cerrar), pero no `isOpen &&
+    // !producto` — el caso real de "cerrar con la X y luego abrir Nuevo producto" — así
+    // que el form quedaba con los valores del producto editado previamente.
+    it('limpia todos los campos al cerrar en modo Editar y reabrir en modo Nuevo', () => {
+        const { rerender } = render(
+            <ProductoModal isOpen onClose={vi.fn()} onSubmit={vi.fn()} producto={PRODUCTO_EDITANDO} />,
+        );
+        expect(screen.getByText('Editar Producto')).toBeInTheDocument();
+        expect(fieldFor(/precio venta/i)).toHaveValue(350.5);
+
+        // Cerrar con la X (sin desmontar el componente).
+        rerender(<ProductoModal isOpen={false} onClose={vi.fn()} onSubmit={vi.fn()} producto={PRODUCTO_EDITANDO} />);
+
+        // Abrir "Nuevo producto".
+        rerender(<ProductoModal isOpen onClose={vi.fn()} onSubmit={vi.fn()} producto={null} />);
+
+        expect(screen.getByText('Nuevo Producto')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Mocasín clásico')).toHaveValue('');
+        expect(screen.getByPlaceholderText('Nueva Tendencia')).toHaveValue('');
+        expect(screen.getByPlaceholderText('Mocasín / Botín')).toHaveValue('');
+        expect(screen.getByPlaceholderText('Hombre / Mujer')).toHaveValue('');
+        expect(screen.getByPlaceholderText('Cuero genuino')).toHaveValue('');
+        expect(screen.getByPlaceholderText('Negro / Café')).toHaveValue('');
+        expect(screen.getByPlaceholderText('Descripción breve del producto...')).toHaveValue('');
+        expect(fieldFor(/precio venta/i)).toHaveValue(null);
+        expect(fieldFor(/costo unidad/i)).toHaveValue(null);
+        expect(fieldFor('Stock actual')).toHaveValue(0);
+        expect(screen.getByPlaceholderText('Selecciona una categoría')).toHaveValue('Sin categoría / oculto del catálogo');
+        expect(screen.getByRole('checkbox', { name: /producto activo/i })).toBeChecked();
+    });
 });
 
 describe('ProductoModal — categoría (CreatableSelect)', () => {

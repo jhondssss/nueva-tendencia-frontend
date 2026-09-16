@@ -23,6 +23,12 @@ function resolveImageUrl(url?: string | null): string | null {
 const nanToDefault = (fallback: number) => (v: unknown) =>
     typeof v === 'number' && isNaN(v) ? fallback : v;
 
+// El backend devuelve las columnas `decimal` como string (gotcha de TypeORM/pg).
+// Sin esta conversión, react-hook-form carga el string tal cual y la validación
+// de Zod (z.number()) lo rechaza en silencio al enviar el formulario de edición.
+const numeroODefault = (v: number | null | undefined): number | undefined =>
+    v == null ? undefined : Number(v);
+
 // Vacío (input sin tocar) o NaN → undefined, para poder distinguir "no configurado" de "0".
 const emptyToUndefined = (v: unknown) => {
     if (v === '' || v === null) return undefined;
@@ -104,6 +110,30 @@ interface Props {
     producto?: Producto | null;
 }
 
+// Estado de un formulario "en blanco". Se pasa explícito a reset() (en vez de reset()
+// sin argumentos) porque react-hook-form, sin args, solo restaura los campos presentes
+// en el `defaultValues` original de useForm — cualquier otro campo (nombre_modelo, marca,
+// precio_venta, etc.) conserva su último valor interno aunque el input se desmonte y
+// vuelva a montar (p. ej. al cerrar en modo Editar y reabrir en modo Nuevo Producto).
+const FORM_VACIO: Partial<ProductoFormData> = {
+    nombre_modelo: '', marca: '', tipo_calzado: '', genero: '', material_principal: '', color: '',
+    categoria_id: null,
+    precio_venta: undefined,
+    costo_unidad: undefined,
+    descripcion_corta: '',
+    stock: 0,
+    nivel_minimo: 0,
+    unidad_medida: 'unidades',
+    activo: true,
+    cuero_pies:             undefined,
+    clefa_aparado_litros:   undefined,
+    pasta_solado_litros:    undefined,
+    clefa_solado_litros:    undefined,
+    pvc_solado_litros:      undefined,
+    clefa_empaque_litros:   undefined,
+    esponja_empaque_hojas:  undefined,
+};
+
 export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: Props) {
     const fileRef = useRef<HTMLInputElement>(null);
     const [imagen, setImagen]   = useState<File | null>(null);
@@ -112,7 +142,7 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
     const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<ProductoFormData>({
         resolver: zodResolver(schema) as Resolver<ProductoFormData>,
         mode: 'onTouched',
-        defaultValues: { activo: true, stock: 0, nivel_minimo: 0, categoria_id: null },
+        defaultValues: FORM_VACIO,
     });
 
     const categoriasProducto     = useProductoStore(s => s.categoriasProducto);
@@ -136,18 +166,21 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                 nivel_minimo:       Number(producto.nivel_minimo),
                 unidad_medida:      producto.unidad_medida ?? 'unidades',
                 activo:             Boolean(producto.activo),
-                cuero_pies:             producto.cuero_pies ?? undefined,
-                clefa_aparado_litros:   producto.clefa_aparado_litros ?? undefined,
-                pasta_solado_litros:    producto.pasta_solado_litros ?? undefined,
-                clefa_solado_litros:    producto.clefa_solado_litros ?? undefined,
-                pvc_solado_litros:      producto.pvc_solado_litros ?? undefined,
-                clefa_empaque_litros:   producto.clefa_empaque_litros ?? undefined,
-                esponja_empaque_hojas:  producto.esponja_empaque_hojas ?? undefined,
+                cuero_pies:             numeroODefault(producto.cuero_pies),
+                clefa_aparado_litros:   numeroODefault(producto.clefa_aparado_litros),
+                pasta_solado_litros:    numeroODefault(producto.pasta_solado_litros),
+                clefa_solado_litros:    numeroODefault(producto.clefa_solado_litros),
+                pvc_solado_litros:      numeroODefault(producto.pvc_solado_litros),
+                clefa_empaque_litros:   numeroODefault(producto.clefa_empaque_litros),
+                esponja_empaque_hojas:  numeroODefault(producto.esponja_empaque_hojas),
             });
             setPreview(getImagenEstandarizada(resolveImageUrl(producto.imagen_url), 400));
             setImagen(null);
-        } else if (!isOpen) {
-            reset();
+        } else {
+            // Cubre tanto el cierre del modal como el tránsito Editar → Nuevo sin
+            // desmontar (isOpen sigue true, producto pasa a null): sin este else,
+            // el form quedaba con los datos del producto editado previamente.
+            reset(FORM_VACIO);
             setPreview(null);
             setImagen(null);
         }
