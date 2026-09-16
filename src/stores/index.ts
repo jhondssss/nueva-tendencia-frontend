@@ -363,6 +363,7 @@ interface MisSolicitudesState {
     error:       string | null;
     fetchAll:    () => Promise<void>;
     create:      (dto: CreateSolicitudPedidoDto) => Promise<SolicitudPedido>;
+    cancelar:    (id: number) => Promise<void>;
 }
 
 export const useMisSolicitudesStore = create<MisSolicitudesState>((set, get) => ({
@@ -382,6 +383,15 @@ export const useMisSolicitudesStore = create<MisSolicitudesState>((set, get) => 
         set({ solicitudes: [data, ...get().solicitudes] });
         toast.success('Solicitud enviada — te avisaremos cuando sea revisada');
         return data;
+    },
+    cancelar: async (id) => {
+        try {
+            const { data } = await solicitudPedidoApi.cancelar(id);
+            set({ solicitudes: get().solicitudes.map(s => s.id_solicitud === id ? data : s) });
+            toast.success('Solicitud cancelada');
+        } catch (err) {
+            toast.error(errorMessage(err, 'No se pudo cancelar la solicitud. Intentá de nuevo.'));
+        }
     },
 }));
 

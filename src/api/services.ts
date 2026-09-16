@@ -121,6 +121,7 @@ export const solicitudPedidoApi = {
     getAll:         (estado?: string)                             => api.get<PaginatedResponse<SolicitudPedido>>('/solicitudes-pedido', { params: { estado } }),
     aprobar:        (id: number, dto: AprobarSolicitudDto)        => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/aprobar`, dto),
     rechazar:       (id: number, dto: RechazarSolicitudDto)       => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/rechazar`, dto),
+    cancelar:       (id: number)                                  => api.patch<SolicitudPedido>(`/solicitudes-pedido/${id}/cancelar`),
 };
 
 // ─── Calificaciones (panel admin) ──────────────────────────────────────────────

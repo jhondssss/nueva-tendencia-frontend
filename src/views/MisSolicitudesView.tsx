@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, Package, Calendar, XCircle, ArrowRight, AlertTriangle } from 'lucide-react';
+import { ClipboardList, Package, Calendar, XCircle, ArrowRight, AlertTriangle, Ban } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useMisSolicitudesStore } from '@/stores/index';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/Skeleton';
+import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import AdvancedPagination, { PAGE_SIZES } from '@/components/shared/AdvancedPagination';
 import type { PageSize } from '@/components/shared/AdvancedPagination';
 import type { EstadoSolicitud, SolicitudPedido } from '@/types';
@@ -41,7 +42,7 @@ function EstadoSolicitudBadge({ estado }: { estado: EstadoSolicitud }) {
     );
 }
 
-function SolicitudCard({ solicitud }: { solicitud: SolicitudPedido }) {
+function SolicitudCard({ solicitud, onCancelar }: { solicitud: SolicitudPedido; onCancelar: (s: SolicitudPedido) => void }) {
     const navigate = useNavigate();
     return (
         <Card className="border-border/50 bg-card/50 backdrop-blur">
@@ -90,6 +91,17 @@ function SolicitudCard({ solicitud }: { solicitud: SolicitudPedido }) {
                         <ArrowRight size={14} />
                     </Button>
                 )}
+
+                {solicitud.estado === 'Pendiente' && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-center text-destructive hover:text-destructive"
+                        onClick={() => onCancelar(solicitud)}
+                    >
+                        <Ban size={14} /> Cancelar solicitud
+                    </Button>
+                )}
             </CardContent>
         </Card>
     );
@@ -100,9 +112,11 @@ export default function MisSolicitudesView() {
     const isLoading    = useMisSolicitudesStore(s => s.isLoading);
     const error        = useMisSolicitudesStore(s => s.error);
     const fetchAll     = useMisSolicitudesStore(s => s.fetchAll);
+    const cancelar     = useMisSolicitudesStore(s => s.cancelar);
 
-    const [page, setPage]         = useState(1);
-    const [pageSize, setPageSize] = useState<PageSize>(readPageSize);
+    const [page, setPage]                     = useState(1);
+    const [pageSize, setPageSize]             = useState<PageSize>(readPageSize);
+    const [cancelTarget, setCancelTarget]     = useState<SolicitudPedido | null>(null);
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -157,7 +171,7 @@ export default function MisSolicitudesView() {
 
             {solicitudes.length > 0 && (
                 <div className="space-y-3">
-                    {paginated.map(s => <SolicitudCard key={s.id_solicitud} solicitud={s} />)}
+                    {paginated.map(s => <SolicitudCard key={s.id_solicitud} solicitud={s} onCancelar={setCancelTarget} />)}
                 </div>
             )}
 
@@ -172,6 +186,18 @@ export default function MisSolicitudesView() {
                     noun="solicitudes"
                 />
             )}
+
+            <ConfirmDialog
+                isOpen={!!cancelTarget}
+                onClose={() => setCancelTarget(null)}
+                onConfirm={() => cancelTarget && void cancelar(cancelTarget.id_solicitud)}
+                title="Cancelar solicitud"
+                message={cancelTarget
+                    ? `¿Seguro que deseas cancelar la solicitud #${cancelTarget.id_solicitud}? Esta acción no se puede deshacer.`
+                    : ''}
+                confirmLabel="Cancelar solicitud"
+                icon={Ban}
+            />
         </div>
     );
 }
