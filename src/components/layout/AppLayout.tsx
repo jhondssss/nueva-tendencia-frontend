@@ -151,26 +151,29 @@ export default function AppLayout() {
                             return (
                                 <div key={label}>
                                     {sidebarOpen && (
-                                        <button
-                                            type="button"
-                                            onClick={() => toggleSection(label)}
-                                            className={clsx(
-                                                'w-full flex items-center justify-between gap-2 px-3 pt-3 pb-1 select-none',
-                                                'text-2xs uppercase tracking-widest transition-colors',
-                                                isGroupActive ? 'text-sidebar-foreground/60' : 'text-sidebar-foreground/40 hover:text-sidebar-foreground/60',
-                                            )}
-                                        >
-                                            <span className="flex items-center gap-1.5">
-                                                {label}
-                                                {isGroupActive && isCollapsed && (
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-sidebar-primary" />
+                                        <div className="pt-3 pb-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleSection(label)}
+                                                className={clsx(
+                                                    'w-full flex items-center justify-between gap-2 rounded-md px-3 py-2 select-none',
+                                                    'text-2xs uppercase tracking-widest transition-all duration-200',
+                                                    'hover:bg-sidebar-accent hover:text-sidebar-foreground',
+                                                    isGroupActive ? 'text-sidebar-foreground/60' : 'text-sidebar-foreground/40',
                                                 )}
-                                            </span>
-                                            <ChevronDown
-                                                size={12}
-                                                className={clsx('flex-shrink-0 transition-transform duration-200', isCollapsed && '-rotate-90')}
-                                            />
-                                        </button>
+                                            >
+                                                <span className="flex items-center gap-1.5">
+                                                    {label}
+                                                    {isGroupActive && isCollapsed && (
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-sidebar-primary" />
+                                                    )}
+                                                </span>
+                                                <ChevronDown
+                                                    size={12}
+                                                    className={clsx('flex-shrink-0 transition-transform duration-200', isCollapsed && '-rotate-90')}
+                                                />
+                                            </button>
+                                        </div>
                                     )}
                                     {!sidebarOpen && <Separator className="my-1 bg-sidebar-border/60" />}
                                     {showItems && (
