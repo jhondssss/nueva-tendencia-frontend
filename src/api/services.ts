@@ -172,6 +172,25 @@ export const generoApi = {
     create:  (nombre: string) => api.post<Genero>('/generos', { nombre }),
 };
 
+// ─── Catálogos: CRUD genérico ─────────────────────────────────────────────────
+// Las 6 entidades de catálogo comparten contrato (GET/POST/PATCH/DELETE sobre `path`).
+// Las mutaciones van con x-silent: el caller (CatalogoManager) muestra el mensaje real
+// del backend (p. ej. el 409 "en uso") en vez del toast genérico del interceptor.
+const SILENT = { headers: { 'x-silent': 'true' } };
+export interface CatalogoRegistro { nombre: string; activo: boolean; [idKey: string]: unknown }
+export interface CatalogoApi {
+    getAll: () => Promise<{ data: CatalogoRegistro[] }>;
+    create: (nombre: string) => Promise<{ data: CatalogoRegistro }>;
+    update: (id: number, dto: { nombre?: string; activo?: boolean }) => Promise<{ data: CatalogoRegistro }>;
+    remove: (id: number) => Promise<unknown>;
+}
+export const crearCatalogoApi = (path: string): CatalogoApi => ({
+    getAll: () => api.get<CatalogoRegistro[]>(path),
+    create: (nombre) => api.post<CatalogoRegistro>(path, { nombre }, SILENT),
+    update: (id, dto) => api.patch<CatalogoRegistro>(`${path}/${id}`, dto, SILENT),
+    remove: (id) => api.delete(`${path}/${id}`, SILENT),
+});
+
 // ─── Kardex ───────────────────────────────────────────────────────────────────
 export const kardexApi = {
     getAll:        (page?: number, limit?: number) => api.get<PaginatedResponse<KardexMovimiento>>('/kardex', { params: { page, limit } }),

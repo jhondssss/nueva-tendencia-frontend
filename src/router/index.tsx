@@ -20,6 +20,7 @@ const InsumosView          = lazy(() => import('@/views/InsumosView'));
 const ReporteDiarioView    = lazy(() => import('@/views/ReporteDiarioView'));
 const SeguimientoView      = lazy(() => import('@/views/SeguimientoView'));
 const UsuariosView         = lazy(() => import('@/views/UsuariosView'));
+const CatalogosView        = lazy(() => import('@/views/CatalogosView'));
 const ResetPasswordView    = lazy(() => import('@/views/ResetPasswordView'));
 const CambiarPasswordView  = lazy(() => import('@/views/CambiarPasswordView'));
 const MisPedidosView       = lazy(() => import('@/views/MisPedidosView'));
@@ -152,6 +153,7 @@ export const router = createBrowserRouter([
                                             { path: '/insumos',          element: <Lazy><InsumosView /></Lazy> },
                                             { path: '/reporte-diario',   element: <Lazy><ReporteDiarioView /></Lazy> },
                                             { path: '/usuarios',         element: <Lazy><UsuariosView /></Lazy> },
+                                            { path: '/catalogos',        element: <Lazy><CatalogosView /></Lazy> },
                                         ],
                                     },
                                 ],

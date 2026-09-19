@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation, matchPath } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Star, Search, ChevronDown, UserCircle } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Star, Search, ChevronDown, UserCircle, Settings2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCommandPaletteStore } from '@/stores/commandPalette.store';
 import { useRole } from '@/hooks/useRole';
@@ -65,6 +65,7 @@ const NAV_GROUPS = [
         items: [
             { to: '/usuarios',  icon: UserCog,       label: 'Usuarios',  desc: 'Gestión de usuarios', roles: ['admin'] },
             { to: '/auditoria', icon: ClipboardList, label: 'Auditoría', desc: 'Log de actividad',    roles: ['admin'] },
+            { to: '/catalogos', icon: Settings2,     label: 'Catálogos', desc: 'Categorías y tipos',  roles: ['admin'] },
         ],
     },
     {
