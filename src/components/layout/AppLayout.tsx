@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation, matchPath } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Star, Search, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, GitBranch, BarChart2, ArrowLeftRight, ClipboardList, ClipboardCheck, FlaskConical, CalendarCheck, LogOut, Menu, X, Star, Search, ChevronDown, UserCircle } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCommandPaletteStore } from '@/stores/commandPalette.store';
 import { useRole } from '@/hooks/useRole';
@@ -65,6 +65,12 @@ const NAV_GROUPS = [
         items: [
             { to: '/usuarios',  icon: UserCog,       label: 'Usuarios',  desc: 'Gestión de usuarios', roles: ['admin'] },
             { to: '/auditoria', icon: ClipboardList, label: 'Auditoría', desc: 'Log de actividad',    roles: ['admin'] },
+        ],
+    },
+    {
+        label: 'CUENTA',
+        items: [
+            { to: '/perfil', icon: UserCircle, label: 'Mi perfil', desc: 'Datos y contraseña', roles: ['admin', 'operario'] },
         ],
     },
 ];
@@ -247,6 +253,9 @@ export default function AppLayout() {
                                 <DropdownMenuContent align="start" className="w-56">
                                     <DropdownMenuLabel className="truncate font-normal text-muted-foreground">{user?.email}</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => navigate('/perfil')}>
+                                        <UserCircle size={14} /> Mi perfil
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem
                                         onClick={handleLogout}
                                         className="text-destructive focus:text-destructive focus:bg-destructive/10"

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { authApi } from '@/api/services';
-import type { User, LoginDto } from '@/types';
+import type { User, LoginDto, UpdatePerfilDto } from '@/types';
 
 interface AuthState {
     user:                User | null;
@@ -15,6 +15,8 @@ interface AuthState {
     checkSession:        () => Promise<void>;
     clearAuth:           () => void;
     markPasswordChanged: () => void;
+    /** Guarda el perfil propio y refresca `user` en el store con la respuesta (sin F5). */
+    updatePerfil:        (dto: UpdatePerfilDto) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -60,4 +62,12 @@ export const useAuthStore = create<AuthState>()((set) => ({
     clearAuth: () => set({ user: null, isAuthenticated: false, passwordChanged: false }),
 
     markPasswordChanged: () => set({ passwordChanged: true }),
+
+    updatePerfil: async (dto) => {
+        // Si el email cambió, el backend ya reemitió la cookie httpOnly; acá solo se sincroniza el estado local.
+        const { data } = await authApi.updatePerfil(dto);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { access_token, ...user } = data;
+        set(state => ({ user: { ...state.user, ...user } }));
+    },
 }));

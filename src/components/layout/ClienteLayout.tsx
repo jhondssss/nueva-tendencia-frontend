@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LogOut, Package, ShoppingBag, ClipboardList, Menu, X } from 'lucide-react';
+import { LogOut, Package, ShoppingBag, ClipboardList, UserCircle, Menu, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMisPedidosStore } from '@/stores/index';
@@ -11,6 +11,7 @@ const NAV_LINKS = [
     { to: '/mis-pedidos',      label: 'Mis pedidos',     icon: Package },
     { to: '/catalogo',         label: 'Catálogo',        icon: ShoppingBag },
     { to: '/mis-solicitudes',  label: 'Mis solicitudes', icon: ClipboardList },
+    { to: '/perfil',           label: 'Mi perfil',       icon: UserCircle },
 ];
 
 export default function ClienteLayout() {

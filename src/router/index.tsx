@@ -27,6 +27,7 @@ const MisPedidoDetalleView = lazy(() => import('@/views/MisPedidoDetalleView'));
 const CatalogoView         = lazy(() => import('@/views/CatalogoView'));
 const CalificacionesView   = lazy(() => import('@/views/CalificacionesView'));
 const MisSolicitudesView   = lazy(() => import('@/views/MisSolicitudesView'));
+const PerfilView           = lazy(() => import('@/views/PerfilView'));
 const SolicitudesView      = lazy(() => import('@/views/SolicitudesView'));
 
 function PageLoader() {
@@ -90,6 +91,12 @@ function StaffRoute() {
     return <Outlet />;
 }
 
+/** Layout según rol: el portal cliente y el panel admin comparten rutas de cuenta (/perfil). */
+function RoleLayout() {
+    const role = useAuthStore(s => s.user?.role);
+    return role === 'cliente' ? <ClienteLayout /> : <AppLayout />;
+}
+
 export const router = createBrowserRouter([
     {
         // Solo las rutas que dependen de saber si hay sesión esperan a checkSession().
@@ -117,6 +124,12 @@ export const router = createBrowserRouter([
                                             { path: '/mis-solicitudes',  element: <Lazy><MisSolicitudesView /></Lazy> },
                                         ],
                                     },
+                                ],
+                            },
+                            {
+                                element: <RoleLayout />,
+                                children: [
+                                    { path: '/perfil', element: <Lazy><PerfilView /></Lazy> },
                                 ],
                             },
                             {

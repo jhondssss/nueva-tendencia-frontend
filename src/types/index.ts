@@ -25,6 +25,16 @@ export interface User {
     requiereCambioPassword?: boolean;
 }
 
+export interface UpdatePerfilDto {
+    nombre?:   string;
+    apellido?: string;
+    email?:    string;
+}
+export interface CambiarPasswordDto {
+    password_actual: string;
+    password_nuevo:  string;
+}
+
 // ─── Usuario (gestión admin) ───────────────────────────────────────────────────
 export type RolUsuario = 'admin' | 'operario' | 'cliente';
 export interface UsuarioAdmin {

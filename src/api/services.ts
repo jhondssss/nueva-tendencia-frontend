@@ -1,7 +1,7 @@
 import api from './axios';
 import type { AxiosRequestConfig } from 'axios';
 import type {
-    LoginDto, AuthResponse, User,
+    LoginDto, AuthResponse, User, UpdatePerfilDto, CambiarPasswordDto,
     Cliente, CreateClienteDto, UpdateClienteDto, TipoCliente,
     Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
@@ -29,6 +29,10 @@ export const authApi = {
     forgotPassword:         (email: string)                    => api.post('/auth/forgot-password', { email }),
     resetPassword:          (token: string, password: string)  => api.post('/auth/reset-password', { token, password }),
     cambiarPasswordInicial: (password: string)                 => api.post<{ message: string }>('/auth/cambiar-password-inicial', { password }),
+    perfil:                 ()                                  => api.get<User>('/auth/perfil', { headers: { 'x-silent': 'true' } }),
+    // x-silent: la vista muestra el mensaje real del backend (409 email duplicado, 400 contraseña incorrecta)
+    updatePerfil:           (dto: UpdatePerfilDto)             => api.patch<User & { access_token?: string }>('/auth/perfil', dto, { headers: { 'x-silent': 'true' } }),
+    cambiarPassword:        (dto: CambiarPasswordDto)          => api.patch<{ message: string }>('/auth/perfil/password', dto, { headers: { 'x-silent': 'true' } }),
 };
 
 // ─── Usuarios (gestión admin) ─────────────────────────────────────────────────
