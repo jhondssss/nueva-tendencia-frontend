@@ -97,13 +97,25 @@ export interface CategoriaProducto {
     activo:                boolean;
 }
 
+// ─── Tipo de Calzado / Género ───────────────────────────────────────────────────
+export interface TipoCalzado {
+    id:     number;
+    nombre: string;
+    activo: boolean;
+}
+export interface Genero {
+    id:     number;
+    nombre: string;
+    activo: boolean;
+}
+
 // ─── Producto ─────────────────────────────────────────────────────────────────
 export interface Producto {
     id_producto: number;
     nombre_modelo: string;
     marca: string;
-    tipo_calzado: string;
-    genero: string;
+    tipo_calzado: TipoCalzado | null;
+    genero: Genero | null;
     material_principal: string;
     color: string;
     precio_venta: number;
@@ -126,7 +138,11 @@ export interface Producto {
     clefa_empaque_litros?: number | null;
     esponja_empaque_hojas?: number | null;
 }
-export type CreateProductoDto = Omit<Producto, 'id_producto' | 'categoria'> & { categoria_id?: number | null };
+export type CreateProductoDto = Omit<Producto, 'id_producto' | 'categoria' | 'tipo_calzado' | 'genero'> & {
+    categoria_id?: number | null;
+    tipo_calzado_id: number;
+    genero_id: number;
+};
 export type UpdateProductoDto = Partial<CreateProductoDto>;
 
 // ─── Catálogo público (portal de cliente) ──────────────────────────────────────

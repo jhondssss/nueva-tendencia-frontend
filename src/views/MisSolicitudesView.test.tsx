@@ -24,8 +24,8 @@ function makeSolicitud(overrides: Partial<SolicitudPedido> = {}): SolicitudPedid
             telefono_principal: '70000001', fecha_registro: '2026-01-01', activo: true,
         },
         producto: {
-            id_producto: 1, nombre_modelo: 'Mocasín clásico', marca: 'NT', tipo_calzado: 'Mocasín',
-            genero: 'Hombre', material_principal: 'Cuero', color: 'Negro',
+            id_producto: 1, nombre_modelo: 'Mocasín clásico', marca: 'NT', tipo_calzado: { id: 1, nombre: 'Mocasín', activo: true },
+            genero: { id: 1, nombre: 'Hombre', activo: true }, material_principal: 'Cuero', color: 'Negro',
             precio_venta: '250.00' as unknown as number, costo_unidad: 120, descripcion_corta: 'desc',
             activo: true, stock: 10, unidad_medida: 'unidades', nivel_minimo: 2, categoria: null,
         },

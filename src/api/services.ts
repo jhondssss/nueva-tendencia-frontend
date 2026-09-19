@@ -9,7 +9,7 @@ import type {
     CalificacionAdmin, CalificacionesFiltros,
     SolicitudPedido, CreateSolicitudPedidoDto, AprobarSolicitudDto, RechazarSolicitudDto,
     Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo, UnidadMedida,
-    CategoriaProducto,
+    CategoriaProducto, TipoCalzado, Genero,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity, ProximoPedido,
     KardexMovimiento, CreateKardexDto,
     AuditoriaLog,
@@ -160,6 +160,16 @@ export const unidadMedidaApi = {
 export const categoriaProductoApi = {
     getAll:  () => api.get<CategoriaProducto[]>('/categorias-producto'),
     create:  (nombre: string) => api.post<CategoriaProducto>('/categorias-producto', { nombre }),
+};
+
+export const tipoCalzadoApi = {
+    getAll:  () => api.get<TipoCalzado[]>('/tipos-calzado'),
+    create:  (nombre: string) => api.post<TipoCalzado>('/tipos-calzado', { nombre }),
+};
+
+export const generoApi = {
+    getAll:  () => api.get<Genero[]>('/generos'),
+    create:  (nombre: string) => api.post<Genero>('/generos', { nombre }),
 };
 
 // ─── Kardex ───────────────────────────────────────────────────────────────────

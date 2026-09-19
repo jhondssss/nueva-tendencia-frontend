@@ -20,7 +20,7 @@ const CLIENTES: Cliente[] = [
 const PRODUCTOS: Producto[] = [
     {
         id_producto: 1, nombre_modelo: 'Mocasín clásico', marca: 'Nueva Tendencia',
-        tipo_calzado: 'Mocasín', genero: 'Hombre', material_principal: 'Cuero', color: 'Negro',
+        tipo_calzado: { id: 1, nombre: 'Mocasín', activo: true }, genero: { id: 1, nombre: 'Hombre', activo: true }, material_principal: 'Cuero', color: 'Negro',
         precio_venta: 250, costo_unidad: 120, descripcion_corta: 'desc', activo: true,
         stock: 10, unidad_medida: 'unidades', nivel_minimo: 2, categoria: null,
     },

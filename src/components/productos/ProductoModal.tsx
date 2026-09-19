@@ -41,8 +41,8 @@ const numeroOpcional = z.preprocess(emptyToUndefined, z.number().min(0, 'No pued
 const schema = z.object({
     nombre_modelo:      z.string().min(3, 'Mínimo 3 caracteres'),
     marca:              z.string().min(1, 'Requerido'),
-    tipo_calzado:       z.string().min(1, 'Requerido'),
-    genero:             z.string().min(1, 'Requerido'),
+    tipo_calzado_id:    z.number({ error: 'Requerido' }),
+    genero_id:          z.number({ error: 'Requerido' }),
     material_principal: z.string().min(1, 'Requerido'),
     color:              z.string().min(1, 'Requerido'),
     categoria_id:       z.number().nullable().optional(),
@@ -67,8 +67,6 @@ export type ProductoFormData = z.infer<typeof schema>;
 const FIELDS = [
     { name: 'nombre_modelo',      label: 'Nombre del modelo', placeholder: 'Mocasín clásico'   },
     { name: 'marca',              label: 'Marca',             placeholder: 'Nueva Tendencia'    },
-    { name: 'tipo_calzado',       label: 'Tipo de calzado',   placeholder: 'Mocasín / Botín'    },
-    { name: 'genero',             label: 'Género',            placeholder: 'Hombre / Mujer'     },
     { name: 'material_principal', label: 'Material',          placeholder: 'Cuero genuino'      },
     { name: 'color',              label: 'Color',             placeholder: 'Negro / Café'       },
 ] as const;
@@ -116,7 +114,7 @@ interface Props {
 // precio_venta, etc.) conserva su último valor interno aunque el input se desmonte y
 // vuelva a montar (p. ej. al cerrar en modo Editar y reabrir en modo Nuevo Producto).
 const FORM_VACIO: Partial<ProductoFormData> = {
-    nombre_modelo: '', marca: '', tipo_calzado: '', genero: '', material_principal: '', color: '',
+    nombre_modelo: '', marca: '', tipo_calzado_id: undefined, genero_id: undefined, material_principal: '', color: '',
     categoria_id: null,
     precio_venta: undefined,
     costo_unidad: undefined,
@@ -147,6 +145,10 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
 
     const categoriasProducto     = useProductoStore(s => s.categoriasProducto);
     const createCategoriaProducto = useProductoStore(s => s.createCategoriaProducto);
+    const tiposCalzado     = useProductoStore(s => s.tiposCalzado);
+    const createTipoCalzado = useProductoStore(s => s.createTipoCalzado);
+    const generos          = useProductoStore(s => s.generos);
+    const createGenero     = useProductoStore(s => s.createGenero);
     const { canCreate } = useRole();
 
     useEffect(() => {
@@ -154,8 +156,8 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
             reset({
                 nombre_modelo:      producto.nombre_modelo,
                 marca:              producto.marca,
-                tipo_calzado:       producto.tipo_calzado,
-                genero:             producto.genero,
+                tipo_calzado_id:    producto.tipo_calzado?.id,
+                genero_id:          producto.genero?.id,
                 material_principal: producto.material_principal,
                 color:              producto.color,
                 categoria_id:       producto.categoria?.id_categoria_producto ?? null,
@@ -248,6 +250,50 @@ export default function ProductoModal({ isOpen, onClose, onSubmit, producto }: P
                             {errors[name] && <p className="text-destructive text-xs mt-1">{errors[name]?.message}</p>}
                         </div>
                     ))}
+                    <div>
+                        <label className="label">Tipo de calzado *</label>
+                        <Controller
+                            name="tipo_calzado_id"
+                            control={control}
+                            render={({ field }) => (
+                                <CreatableSelect
+                                    value={field.value}
+                                    onChange={id => field.onChange(id)}
+                                    options={tiposCalzado}
+                                    onCreate={async nombre => {
+                                        const c = await createTipoCalzado(nombre);
+                                        return { id: c.id, nombre: c.nombre, activo: c.activo };
+                                    }}
+                                    placeholder="Selecciona un tipo"
+                                    newLabel="+ Nuevo tipo de calzado"
+                                    canCreateNew={canCreate}
+                                    error={errors.tipo_calzado_id?.message}
+                                />
+                            )}
+                        />
+                    </div>
+                    <div>
+                        <label className="label">Género *</label>
+                        <Controller
+                            name="genero_id"
+                            control={control}
+                            render={({ field }) => (
+                                <CreatableSelect
+                                    value={field.value}
+                                    onChange={id => field.onChange(id)}
+                                    options={generos}
+                                    onCreate={async nombre => {
+                                        const c = await createGenero(nombre);
+                                        return { id: c.id, nombre: c.nombre, activo: c.activo };
+                                    }}
+                                    placeholder="Selecciona un género"
+                                    newLabel="+ Nuevo género"
+                                    canCreateNew={canCreate}
+                                    error={errors.genero_id?.message}
+                                />
+                            )}
+                        />
+                    </div>
                 </div>
 
                 <div>

@@ -15,6 +15,15 @@ vi.mock('react-hot-toast', () => ({
     default: { error: vi.fn(), success: vi.fn() },
 }));
 
+const TIPOS = [
+    { id: 1, nombre: 'Botín', activo: true },
+    { id: 2, nombre: 'Mocasín', activo: true },
+];
+const GENEROS = [
+    { id: 1, nombre: 'Hombre', activo: true },
+    { id: 2, nombre: 'Mujer', activo: true },
+];
+
 const CATEGORIAS = [
     { id_categoria_producto: 1, nombre: 'Botas', activo: true },
     { id_categoria_producto: 2, nombre: 'Mocasines', activo: true },
@@ -27,8 +36,8 @@ const PRODUCTO_EDITANDO = {
     id_producto: 5,
     nombre_modelo: 'Bota de Seguridad Industrial',
     marca: 'Nueva Tendencia',
-    tipo_calzado: 'Botín',
-    genero: 'Hombre',
+    tipo_calzado: { id: 1, nombre: 'Botín', activo: true },
+    genero: { id: 1, nombre: 'Hombre', activo: true },
     material_principal: 'Cuero genuino',
     color: 'Negro',
     precio_venta: '350.50' as unknown as number,
@@ -57,7 +66,7 @@ function fieldFor(text: string | RegExp): HTMLInputElement {
 
 beforeEach(() => {
     vi.clearAllMocks();
-    useProductoStore.setState({ categoriasProducto: CATEGORIAS, productos: [], alertas: [], isLoading: false, error: null });
+    useProductoStore.setState({ categoriasProducto: CATEGORIAS, tiposCalzado: TIPOS, generos: GENEROS, productos: [], alertas: [], isLoading: false, error: null });
     // Crear/editar productos es exclusivo de admin (ver useRole/CLAUDE.md); CreatableSelect
     // usa canCreate para decidir si ofrece "+ Nueva categoría".
     useAuthStore.setState({
@@ -71,8 +80,10 @@ beforeEach(() => {
 async function llenarCamposGenerales(user: ReturnType<typeof userEvent.setup>) {
     await user.type(screen.getByPlaceholderText('Mocasín clásico'), 'Zapato Test');
     await user.type(screen.getByPlaceholderText('Nueva Tendencia'), 'NT');
-    await user.type(screen.getByPlaceholderText('Mocasín / Botín'), 'Mocasín');
-    await user.type(screen.getByPlaceholderText('Hombre / Mujer'), 'Hombre');
+    await user.click(screen.getByPlaceholderText('Selecciona un tipo'));
+    await user.click(screen.getByRole('button', { name: 'Mocasín' }));
+    await user.click(screen.getByPlaceholderText('Selecciona un género'));
+    await user.click(screen.getByRole('button', { name: 'Hombre' }));
     await user.type(screen.getByPlaceholderText('Cuero genuino'), 'Cuero');
     await user.type(screen.getByPlaceholderText('Negro / Café'), 'Negro');
 }
@@ -141,6 +152,11 @@ describe('ProductoModal — nuevo producto', () => {
         expect(dto.clefa_aparado_litros).toBeUndefined();
         expect(dto.precio_venta).toBe(199.9);
         expect(dto.costo_unidad).toBe(80);
+        // El contrato de API espera IDs enteros, no el texto/objeto.
+        expect(dto.tipo_calzado_id).toBe(2);
+        expect(dto.genero_id).toBe(1);
+        expect(dto).not.toHaveProperty('tipo_calzado');
+        expect(dto).not.toHaveProperty('genero');
     });
 
     it('envía los campos de fórmula completados como número', async () => {
@@ -178,6 +194,12 @@ describe('ProductoModal — editar producto (coerción de tipos del backend)', (
     it('precarga la categoría actual del producto en el selector', () => {
         render(<ProductoModal isOpen onClose={vi.fn()} onSubmit={vi.fn()} producto={PRODUCTO_EDITANDO} />);
         expect(screen.getByPlaceholderText('Selecciona una categoría')).toHaveValue('Botas');
+    });
+
+    it('precarga tipo de calzado y género actuales del producto (objetos del backend)', () => {
+        render(<ProductoModal isOpen onClose={vi.fn()} onSubmit={vi.fn()} producto={PRODUCTO_EDITANDO} />);
+        expect(screen.getByPlaceholderText('Selecciona un tipo')).toHaveValue('Botín');
+        expect(screen.getByPlaceholderText('Selecciona un género')).toHaveValue('Hombre');
     });
 
     it('precarga el campo de fórmula configurado (cuero_pies) y no confunde etapas', async () => {
@@ -229,8 +251,8 @@ describe('ProductoModal — transición Editar → Nuevo sin desmontar', () => {
         expect(screen.getByText('Nuevo Producto')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Mocasín clásico')).toHaveValue('');
         expect(screen.getByPlaceholderText('Nueva Tendencia')).toHaveValue('');
-        expect(screen.getByPlaceholderText('Mocasín / Botín')).toHaveValue('');
-        expect(screen.getByPlaceholderText('Hombre / Mujer')).toHaveValue('');
+        expect(screen.getByPlaceholderText('Selecciona un tipo')).toHaveValue('');
+        expect(screen.getByPlaceholderText('Selecciona un género')).toHaveValue('');
         expect(screen.getByPlaceholderText('Cuero genuino')).toHaveValue('');
         expect(screen.getByPlaceholderText('Negro / Café')).toHaveValue('');
         expect(screen.getByPlaceholderText('Descripción breve del producto...')).toHaveValue('');

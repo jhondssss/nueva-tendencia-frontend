@@ -4,12 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ProductosView from './ProductosView';
 import { useAuthStore } from '@/stores/auth.store';
 import { useProductoStore } from '@/stores/index';
-import { productoApi, categoriaProductoApi } from '@/api/services';
+import { productoApi, categoriaProductoApi, tipoCalzadoApi, generoApi } from '@/api/services';
 import type { Producto } from '@/types';
 
 vi.mock('@/api/services', () => ({
     productoApi: { getAll: vi.fn(), getAlertas: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn() },
     categoriaProductoApi: { getAll: vi.fn(), create: vi.fn() },
+    tipoCalzadoApi: { getAll: vi.fn(), create: vi.fn() },
+    generoApi: { getAll: vi.fn(), create: vi.fn() },
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -18,8 +20,8 @@ vi.mock('react-hot-toast', () => ({
 
 function makeProducto(overrides: Partial<Producto> = {}): Producto {
     return {
-        id_producto: 1, nombre_modelo: 'Bota clásica', marca: 'NT', tipo_calzado: 'bota',
-        genero: 'unisex', material_principal: 'cuero', color: 'negro', precio_venta: 100,
+        id_producto: 1, nombre_modelo: 'Bota clásica', marca: 'NT', tipo_calzado: { id: 1, nombre: 'bota', activo: true },
+        genero: { id: 1, nombre: 'unisex', activo: true }, material_principal: 'cuero', color: 'negro', precio_venta: 100,
         costo_unidad: 50, descripcion_corta: '', activo: true, stock: 10,
         unidad_medida: 'par', nivel_minimo: 2, categoria: null,
         ...overrides,
@@ -43,6 +45,8 @@ beforeEach(() => {
     setRole('admin');
     vi.mocked(productoApi.getAlertas).mockResolvedValue({ data: [] } as never);
     vi.mocked(categoriaProductoApi.getAll).mockResolvedValue({ data: [] } as never);
+    vi.mocked(tipoCalzadoApi.getAll).mockResolvedValue({ data: [] } as never);
+    vi.mocked(generoApi.getAll).mockResolvedValue({ data: [] } as never);
 });
 
 function renderView() {

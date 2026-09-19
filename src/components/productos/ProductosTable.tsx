@@ -127,7 +127,7 @@ export default function ProductosTable({ onEdit, onDelete, canEdit, canDelete, i
                                         </TableCell>
                                         <TableCell className="font-medium text-foreground">{p.nombre_modelo}</TableCell>
                                         <TableCell className="text-muted-foreground">{p.marca}</TableCell>
-                                        <TableCell className="text-muted-foreground">{p.tipo_calzado}</TableCell>
+                                        <TableCell className="text-muted-foreground">{p.tipo_calzado?.nombre ?? '—'}</TableCell>
                                         <TableCell className="text-muted-foreground">{p.color}</TableCell>
                                         <TableCell className="font-mono text-primary">Bs. {Number(p.precio_venta).toFixed(2)}</TableCell>
                                         <TableCell className={clsx('font-mono font-medium', lowStock ? 'text-destructive' : 'text-foreground')}>

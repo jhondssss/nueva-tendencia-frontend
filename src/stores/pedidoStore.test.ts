@@ -31,8 +31,8 @@ function makePedido(overrides: Partial<Pedido> = {}): Pedido {
             fecha_registro: '2026-01-01', activo: true,
         },
         producto: {
-            id_producto: 1, nombre_modelo: 'Bota clásica', marca: 'NT', tipo_calzado: 'bota',
-            genero: 'unisex', material_principal: 'cuero', color: 'negro', precio_venta: 100,
+            id_producto: 1, nombre_modelo: 'Bota clásica', marca: 'NT', tipo_calzado: { id: 1, nombre: 'bota', activo: true },
+            genero: { id: 1, nombre: 'unisex', activo: true }, material_principal: 'cuero', color: 'negro', precio_venta: 100,
             costo_unidad: 50, descripcion_corta: '', activo: true, stock: 10,
             unidad_medida: 'par', nivel_minimo: 2, categoria: null,
         },

@@ -17,10 +17,10 @@ export default function ProductosView() {
     const [showAlertas, setShowAlertas]   = useState(false);
     const [filterActivo, setFilterActivo] = useState<'todos' | 'activos' | 'inactivos'>('todos');
 
-    const { productos, alertas, isLoading, error, fetchAll, fetchAlertas, fetchCategoriasProducto, create, update, remove } = useProductoStore();
+    const { productos, alertas, isLoading, error, fetchAll, fetchAlertas, fetchCategoriasProducto, fetchTiposCalzado, fetchGeneros, create, update, remove } = useProductoStore();
     const { canCreate, canEdit, canDelete } = useRole();
 
-    useEffect(() => { fetchAll(); fetchAlertas(); fetchCategoriasProducto(); }, [fetchAll, fetchAlertas, fetchCategoriasProducto]);
+    useEffect(() => { fetchAll(); fetchAlertas(); fetchCategoriasProducto(); fetchTiposCalzado(); fetchGeneros(); }, [fetchAll, fetchAlertas, fetchCategoriasProducto, fetchTiposCalzado, fetchGeneros]);
     useEffect(() => { document.title = 'Stock | NT'; }, []);
 
     const displayed = showAlertas ? alertas : productos;

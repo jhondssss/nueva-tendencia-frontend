@@ -3,11 +3,11 @@ import toast from 'react-hot-toast';
 import { type AxiosError } from 'axios';
 import {
     clienteApi, tipoClienteApi, productoApi, pedidoApi, insumoApi, categoriaInsumoApi, unidadMedidaApi,
-    categoriaProductoApi, dashboardApi, solicitudPedidoApi,
+    categoriaProductoApi, tipoCalzadoApi, generoApi, dashboardApi, solicitudPedidoApi,
 } from '@/api/services';
 import type {
     Cliente, CreateClienteDto, UpdateClienteDto, TipoCliente,
-    Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo, CategoriaProducto,
+    Producto, CreateProductoDto, UpdateProductoDto, ProductoCatalogo, CategoriaProducto, TipoCalzado, Genero,
     Pedido, CreatePedidoDto, UpdatePedidoDto, EstadoPedido,
     Insumo, CreateInsumoDto, UpdateInsumoDto, CategoriaInsumo, UnidadMedida,
     DashboardKpis, OrdersStatus, ProductionFunnel, RecentActivity,
@@ -92,19 +92,24 @@ export const useClienteStore = create<ClienteState>((set, get) => ({
 
 // ─── Productos ────────────────────────────────────────────────────────────────
 interface ProductoState {
-    productos: Producto[]; alertas: Producto[]; categoriasProducto: CategoriaProducto[]; isLoading: boolean;
+    productos: Producto[]; alertas: Producto[]; categoriasProducto: CategoriaProducto[];
+    tiposCalzado: TipoCalzado[]; generos: Genero[]; isLoading: boolean;
     error: string | null;
     fetchAll:     () => Promise<void>;
     fetchAlertas: () => Promise<void>;
     fetchCategoriasProducto: () => Promise<void>;
     createCategoriaProducto: (nombre: string) => Promise<CategoriaProducto>;
+    fetchTiposCalzado: () => Promise<void>;
+    createTipoCalzado: (nombre: string) => Promise<TipoCalzado>;
+    fetchGeneros: () => Promise<void>;
+    createGenero: (nombre: string) => Promise<Genero>;
     create:  (dto: CreateProductoDto, imagen?: File) => Promise<void>;
     update:  (id: number, dto: UpdateProductoDto, imagen?: File) => Promise<void>;
     remove:  (id: number) => Promise<void>;
 }
 
 export const useProductoStore = create<ProductoState>((set, get) => ({
-    productos: [], alertas: [], categoriasProducto: [], isLoading: false, error: null,
+    productos: [], alertas: [], categoriasProducto: [], tiposCalzado: [], generos: [], isLoading: false, error: null,
 
     fetchAll: async () => {
         set({ isLoading: true, error: null });
@@ -124,6 +129,26 @@ export const useProductoStore = create<ProductoState>((set, get) => ({
         const { data } = await categoriaProductoApi.create(nombre);
         set({ categoriasProducto: [...get().categoriasProducto, data] });
         toast.success('Categoría de producto creada');
+        return data;
+    },
+    fetchTiposCalzado: async () => {
+        const { data } = await tipoCalzadoApi.getAll();
+        set({ tiposCalzado: data });
+    },
+    createTipoCalzado: async (nombre) => {
+        const { data } = await tipoCalzadoApi.create(nombre);
+        set({ tiposCalzado: [...get().tiposCalzado, data] });
+        toast.success('Tipo de calzado creado');
+        return data;
+    },
+    fetchGeneros: async () => {
+        const { data } = await generoApi.getAll();
+        set({ generos: data });
+    },
+    createGenero: async (nombre) => {
+        const { data } = await generoApi.create(nombre);
+        set({ generos: [...get().generos, data] });
+        toast.success('Género creado');
         return data;
     },
     create: async (dto, imagen) => {
